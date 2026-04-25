@@ -1,0 +1,62 @@
+﻿using AbsoluteFitManagement.Application.Common.Interfaces;
+using AbsoluteFitManagement.Domain.Subscriptions;
+using AbsoluteFitManagement.Infrastructure.Common.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace AbsoluteFitManagement.Infrastructure.Subscriptions.Persistence;
+
+public class SubscriptionsRepository : ISubscriptionsRepository
+{
+    private readonly AbsoluteFitManagementDbContext _dbContext;
+
+    public SubscriptionsRepository(AbsoluteFitManagementDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    public async Task AddSubscriptionAsync(Subscription subscription)
+    {
+        await _dbContext.Subscriptions.AddAsync(subscription);
+    }
+
+    public async Task<bool> ExistsAsync(Guid id)
+    {
+        return await _dbContext.Subscriptions.AsNoTracking()
+                                             .AnyAsync(s => s.Id == id);
+    }
+
+    public async Task<Subscription?> GetByAdminIdAsync(Guid adminId)
+    {
+        return await _dbContext.Subscriptions.AsNoTracking()
+                                             .FirstOrDefaultAsync(s => s.AdminId == adminId);
+    }
+
+    public async Task<Subscription?> GetByIdAsync(Guid id)
+    {
+        return await _dbContext.Subscriptions.FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public async Task<Subscription?> GetSubscriptionAsync(Guid subscriptionId)
+    {
+        return await _dbContext.Subscriptions.FindAsync(subscriptionId);
+    }
+
+    public async Task<List<Subscription>> ListAsync()
+    {
+        return await _dbContext.Subscriptions.ToListAsync();
+    }
+
+    public Task RemoveSubscriptionAsync(Subscription subscription)
+    {
+        _dbContext.Subscriptions.Remove(subscription);
+
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(Subscription subscription)
+    {
+        _dbContext.Subscriptions.Update(subscription);
+
+        return Task.CompletedTask;
+    }
+}
