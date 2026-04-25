@@ -1,0 +1,205 @@
+/* Landing page — lavender background matching the screenshot */
+.landing {
+  background: linear-gradient(145deg, #f3eef8 0%, #ede8f5 50%, #e8f0f8 100%);
+  min-height: calc(100vh - 68px);
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 48px 64px;
+  width: 100%;
+  align-items: center;
+  flex: 1;
+}
+
+/* ── Hero Left ── */
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #6d28d9;
+  background: rgba(109, 40, 217, .1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.hero-heading {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -1.5px;
+  color: #111827;
+  margin: 0;
+}
+
+.hero-sub {
+  font-size: 17px;
+  line-height: 1.65;
+  color: #4b5563;
+  max-width: 480px;
+  margin: 0;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cta-primary {
+  padding: 13px 28px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.cta-primary:hover { background: #1f2937; transform: translateY(-1px); }
+
+.cta-secondary {
+  padding: 13px 28px;
+  background: transparent;
+  color: #374151;
+  border: 1.5px solid #9ca3af;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.cta-secondary:hover { border-color: #6b7280; background: rgba(0,0,0,.03); }
+
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
+}
+.stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+.stat-divider {
+  width: 1px;
+  height: 36px;
+  background: #d1d5db;
+}
+
+/* ── Hero Right — Image Grid ── */
+.hero-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.16);
+}
+
+.grid-cell {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.grid-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .4s ease;
+}
+.grid-cell:hover img { transform: scale(1.06); }
+
+/* ── Features Strip ── */
+.features {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+.feature-card {
+  padding: 36px 32px;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.feature-card:last-child { border-right: none; }
+
+.feature-icon { font-size: 28px; }
+
+.feature-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.feature-card p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .landing-inner {
+    grid-template-columns: 1fr;
+    padding: 48px 24px;
+    gap: 40px;
+  }
+  .hero-right { justify-content: center; }
+  .features { grid-template-columns: repeat(2, 1fr); }
+  .feature-card:nth-child(2) { border-right: none; }
+  .feature-card:nth-child(3) { border-top: 1px solid #e5e7eb; }
+  .feature-card:nth-child(4) { border-top: 1px solid #e5e7eb; border-right: none; }
+}
+
+@media (max-width: 540px) {
+  .features { grid-template-columns: 1fr; }
+  .feature-card { border-right: none; border-top: 1px solid #e5e7eb; }
+  .feature-card:first-child { border-top: none; }
+}

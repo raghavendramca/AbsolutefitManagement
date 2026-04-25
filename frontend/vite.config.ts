@@ -7,6 +7,7 @@ export default defineConfig({
     proxy: {
       '/subscriptions': 'http://localhost:5197',
       '/gyms': 'http://localhost:5197',
+      '/navigation': 'http://localhost:5197',
     },
   },
 })
