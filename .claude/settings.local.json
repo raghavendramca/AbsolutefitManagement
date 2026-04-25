@@ -3,7 +3,11 @@
     "allow": [
       "Bash(cmd.exe /c \"dir C:\\\\workfolder\\\\AbsoluteFitManagement\\\\Backend\\\\src /AD /B\")",
       "Bash(cmd.exe /c \"dir C:\\\\workfolder\\\\AbsoluteFitManagement\\\\Backend\\\\src\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet tool *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet build *)"
     ]
   }
 }

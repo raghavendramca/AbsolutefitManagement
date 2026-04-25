@@ -2,6 +2,7 @@
 using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Domain.Admins;
 using AbsoluteFitManagement.Domain.Gyms;
+using AbsoluteFitManagement.Domain.Navigation;
 using AbsoluteFitManagement.Domain.Subscriptions;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ public class AbsoluteFitManagementDbContext : DbContext, IUnitOfWork
     public DbSet<Admin> Admins { get; set; } = null!;
     public DbSet<Subscription> Subscriptions { get; set; } = null!;
     public DbSet<Gym> Gyms { get; set; } = null!;
+    public DbSet<LoginOption> LoginOptions { get; set; } = null!;
 
     public AbsoluteFitManagementDbContext(DbContextOptions options) : base(options)
     {

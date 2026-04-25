@@ -17,6 +17,34 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
 
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.LoginOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Route")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LoginOptions");
+
+                    b.HasData(
+                        new { Id = 1, Label = "Member", Route = "/login/member", DisplayOrder = 1 },
+                        new { Id = 2, Label = "Studio", Route = "/login/studio", DisplayOrder = 2 });
+                });
+
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Admins.Admin", b =>
                 {
                     b.Property<Guid>("Id")
