@@ -76,6 +76,25 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<Guid>("SubscriptionId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Locality")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasDefaultValue("")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasDefaultValue("")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("BranchCode")
+                        .HasDefaultValue(0)
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("_maxRooms")
                         .HasColumnType("INTEGER")
                         .HasColumnName("MaxRooms");

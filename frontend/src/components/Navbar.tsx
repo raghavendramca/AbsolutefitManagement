@@ -72,15 +72,14 @@ export default function Navbar() {
           {dropdownOpen && (
             <div className="dropdown" role="menu">
               {loginOptions.map((opt) => (
-                <a
+                <button
                   key={opt.id}
-                  href={opt.route}
                   className="dropdown-item"
                   role="menuitem"
-                  onClick={() => setDropdownOpen(false)}
+                  onClick={() => { setDropdownOpen(false); navigate(opt.route); }}
                 >
                   {opt.label}
-                </a>
+                </button>
               ))}
             </div>
           )}

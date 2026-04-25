@@ -1,0 +1,180 @@
+.sb-page {
+  min-height: calc(100vh - 68px);
+  background: #ffffff;
+}
+
+.sb-header-bar {
+  padding: 16px 32px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.sb-back:hover { color: #111827; }
+
+.sb-back svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sb-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+}
+
+/* ── Filter section ───────────────────────────────────────── */
+
+.sb-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.sb-filter-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  display: block;
+}
+
+.sb-city-select {
+  width: 240px;
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.sb-city-select:focus { border-color: #f07020; }
+
+.sb-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 24px 0;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+
+.sb-table-wrapper {
+  overflow-x: auto;
+}
+
+.sb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.sb-table thead tr {
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sb-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.sb-table th:first-child,
+.sb-table th:last-child { text-align: center; }
+
+.sb-table th:nth-child(2) { text-align: center; }
+
+.sb-table td {
+  padding: 14px 16px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.sb-table tbody tr:last-child td { border-bottom: none; }
+
+.sb-table tbody tr:hover { background: #fafafa; }
+
+.sb-center { text-align: center; }
+
+.sb-branch-id {
+  font-weight: 600;
+  color: #111827;
+}
+
+.sb-locality {
+  color: #f07020;
+  font-weight: 500;
+}
+
+/* ── Login button ─────────────────────────────────────────── */
+
+.sb-login-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  padding: 0;
+}
+
+.sb-login-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sb-login-btn.filled {
+  background: #f07020;
+  color: #fff;
+}
+
+.sb-login-btn.outlined {
+  background: transparent;
+  border: 1.5px solid #f07020;
+  color: #f07020;
+}
+
+.sb-login-btn:hover { opacity: 0.85; transform: scale(1.05); }
+
+/* ── States ───────────────────────────────────────────────── */
+
+.sb-state {
+  padding: 40px 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.sb-error { color: #dc2626; }
+
+/* ── Orange footer accent (matches screenshot) ────────────── */
+.sb-page::after {
+  content: '';
+  display: block;
+  height: 6px;
+  background: linear-gradient(90deg, #f07020 0%, #fbbf24 100%);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}

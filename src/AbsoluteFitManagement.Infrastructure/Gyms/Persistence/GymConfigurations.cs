@@ -28,5 +28,18 @@ public class GymConfigurations : IEntityTypeConfiguration<Gym>
         builder.Property(x => x.Name);
 
         builder.Property(x => x.SubscriptionId);
+
+        builder.Property(x => x.TenantId);
+
+        builder.Property(x => x.Locality)
+            .HasMaxLength(200)
+            .HasDefaultValue(string.Empty);
+
+        builder.Property(x => x.City)
+            .HasMaxLength(200)
+            .HasDefaultValue(string.Empty);
+
+        builder.Property(x => x.BranchCode)
+            .HasDefaultValue(0);
     }
 }

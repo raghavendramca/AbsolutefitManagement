@@ -1,5 +1,7 @@
 ﻿using AbsoluteFitManagement.Application;
 using AbsoluteFitManagement.Infrastructure;
+using AbsoluteFitManagement.Infrastructure.Common.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,5 +33,13 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+// Apply any pending EF migrations automatically on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AbsoluteFitManagementDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 app.Run();
 

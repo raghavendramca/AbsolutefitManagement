@@ -14,15 +14,28 @@ public class Gym
     public string Name { get; init; } = null!;
     public Guid SubscriptionId { get; init; }
 
+    // Multi-tenant discriminator: shared-DB model, every branch row carries the tenant key
+    public Guid TenantId { get; init; }
+    public string Locality { get; init; } = string.Empty;
+    public string City { get; init; } = string.Empty;
+    public int BranchCode { get; init; }
+
     public Gym(
         string name,
         int maxRooms,
         Guid subscriptionId,
-        Guid? id = null)
+        Guid? id = null,
+        string locality = "",
+        string city = "",
+        int branchCode = 0)
     {
         Name = name;
         _maxRooms = maxRooms;
         SubscriptionId = subscriptionId;
+        TenantId = subscriptionId;   // tenant == subscription in shared-DB model
+        Locality = locality;
+        City = city;
+        BranchCode = branchCode;
         Id = id ?? Guid.NewGuid();
     }
 

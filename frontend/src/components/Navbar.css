@@ -128,10 +128,16 @@
 
 .dropdown-item {
   display: block;
+  width: 100%;
   padding: 12px 18px;
   font-size: 14px;
+  font-weight: 500;
   color: #374151;
+  background: transparent;
+  border: none;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
   transition: background .1s;
 }
 .dropdown-item:hover { background: #f3f4f6; color: #111827; }
