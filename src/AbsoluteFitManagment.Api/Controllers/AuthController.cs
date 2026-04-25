@@ -1,35 +1,34 @@
+using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Contracts.Auth;
-using AbsoluteFitManagement.Infrastructure.Common.Persistence;
+using AbsoluteFitManagement.Infrastructure.Common.Auth;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AbsoluteFitManagement.Api.Controllers;
 
 [Route("auth")]
 public class AuthController : ApiController
 {
-    // Well-known seeded IDs — stand-in until real user/auth tables are added
-    private static readonly Guid SeedAdminId = Guid.Parse("0c97fb2a-479e-44b1-9353-dea3d9f418e1");
+    private readonly IStudioUsersRepository _users;
+    private readonly IAdminsRepository _admins;
 
-    private readonly AbsoluteFitManagementDbContext _db;
-
-    public AuthController(AbsoluteFitManagementDbContext db)
+    public AuthController(IStudioUsersRepository users, IAdminsRepository admins)
     {
-        _db = db;
+        _users = users;
+        _admins = admins;
     }
 
-    /// <summary>
-    /// Mock studio login. Accepts any credentials and returns the tenant's subscription ID.
-    /// Replace this with real credential validation once a Users table is introduced.
-    /// </summary>
     [HttpPost("studio/login")]
     public async Task<IActionResult> StudioLogin([FromBody] StudioLoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             return BadRequest(new { message = "Email and password are required." });
 
-        var admin = await _db.Admins.AsNoTracking()
-                                    .FirstOrDefaultAsync(a => a.Id == SeedAdminId);
+        var user = await _users.GetByEmailAsync(request.Email);
+
+        if (user is null || !PasswordHasher.Verify(request.Password, user.PasswordHash))
+            return Unauthorized(new { message = "Invalid email or password." });
+
+        var admin = await _admins.GetByIdAsync(user.AdminId);
 
         if (admin is null || admin.SubscriptionId is null)
             return Unauthorized(new { message = "No tenant found for this account." });

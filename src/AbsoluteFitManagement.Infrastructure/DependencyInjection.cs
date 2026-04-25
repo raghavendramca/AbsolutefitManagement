@@ -1,30 +1,62 @@
-﻿using AbsoluteFitManagement.Application.Common.Interfaces;
+using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Infrastructure.Admins.Persistence;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using AbsoluteFitManagement.Infrastructure.Subscriptions.Persistence;
+using AbsoluteFitManagement.Infrastructure.Users.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AbsoluteFitManagement.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        return services.AddPersistence();
+        return services.AddPersistence(configuration);
     }
 
-    public static IServiceCollection AddPersistence(this IServiceCollection services)
+    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<AbsoluteFitManagementDbContext>(options => 
-            options.UseSqlite("Data Source = AbsoluteFitManagement.db"));
-            
+        var provider = configuration["DatabaseProvider"]
+            ?? throw new InvalidOperationException("'DatabaseProvider' is not set in configuration.");
+
+        services.AddDbContext<AbsoluteFitManagementDbContext>(options =>
+            ConfigureProvider(options, provider, configuration));
+
         services.AddScoped<ISubscriptionsRepository, SubscriptionsRepository>();
         services.AddScoped<IAdminsRepository, AdminsRepository>();
         services.AddScoped<IGymsRepository, GymsRepository>();
-        services.AddScoped<IUnitOfWork>(services => 
-            services.GetRequiredService<AbsoluteFitManagementDbContext>());
-            
+        services.AddScoped<IStudioUsersRepository, StudioUsersRepository>();
+        services.AddScoped<IUnitOfWork>(sp =>
+            sp.GetRequiredService<AbsoluteFitManagementDbContext>());
+
         return services;
+    }
+
+    private static void ConfigureProvider(
+        DbContextOptionsBuilder options,
+        string provider,
+        IConfiguration configuration)
+    {
+        switch (provider.ToLowerInvariant())
+        {
+            case "sqlserver":
+                var sqlServerConn = configuration.GetConnectionString("SqlServer")
+                    ?? throw new InvalidOperationException("Connection string 'SqlServer' not found.");
+                options.UseSqlServer(sqlServerConn);
+                break;
+
+            case "sqlite":
+                var sqliteConn = configuration.GetConnectionString("Sqlite")
+                    ?? "Data Source=AbsoluteFitManagement.db";
+                options.UseSqlite(sqliteConn);
+                break;
+
+            default:
+                throw new InvalidOperationException(
+                    $"Unsupported DatabaseProvider '{provider}'. " +
+                    "Supported values: 'Sqlite', 'SqlServer'.");
+        }
     }
 }

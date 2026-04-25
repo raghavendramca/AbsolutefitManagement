@@ -5,9 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/subscriptions': 'http://localhost:5197',
-      '/gyms': 'http://localhost:5197',
-      '/navigation': 'http://localhost:5197',
+      '/auth':          'http://localhost:5215',
+      '/subscriptions': 'http://localhost:5215',
+      '/gyms':          'http://localhost:5215',
+      '/navigation':    'http://localhost:5215',
     },
   },
 })
