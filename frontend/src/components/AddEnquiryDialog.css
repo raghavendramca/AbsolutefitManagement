@@ -1,0 +1,235 @@
+/* Overlay */
+.aeq-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+/* Dialog box */
+.aeq-dialog {
+  background: #fff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.aeq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.aeq-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.aeq-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.aeq-close:hover { color: #212529; background: transparent; }
+
+/* Tab strip */
+.aeq-tabs {
+  padding: 0 24px;
+  border-bottom: 1px solid #dee2e6;
+  margin-top: 16px;
+}
+
+.aeq-tab {
+  display: inline-block;
+  padding: 10px 0;
+  margin-right: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.aeq-tab.active {
+  color: #e8611a;
+  border-bottom: 2px solid #e8611a;
+}
+
+/* Body */
+.aeq-body {
+  padding: 24px;
+}
+
+/* Two-column grid */
+.aeq-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 640px) {
+  .aeq-columns { grid-template-columns: 1fr; }
+}
+
+/* Section headings */
+.aeq-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 16px;
+}
+
+.aeq-section-gap {
+  margin-top: 24px;
+}
+
+/* Field */
+.aeq-field {
+  margin-bottom: 14px;
+}
+
+.aeq-field > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 5px;
+}
+
+.aeq-field input[type="text"],
+.aeq-field input[type="email"],
+.aeq-field input[type="tel"],
+.aeq-field input[type="date"],
+.aeq-field input[type="datetime-local"],
+.aeq-field select,
+.aeq-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 13px;
+  color: #212529;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.aeq-field input:focus,
+.aeq-field select:focus,
+.aeq-field textarea:focus {
+  border-color: #e8611a;
+}
+
+.aeq-field textarea { resize: vertical; }
+
+/* Required marker */
+.aeq-req { color: #dc3545; margin-left: 2px; }
+
+/* Radio groups */
+.aeq-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.aeq-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #212529;
+  cursor: pointer;
+  margin: 0;
+}
+
+.aeq-radio-label input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: #e8611a;
+}
+
+.aeq-trial-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Call tag radio buttons */
+.aeq-calltag-group {
+  display: flex;
+  gap: 12px;
+}
+
+.aeq-calltag-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  transition: background 0.15s;
+}
+
+.aeq-calltag-label input[type="radio"] {
+  display: none;
+}
+
+.aeq-calltag-cold { border-color: #4f46e5; color: #4f46e5; }
+.aeq-calltag-cold.selected { background: #e0e7ff; }
+
+.aeq-calltag-warm { border-color: #d97706; color: #d97706; }
+.aeq-calltag-warm.selected { background: #fef3c7; }
+
+.aeq-calltag-hot { border-color: #dc2626; color: #dc2626; }
+.aeq-calltag-hot.selected { background: #fee2e2; }
+
+/* Error */
+.aeq-error {
+  color: #dc3545;
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+/* Footer */
+.aeq-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid #dee2e6;
+  margin-top: 24px;
+}
+
+.aeq-save-btn {
+  background: #e8611a;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 60px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.aeq-save-btn:hover:not(:disabled) { background: #cf5516; }
+.aeq-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }

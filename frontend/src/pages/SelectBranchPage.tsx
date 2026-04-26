@@ -31,8 +31,9 @@ export default function SelectBranchPage() {
     : branches;
 
   function handleBranchLogin(branch: BranchResponse) {
-    // Navigate into the branch's gym detail — wired to real auth later
-    navigate(`/subscriptions/${tenantId}/gyms/${branch.id}`);
+    navigate(`/dashboard/${tenantId}/${branch.id}`, {
+      state: { studio: branch.studio, locality: branch.locality },
+    });
   }
 
   return (

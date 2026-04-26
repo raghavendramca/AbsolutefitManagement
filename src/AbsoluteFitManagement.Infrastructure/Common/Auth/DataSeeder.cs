@@ -1,4 +1,5 @@
 using AbsoluteFitManagement.Domain.Gyms;
+using AbsoluteFitManagement.Domain.Staff;
 using AbsoluteFitManagement.Domain.Subscriptions;
 using AbsoluteFitManagement.Domain.Users;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
@@ -14,6 +15,9 @@ public static class DataSeeder
     private static readonly Guid SeedSubscriptionId = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef0123456789");
     private static readonly Guid SeedGym1Id         = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid SeedGym2Id         = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid SeedGym3Id         = Guid.Parse("33333333-3333-3333-3333-333333333333");
+    private static readonly Guid SeedGym4Id         = Guid.Parse("44444444-4444-4444-4444-444444444444");
+    private static readonly Guid SeedGym5Id         = Guid.Parse("55555555-5555-5555-5555-555555555555");
     private const string SeedEmail    = "admin@absolutefit.com";
     private const string SeedPassword = "Admin@123";
 
@@ -24,7 +28,9 @@ public static class DataSeeder
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<AbsoluteFitManagementDbContext>>();
 
         await SeedSubscriptionAndGymsAsync(db, logger);
+        await SeedAdditionalGymsAsync(db, logger);
         await SeedAdminUserAsync(db, logger);
+        await SeedStaffAsync(db, logger);
     }
 
     private static async Task SeedSubscriptionAndGymsAsync(
@@ -70,6 +76,36 @@ public static class DataSeeder
         logger.LogInformation("Seeded demo subscription and 2 gyms.");
     }
 
+    private static async Task SeedAdditionalGymsAsync(
+        AbsoluteFitManagementDbContext db, ILogger logger)
+    {
+        var extraGyms = new[]
+        {
+            (Id: SeedGym3Id, Name: "AbsoluteFit Koramangala",   Locality: "Koramangala",  City: "Bengaluru",  Code: 6901),
+            (Id: SeedGym4Id, Name: "AbsoluteFit Bandra",        Locality: "Bandra West",  City: "Mumbai",     Code: 7201),
+            (Id: SeedGym5Id, Name: "AbsoluteFit Hitech City",   Locality: "Hitech City",  City: "Hyderabad",  Code: 7401),
+        };
+
+        foreach (var g in extraGyms)
+        {
+            if (await db.Gyms.AnyAsync(x => x.Id == g.Id)) continue;
+
+            var gym = new Gym(
+                name: g.Name,
+                maxRooms: 3,
+                subscriptionId: SeedSubscriptionId,
+                id: g.Id,
+                locality: g.Locality,
+                city: g.City,
+                branchCode: g.Code);
+
+            await db.Gyms.AddAsync(gym);
+            logger.LogInformation("Seeded gym: {Name}", g.Name);
+        }
+
+        await db.SaveChangesAsync();
+    }
+
     private static async Task SeedAdminUserAsync(
         AbsoluteFitManagementDbContext db, ILogger logger)
     {
@@ -85,5 +121,34 @@ public static class DataSeeder
         await db.SaveChangesAsync();
 
         logger.LogInformation("Seeded admin studio user: {Email} / {Password}", SeedEmail, SeedPassword);
+    }
+
+    private static async Task SeedStaffAsync(
+        AbsoluteFitManagementDbContext db, ILogger logger)
+    {
+        if (await db.Staff.AnyAsync(s => s.GymId == SeedGym1Id))
+            return;
+
+        var joinDate = new DateOnly(2022, 1, 1);
+
+        var staffList = new[]
+        {
+            new StaffMember(SeedGym1Id, 44998, "Ayub Khan",  "9900000001", "Trainer",   joinDate, email: "absolutefitgym@gmail.com",     adminRights: "Training",     attendanceId: "S44998", isActive: true),
+            new StaffMember(SeedGym1Id, 58227, "Chetan",     "9900000002", "Staff",     joinDate, email: "chetanabsolutefit@gmail.com",   adminRights: "Housekeeping", attendanceId: null,     isActive: false),
+            new StaffMember(SeedGym1Id, 55628, "Dhirendar",  "9900000003", "Staff",     joinDate, email: "dhirendarabsfit@gmail.com",     adminRights: "Housekeeping", attendanceId: "S55628", isActive: true),
+            new StaffMember(SeedGym1Id, 47571, "Dilip",      "9900000004", "Trainer",   joinDate, email: "dilip@absolutefit.in",          adminRights: "Training",     attendanceId: "S47571", isActive: true),
+            new StaffMember(SeedGym1Id, 70874, "Dipin Joy",  "9900000005", "Trainer",   joinDate, email: "dipin@absolutefit.in",          adminRights: "Training",     attendanceId: "S70874", isActive: true),
+            new StaffMember(SeedGym1Id, 50427, "KALPANA",    "9900000006", "Staff",     joinDate, email: "kalpanaabsolutefit@gmail.com",  adminRights: "Housekeeping", attendanceId: "S50427", isActive: false),
+            new StaffMember(SeedGym1Id, 49102, "Mounesh",    "9900000007", "Staff",     joinDate, email: "mouneshabsolutefit@gmail.com",  adminRights: "Housekeeping", attendanceId: "S49102", isActive: true),
+            new StaffMember(SeedGym1Id, 42592, "Nikhil",     "9900000008", "Sales",     joinDate, email: "nikhil@absolutefit.in",         adminRights: "Sales",        attendanceId: "S42592", isActive: true),
+            new StaffMember(SeedGym1Id, 50826, "Raghu",      "9900000009", "Admin",     joinDate, email: "raghavendra.mca@gmail.com",     adminRights: "Master Admin", attendanceId: null,     isActive: false),
+            new StaffMember(SeedGym1Id, 47566, "Ramesh S",   "9900000010", "Trainer",   joinDate, email: "rameshs@absolutefit.in",        adminRights: "Training",     attendanceId: "S47566", isActive: false),
+            new StaffMember(SeedGym1Id, 60302, "Sathish",    "9900000011", "Trainer",   joinDate, email: "sathishabsolutefit@gmail.com",  adminRights: "Training",     attendanceId: "S60302", isActive: true),
+        };
+
+        await db.Staff.AddRangeAsync(staffList);
+        await db.SaveChangesAsync();
+
+        logger.LogInformation("Seeded {Count} staff members for gym Marathahalli.", staffList.Length);
     }
 }

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0798A3B3-C724-4347-983F-EB95B3E74A5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbsoluteFitManagement.Api", "src\AbsoluteFitManagement.Api\AbsoluteFitManagement.Api.csproj", "{C8B18FF7-59DE-46A1-8CF1-C00F9B0ADB6F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbsoluteFitManagement.Api", "src\AbsoluteFitManagment.Api\AbsoluteFitManagement.Api.csproj", "{C8B18FF7-59DE-46A1-8CF1-C00F9B0ADB6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AbsoluteFitManagement.Application", "src\AbsoluteFitManagement.Application\AbsoluteFitManagement.Application.csproj", "{DA7D1D55-3CBF-4B59-8EA4-4034209F962F}"
 EndProject

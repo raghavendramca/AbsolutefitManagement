@@ -1,5 +1,45 @@
 export type SubscriptionType = 'Free' | 'Starter' | 'Pro';
 
+export type TrialType = 'NoTrial' | 'TrialAppointment' | 'TrialClass' | 'TrialSession';
+export type CallTag = 'Cold' | 'Warm' | 'Hot';
+export type EnquiryStatus = 'Enquiry' | 'Member';
+
+export interface Enquiry {
+  id: string;
+  gymId: string;
+  fullName: string;
+  countryCode: string;
+  contactNumber: string;
+  email?: string;
+  gender?: string;
+  trialType: TrialType;
+  enquiryDate: string;
+  serviceName: string;
+  leadSource?: string;
+  followUpStaffName?: string;
+  followUpDateTime?: string;
+  callTag?: CallTag;
+  message?: string;
+  status: EnquiryStatus;
+  createdAt: string;
+}
+
+export interface CreateEnquiryRequest {
+  fullName: string;
+  countryCode: string;
+  contactNumber: string;
+  email?: string;
+  gender?: string;
+  trialType: TrialType;
+  enquiryDate: string;
+  serviceName: string;
+  leadSource?: string;
+  followUpStaffName?: string;
+  followUpDateTime?: string;
+  callTag?: CallTag;
+  message?: string;
+}
+
 export interface Subscription {
   id: string;
   subscriptionType: SubscriptionType;

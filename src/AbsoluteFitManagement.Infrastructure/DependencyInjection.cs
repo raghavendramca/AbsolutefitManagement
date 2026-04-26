@@ -1,6 +1,7 @@
 using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Infrastructure.Admins.Persistence;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
+using AbsoluteFitManagement.Infrastructure.Enquiries.Persistence;
 using AbsoluteFitManagement.Infrastructure.Subscriptions.Persistence;
 using AbsoluteFitManagement.Infrastructure.Users.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminsRepository, AdminsRepository>();
         services.AddScoped<IGymsRepository, GymsRepository>();
         services.AddScoped<IStudioUsersRepository, StudioUsersRepository>();
+        services.AddScoped<IEnquiriesRepository, EnquiriesRepository>();
         services.AddScoped<IUnitOfWork>(sp =>
             sp.GetRequiredService<AbsoluteFitManagementDbContext>());
 

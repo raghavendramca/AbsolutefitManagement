@@ -67,9 +67,17 @@ export default function GymDetailPage() {
       </Link>
 
       {gym && (
-        <div className="card">
-          <h1>{gym.name}</h1>
-          <p className="id-label">ID: {gym.id}</p>
+        <div className="card card-header">
+          <div>
+            <h1>{gym.name}</h1>
+            <p className="id-label">ID: {gym.id}</p>
+          </div>
+          <Link
+            to={`/subscriptions/${subscriptionId}/gyms/${gymId}/enquiries`}
+            style={{ flexShrink: 0 }}
+          >
+            <button type="button">Enquiries</button>
+          </Link>
         </div>
       )}
 
