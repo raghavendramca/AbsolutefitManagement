@@ -8,7 +8,7 @@ public class EnquiryConfiguration : IEntityTypeConfiguration<Enquiry>
 {
     public void Configure(EntityTypeBuilder<Enquiry> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("Enquiries");
 
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
@@ -25,6 +25,11 @@ public class EnquiryConfiguration : IEntityTypeConfiguration<Enquiry>
         builder.Property(x => x.FollowUpDateTime);
         builder.Property(x => x.CallTag).HasMaxLength(10);
         builder.Property(x => x.Message).HasMaxLength(250);
+        builder.Property(x => x.TrialScheduledAt);
+        builder.Property(x => x.TrialService).HasMaxLength(200);
+        builder.Property(x => x.TrialStaffName).HasMaxLength(200);
+        builder.Property(x => x.TrialClass).HasMaxLength(200);
+        builder.Property(x => x.TrialSession).HasMaxLength(200);
         builder.Property(x => x.Status).HasMaxLength(20).HasDefaultValue("Enquiry");
         builder.Property(x => x.CreatedAt);
 

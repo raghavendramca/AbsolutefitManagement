@@ -9,7 +9,6 @@ public class EstimateConfiguration : IEntityTypeConfiguration<Estimate>
     public void Configure(EntityTypeBuilder<Estimate> builder)
     {
         builder.ToTable("Estimates");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.EnquiryId);

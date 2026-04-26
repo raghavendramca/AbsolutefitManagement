@@ -36,7 +36,12 @@ public class EnquiriesController : ApiController
             FollowUpStaffName: request.FollowUpStaffName,
             FollowUpDateTime: request.FollowUpDateTime,
             CallTag: request.CallTag,
-            Message: request.Message);
+            Message: request.Message,
+            TrialScheduledAt: request.TrialScheduledAt,
+            TrialService: request.TrialService,
+            TrialStaffName: request.TrialStaffName,
+            TrialClass: request.TrialClass,
+            TrialSession: request.TrialSession);
 
         var result = await _mediator.Send(command);
 
@@ -63,5 +68,6 @@ public class EnquiriesController : ApiController
         e.Id, e.GymId, e.FullName, e.CountryCode, e.ContactNumber, e.Email,
         e.Gender, e.TrialType, e.EnquiryDate, e.ServiceName, e.LeadSource,
         e.FollowUpStaffName, e.FollowUpDateTime, e.CallTag, e.Message,
+        e.TrialScheduledAt, e.TrialService, e.TrialStaffName, e.TrialClass, e.TrialSession,
         e.Status, e.CreatedAt);
 }

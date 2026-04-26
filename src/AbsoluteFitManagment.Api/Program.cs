@@ -34,18 +34,11 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
-// Initialize database on startup.
-// SQLite: EnsureCreated creates the schema from the model with correct native types.
-// SqlServer: MigrateAsync runs versioned migrations.
-var dbProvider = builder.Configuration["DatabaseProvider"] ?? "Sqlite";
+// Apply any pending EF migrations on startup (works for both SQLite and SqlServer).
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AbsoluteFitManagementDbContext>();
-
-    if (dbProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
-        await db.Database.MigrateAsync();
-    else
-        await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 if (app.Environment.IsDevelopment())

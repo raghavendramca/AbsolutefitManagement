@@ -1,4 +1,4 @@
-﻿using AbsoluteFitManagement.Domain.Subscriptions;
+using AbsoluteFitManagement.Domain.Subscriptions;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,7 +9,7 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
 {
     public void Configure(EntityTypeBuilder<Subscription> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("Subscriptions");
 
         builder.Property(x => x.Id)
             .ValueGeneratedNever();

@@ -19,3 +19,13 @@ public record NavSectionResponse(
 public record NavSectionItemResponse(
     string Label,
     string? Route);
+
+/// <summary>
+/// One entry in the quick-add (+) dropdown.
+/// RequiredRole is null when the item is visible to all roles.
+/// </summary>
+public record QuickAddMenuItemResponse(
+    string Key,
+    string Label,
+    int SortOrder,
+    string? RequiredRole);

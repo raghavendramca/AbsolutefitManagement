@@ -9,7 +9,6 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
     public void Configure(EntityTypeBuilder<Invoice> builder)
     {
         builder.ToTable("Invoices");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.MemberId);

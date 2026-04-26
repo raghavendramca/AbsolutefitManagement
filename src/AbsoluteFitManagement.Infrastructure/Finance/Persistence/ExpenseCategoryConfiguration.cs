@@ -9,7 +9,6 @@ public class ExpenseCategoryConfiguration : IEntityTypeConfiguration<ExpenseCate
     public void Configure(EntityTypeBuilder<ExpenseCategory> builder)
     {
         builder.ToTable("ExpenseCategories");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.Name).HasMaxLength(100);

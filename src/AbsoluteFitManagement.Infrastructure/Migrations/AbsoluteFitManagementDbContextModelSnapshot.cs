@@ -17,865 +17,16 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
 
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Admins.Admin", b =>
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Common.Entity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("SubscriptionId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Admins");
+                    b.ToTable((string)null);
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("0c97fb2a-479e-44b1-9353-dea3d9f418e1")
-                        });
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Corporates.Corporate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CompanyName")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContactPerson")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("ContractEndDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("ContractStartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("DiscountPercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MembersAllowed")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Active");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("Corporates", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Corporates.CorporateMember", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CorporateId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("MemberId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CorporateId");
-
-                    b.HasIndex("MemberId");
-
-                    b.HasIndex("CorporateId", "MemberId")
-                        .IsUnique();
-
-                    b.ToTable("CorporateMembers", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Enquiries.Enquiry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CallTag")
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContactNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CountryCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("EnquiryDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("FollowUpDateTime")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FollowUpStaffName")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Gender")
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LeadSource")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Message")
-                        .HasMaxLength(250)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ServiceName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Enquiry");
-
-                    b.Property<string>("TrialType")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("Enquiries");
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.Estimate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("EnquiryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EstimateDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EstimateNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("MemberId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Draft");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TaxAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("ValidUntil")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("Estimates", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.EstimateItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("EstimateId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("TaxRate")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EstimateId");
-
-                    b.ToTable("EstimateItems", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.Expense", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("ExpenseDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PaymentMode")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Reference")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("StaffId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("Expenses", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.ExpenseCategory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("ExpenseCategories", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.Invoice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("DueDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("InvoiceDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("MemberId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Draft");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TaxAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.HasIndex("InvoiceNumber");
-
-                    b.ToTable("Invoices", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.InvoiceItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("InvoiceId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("TaxRate")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.ToTable("InvoiceItems", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Gyms.Gym", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("BranchCode")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("Locality")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("SubscriptionId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("_maxRooms")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("MaxRooms");
-
-                    b.Property<string>("_roomIds")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("RoomIds");
-
-                    b.Property<string>("_trainerIds")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("TrainerIds");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Gyms");
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Inventory.InventoryCategory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("InventoryCategories", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Inventory.InventoryItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("QuantityInStock")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ReorderLevel")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("SKU")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Unit")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Pcs");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("InventoryItems", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Marketing.CommunicationLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CampaignId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Channel")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RecipientContact")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("RecipientId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RecipientType")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Sent");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.HasIndex("RecipientId");
-
-                    b.ToTable("CommunicationLogs", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Marketing.MarketingCampaign", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Channel")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("RecipientCount")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("ScheduledAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("SentAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Draft");
-
-                    b.Property<string>("Subject")
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TargetAudience")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("All");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("MarketingCampaigns", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Members.Member", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContactNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CountryCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("DateOfBirth")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmergencyContactName")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmergencyContactPhone")
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("EnquiryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Gender")
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("JoinDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PhotoUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Active");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EnquiryId");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("Members", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Members.Membership", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("AmountPaid")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("MemberId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Pending");
-
-                    b.Property<Guid>("PlanId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Active");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("Memberships", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Members.MembershipPlan", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DurationMonths")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("SessionsIncluded")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("MembershipPlans", (string)null);
+                    b.UseTpcMappingStrategy();
                 });
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.LoginOption", b =>
@@ -1491,9 +642,626 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Services.GymService", b =>
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.QuickAddMenuItem", b =>
                 {
                     b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequiredRole")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("QuickAddMenuItems");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("2a000001-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "enquiry",
+                            Label = "Enquiry",
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000002-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "member",
+                            Label = "Member",
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000003-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "staff",
+                            Label = "Staff",
+                            RequiredRole = "Admin",
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000004-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "inventory",
+                            Label = "Inventory",
+                            RequiredRole = "Admin",
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000005-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "expense",
+                            Label = "Expense",
+                            SortOrder = 5
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000006-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "estimate",
+                            Label = "Estimate",
+                            SortOrder = 6
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000007-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "invoice",
+                            Label = "Invoice",
+                            SortOrder = 7
+                        },
+                        new
+                        {
+                            Id = new Guid("2a000008-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            Key = "support",
+                            Label = "Support request",
+                            SortOrder = 8
+                        });
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Admins.Admin", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<Guid?>("SubscriptionId")
+                        .HasColumnType("TEXT");
+
+                    b.ToTable("Admins", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("0c97fb2a-479e-44b1-9353-dea3d9f418e1")
+                        });
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Corporates.Corporate", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactPerson")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("ContractEndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("ContractStartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("DiscountPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MembersAllowed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Active");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("Corporates", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Corporates.CorporateMember", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<Guid>("CorporateId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("JoinedAt");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("CorporateId");
+
+                    b.HasIndex("MemberId");
+
+                    b.HasIndex("CorporateId", "MemberId")
+                        .IsUnique();
+
+                    b.ToTable("CorporateMembers", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Enquiries.Enquiry", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<string>("CallTag")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EnquiryDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FollowUpDateTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FollowUpStaffName")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Gender")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LeadSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(250)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Enquiry");
+
+                    b.Property<string>("TrialType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("TrialScheduledAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TrialService")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TrialStaffName")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TrialClass")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TrialSession")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("Enquiries", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.Estimate", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("EnquiryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EstimateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EstimateNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("ValidUntil")
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("Estimates", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.EstimateItem", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EstimateId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("EstimateId");
+
+                    b.ToTable("EstimateItems", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.Expense", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("ExpenseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentMode")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("StaffId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("Expenses", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.ExpenseCategory", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("ExpenseCategories", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.Invoice", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("InvoiceDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.HasIndex("InvoiceNumber");
+
+                    b.ToTable("Invoices", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Finance.InvoiceItem", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("InvoiceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("InvoiceItems", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Gyms.Gym", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<int>("BranchCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("Locality")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("_maxRooms")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MaxRooms");
+
+                    b.Property<string>("_roomIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("RoomIds");
+
+                    b.Property<string>("_trainerIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("TrainerIds");
+
+                    b.ToTable("Gyms", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Inventory.InventoryCategory", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("InventoryCategories", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Inventory.InventoryItem", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -1513,7 +1281,327 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.Property<int>("QuantityInStock")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ReorderLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SKU")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Pcs");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("InventoryItems", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Marketing.CommunicationLog", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<Guid?>("CampaignId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecipientContact")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("RecipientId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RecipientType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Sent");
+
+                    b.HasIndex("GymId");
+
+                    b.HasIndex("RecipientId");
+
+                    b.ToTable("CommunicationLogs", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Marketing.MarketingCampaign", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RecipientCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<string>("Subject")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TargetAudience")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("All");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("MarketingCampaigns", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Members.Member", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EmergencyContactName")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("EnquiryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Gender")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("JoinDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Active");
+
+                    b.HasIndex("EnquiryId");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("Members", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Members.Membership", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Pending");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Active");
+
+                    b.HasIndex("GymId");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("Memberships", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Members.MembershipPlan", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DurationMonths")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SessionsIncluded")
+                        .HasColumnType("INTEGER");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("MembershipPlans", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Services.GymService", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
 
                     b.HasIndex("GymId");
 
@@ -1522,8 +1610,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Staff.StaffMember", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -1590,8 +1677,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<int>("StaffCode")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("GymId");
 
                     b.HasIndex("GymId", "StaffCode")
@@ -1602,8 +1687,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Subscriptions.Subscription", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<Guid>("AdminId")
                         .HasColumnType("TEXT");
@@ -1620,15 +1704,12 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("MaxGyms");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Support.SupportRequest", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<Guid?>("AssignedToStaffId")
                         .HasColumnType("TEXT");
@@ -1669,8 +1750,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("GymId");
 
                     b.ToTable("SupportRequests", (string)null);
@@ -1678,8 +1757,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Training.SessionBooking", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<string>("BookingStatus")
                         .IsRequired()
@@ -1697,8 +1775,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<Guid>("SessionId")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("MemberId");
 
                     b.HasIndex("SessionId");
@@ -1711,8 +1787,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Training.TrainingClass", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -1740,8 +1815,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("GymId");
 
                     b.ToTable("TrainingClasses", (string)null);
@@ -1749,8 +1822,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Training.TrainingSession", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<Guid>("ClassId")
                         .HasColumnType("TEXT");
@@ -1784,8 +1856,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<Guid>("TrainerId")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("ClassId");
 
                     b.HasIndex("GymId");
@@ -1795,8 +1865,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Users.StudioUser", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
                     b.Property<Guid>("AdminId")
                         .HasColumnType("TEXT");
@@ -1811,12 +1880,10 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
-
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("StudioUsers");
+                    b.ToTable("StudioUsers", (string)null);
                 });
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.NavFlyout", b =>

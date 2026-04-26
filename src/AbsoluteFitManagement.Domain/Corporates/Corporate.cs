@@ -1,10 +1,9 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Corporates;
 
-public class Corporate
+public class Corporate : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
-
     public string CompanyName { get; set; } = null!;
     public string ContactPerson { get; set; } = null!;
     public string? Email { get; set; }
@@ -17,7 +16,6 @@ public class Corporate
 
     // Active | Inactive | Expired
     public string Status { get; set; } = "Active";
-    public DateTime CreatedAt { get; init; }
 
     public Corporate(
         Guid gymId,
@@ -31,9 +29,8 @@ public class Corporate
         string? address = null,
         DateOnly? contractEndDate = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         CompanyName = companyName;
         ContactPerson = contactPerson;
         Email = email;
@@ -44,8 +41,7 @@ public class Corporate
         MembersAllowed = membersAllowed;
         DiscountPercent = discountPercent;
         Status = "Active";
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public Corporate() { }
+    protected Corporate() { }
 }

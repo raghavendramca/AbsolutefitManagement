@@ -9,7 +9,6 @@ public class MembershipPlanConfiguration : IEntityTypeConfiguration<MembershipPl
     public void Configure(EntityTypeBuilder<MembershipPlan> builder)
     {
         builder.ToTable("MembershipPlans");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.Name).HasMaxLength(200);

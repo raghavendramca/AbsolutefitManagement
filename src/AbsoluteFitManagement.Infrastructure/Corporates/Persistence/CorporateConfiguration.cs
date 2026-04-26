@@ -9,7 +9,6 @@ public class CorporateConfiguration : IEntityTypeConfiguration<Corporate>
     public void Configure(EntityTypeBuilder<Corporate> builder)
     {
         builder.ToTable("Corporates");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.CompanyName).HasMaxLength(300);

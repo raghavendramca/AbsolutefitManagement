@@ -1,21 +1,24 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Marketing;
 
-public class CommunicationLog
+public class CommunicationLog : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
     public Guid? CampaignId { get; init; }
 
     // Enquiry | Member
     public string RecipientType { get; init; } = null!;
     public Guid RecipientId { get; init; }
-    public string RecipientContact { get; init; } = null!;  // phone or email
+    public string RecipientContact { get; init; } = null!;
 
-    public string Channel { get; init; } = null!;          // Email | SMS | WhatsApp
+    // Email | SMS | WhatsApp
+    public string Channel { get; init; } = null!;
     public string Message { get; init; } = null!;
 
     // Sent | Delivered | Failed | Read
     public string Status { get; set; } = "Sent";
+
+    // SentAt is distinct from CreatedAt: records when the message was dispatched.
     public DateTime SentAt { get; init; }
 
     public CommunicationLog(
@@ -27,9 +30,8 @@ public class CommunicationLog
         string message,
         Guid? campaignId = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         CampaignId = campaignId;
         RecipientType = recipientType;
         RecipientId = recipientId;
@@ -40,5 +42,5 @@ public class CommunicationLog
         SentAt = DateTime.UtcNow;
     }
 
-    public CommunicationLog() { }
+    protected CommunicationLog() { }
 }

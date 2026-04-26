@@ -9,7 +9,6 @@ public class InventoryCategoryConfiguration : IEntityTypeConfiguration<Inventory
     public void Configure(EntityTypeBuilder<InventoryCategory> builder)
     {
         builder.ToTable("InventoryCategories");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.Name).HasMaxLength(100);

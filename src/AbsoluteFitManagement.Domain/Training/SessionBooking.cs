@@ -1,23 +1,22 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Training;
 
-public class SessionBooking
+public class SessionBooking : AuditableEntity
 {
-    public Guid Id { get; init; }
     public Guid SessionId { get; init; }
     public Guid MemberId { get; init; }
 
     // Booked | Attended | Absent | Cancelled
     public string BookingStatus { get; set; } = "Booked";
-    public DateTime CreatedAt { get; init; }
 
     public SessionBooking(Guid sessionId, Guid memberId, Guid? id = null)
+        : base(id ?? Guid.NewGuid())
     {
-        Id = id ?? Guid.NewGuid();
         SessionId = sessionId;
         MemberId = memberId;
         BookingStatus = "Booked";
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public SessionBooking() { }
+    protected SessionBooking() { }
 }

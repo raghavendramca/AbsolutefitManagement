@@ -16,5 +16,10 @@ public record EnquiryResponse(
     DateTime? FollowUpDateTime,
     string? CallTag,
     string? Message,
+    DateTime? TrialScheduledAt,
+    string? TrialService,
+    string? TrialStaffName,
+    string? TrialClass,
+    string? TrialSession,
     string Status,
     DateTime CreatedAt);

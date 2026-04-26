@@ -20,6 +20,12 @@ export interface Enquiry {
   followUpDateTime?: string;
   callTag?: CallTag;
   message?: string;
+  // trial scheduling
+  trialScheduledAt?: string;
+  trialService?: string;
+  trialStaffName?: string;
+  trialClass?: string;
+  trialSession?: string;
   status: EnquiryStatus;
   createdAt: string;
 }
@@ -38,6 +44,12 @@ export interface CreateEnquiryRequest {
   followUpDateTime?: string;
   callTag?: CallTag;
   message?: string;
+  // trial scheduling
+  trialScheduledAt?: string;
+  trialService?: string;
+  trialStaffName?: string;
+  trialClass?: string;
+  trialSession?: string;
 }
 
 export interface Subscription {

@@ -13,4 +13,9 @@ public record CreateEnquiryRequest(
     string? FollowUpStaffName,
     DateTime? FollowUpDateTime,
     string? CallTag,
-    string? Message);
+    string? Message,
+    DateTime? TrialScheduledAt,
+    string? TrialService,
+    string? TrialStaffName,
+    string? TrialClass,
+    string? TrialSession);

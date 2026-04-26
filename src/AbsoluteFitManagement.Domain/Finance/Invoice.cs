@@ -1,11 +1,10 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Finance;
 
-public class Invoice
+public class Invoice : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
     public Guid? MemberId { get; init; }
-
     public string InvoiceNumber { get; init; } = null!;
     public DateOnly InvoiceDate { get; set; }
     public DateOnly? DueDate { get; set; }
@@ -16,7 +15,6 @@ public class Invoice
     // Draft | Sent | Paid | Overdue | Cancelled
     public string Status { get; set; } = "Draft";
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; init; }
 
     public Invoice(
         Guid gymId,
@@ -28,9 +26,8 @@ public class Invoice
         DateOnly? dueDate = null,
         string? notes = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         MemberId = memberId;
         InvoiceNumber = invoiceNumber;
         InvoiceDate = invoiceDate;
@@ -40,8 +37,7 @@ public class Invoice
         TotalAmount = subTotal + taxAmount;
         Notes = notes;
         Status = "Draft";
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public Invoice() { }
+    protected Invoice() { }
 }

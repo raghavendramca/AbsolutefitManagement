@@ -9,7 +9,6 @@ public class CommunicationLogConfiguration : IEntityTypeConfiguration<Communicat
     public void Configure(EntityTypeBuilder<CommunicationLog> builder)
     {
         builder.ToTable("CommunicationLogs");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.CampaignId);

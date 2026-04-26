@@ -1,33 +1,34 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Enquiries;
 
-public class Enquiry
+public class Enquiry : PersonEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
-
-    // Personal details
-    public string FullName { get; init; } = null!;
-    public string CountryCode { get; init; } = "+91";
-    public string ContactNumber { get; init; } = null!;
-    public string? Email { get; init; }
-    public string? Gender { get; init; }
-
-    // Trial preference
     public string TrialType { get; init; } = "NoTrial";
-
-    // Lead information
     public DateTime EnquiryDate { get; init; }
     public string ServiceName { get; init; } = null!;
     public string? LeadSource { get; init; }
-
-    // Follow-up scheduling
     public string? FollowUpStaffName { get; init; }
     public DateTime? FollowUpDateTime { get; init; }
     public string? CallTag { get; init; }
     public string? Message { get; init; }
 
+    // ── Trial scheduling ──────────────────────────────────────────────────────
+    // Shared: the date (+ time for Appointment) when the trial is booked
+    public DateTime? TrialScheduledAt { get; init; }
+
+    // TrialAppointment-specific
+    public string? TrialService { get; init; }
+    public string? TrialStaffName { get; init; }
+
+    // TrialClass-specific
+    public string? TrialClass { get; init; }
+
+    // TrialSession-specific
+    public string? TrialSession { get; init; }
+
+    // Enquiry | TrialScheduled | Converted | Lost
     public string Status { get; set; } = "Enquiry";
-    public DateTime CreatedAt { get; init; }
 
     public Enquiry(
         Guid gymId,
@@ -44,15 +45,14 @@ public class Enquiry
         DateTime? followUpDateTime,
         string? callTag,
         string? message,
+        DateTime? trialScheduledAt,
+        string? trialService,
+        string? trialStaffName,
+        string? trialClass,
+        string? trialSession,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId, fullName, countryCode, contactNumber, email, gender)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
-        FullName = fullName;
-        CountryCode = countryCode;
-        ContactNumber = contactNumber;
-        Email = email;
-        Gender = gender;
         TrialType = trialType;
         EnquiryDate = enquiryDate;
         ServiceName = serviceName;
@@ -61,9 +61,13 @@ public class Enquiry
         FollowUpDateTime = followUpDateTime;
         CallTag = callTag;
         Message = message;
-        Status = "Enquiry";
-        CreatedAt = DateTime.UtcNow;
+        TrialScheduledAt = trialScheduledAt;
+        TrialService = trialService;
+        TrialStaffName = trialStaffName;
+        TrialClass = trialClass;
+        TrialSession = trialSession;
+        Status = trialType == "NoTrial" ? "Enquiry" : "TrialScheduled";
     }
 
-    public Enquiry() { }
+    protected Enquiry() { }
 }

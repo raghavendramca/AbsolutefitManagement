@@ -8,17 +8,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AbsoluteFitManagement.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddNavMenu : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Admins",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SubscriptionId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Admins", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CommunicationLogs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CampaignId = table.Column<Guid>(type: "TEXT", nullable: true),
                     RecipientType = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
                     RecipientId = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -26,7 +37,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     Channel = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
                     Message = table.Column<string>(type: "TEXT", maxLength: 4000, nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Sent"),
-                    SentAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    SentAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -52,7 +65,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CompanyName = table.Column<string>(type: "TEXT", maxLength: 300, nullable: false),
                     ContactPerson = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
@@ -63,7 +75,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     MembersAllowed = table.Column<int>(type: "INTEGER", nullable: false),
                     DiscountPercent = table.Column<decimal>(type: "TEXT", precision: 5, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Active"),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,12 +88,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    ContactNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
                     TrialType = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
                     EnquiryDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ServiceName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
@@ -90,7 +97,13 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     CallTag = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
                     Message = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Enquiry"),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    ContactNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -119,7 +132,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     EnquiryId = table.Column<Guid>(type: "TEXT", nullable: true),
                     MemberId = table.Column<Guid>(type: "TEXT", nullable: true),
                     EstimateNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
@@ -130,7 +142,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     TotalAmount = table.Column<decimal>(type: "TEXT", precision: 12, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Draft"),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -142,9 +155,10 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,7 +170,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CategoryId = table.Column<Guid>(type: "TEXT", nullable: true),
                     StaffId = table.Column<Guid>(type: "TEXT", nullable: true),
                     Title = table.Column<string>(type: "TEXT", maxLength: 300, nullable: false),
@@ -165,7 +178,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     PaymentMode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     Reference = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -173,14 +187,35 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Gyms",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    SubscriptionId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    TenantId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Locality = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false, defaultValue: ""),
+                    City = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false, defaultValue: ""),
+                    BranchCode = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0),
+                    MaxRooms = table.Column<int>(type: "INTEGER", nullable: false),
+                    RoomIds = table.Column<string>(type: "TEXT", nullable: false),
+                    TrainerIds = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Gyms", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "GymServices",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -192,9 +227,10 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -206,7 +242,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CategoryId = table.Column<Guid>(type: "TEXT", nullable: true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     SKU = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
@@ -216,7 +251,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     UnitPrice = table.Column<decimal>(type: "TEXT", precision: 12, scale: 2, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -245,7 +281,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     MemberId = table.Column<Guid>(type: "TEXT", nullable: true),
                     InvoiceNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     InvoiceDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
@@ -255,7 +290,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     TotalAmount = table.Column<decimal>(type: "TEXT", precision: 12, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Draft"),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -263,11 +299,25 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LoginOptions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Label = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Route = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    DisplayOrder = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LoginOptions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MarketingCampaigns",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Channel = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
                     Subject = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true),
@@ -277,7 +327,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     ScheduledAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     SentAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     RecipientCount = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -289,13 +340,7 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     EnquiryId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    ContactNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
                     DateOfBirth = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     Address = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     EmergencyContactName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
@@ -303,7 +348,13 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     PhotoUrl = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     JoinDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Active"),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    ContactNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -315,14 +366,14 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     DurationMonths = table.Column<int>(type: "INTEGER", nullable: false),
                     Price = table.Column<decimal>(type: "TEXT", precision: 12, scale: 2, nullable: false),
                     SessionsIncluded = table.Column<int>(type: "INTEGER", nullable: true),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -336,14 +387,14 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     MemberId = table.Column<Guid>(type: "TEXT", nullable: false),
                     PlanId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     StartDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     EndDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     AmountPaid = table.Column<decimal>(type: "TEXT", precision: 12, scale: 2, nullable: false),
                     PaymentStatus = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Pending"),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Active"),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -387,19 +438,22 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
-                    ContactNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    StaffCode = table.Column<int>(type: "INTEGER", nullable: false),
                     Role = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Designation = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    AdminRights = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    AttendanceId = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     Salary = table.Column<decimal>(type: "TEXT", precision: 12, scale: 2, nullable: true),
                     JoinDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
                     Address = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
+                    ContactNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Gender = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -407,11 +461,39 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StudioUsers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "TEXT", maxLength: 512, nullable: false),
+                    AdminId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudioUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Subscriptions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    SubscriptionType = table.Column<int>(type: "INTEGER", nullable: false),
+                    AdminId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    GymIds = table.Column<string>(type: "TEXT", nullable: false),
+                    MaxGyms = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Subscriptions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SupportRequests",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     MemberId = table.Column<Guid>(type: "TEXT", nullable: true),
                     AssignedToStaffId = table.Column<Guid>(type: "TEXT", nullable: true),
                     Subject = table.Column<string>(type: "TEXT", maxLength: 300, nullable: false),
@@ -419,7 +501,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     Priority = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false, defaultValue: "Medium"),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Open"),
                     ResolvedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -431,13 +514,13 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     MaxCapacity = table.Column<int>(type: "INTEGER", nullable: false),
                     DurationMinutes = table.Column<int>(type: "INTEGER", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -449,7 +532,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    GymId = table.Column<Guid>(type: "TEXT", nullable: false),
                     ClassId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TrainerId = table.Column<Guid>(type: "TEXT", nullable: false),
                     RoomId = table.Column<Guid>(type: "TEXT", nullable: true),
@@ -457,7 +539,8 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     EndDateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false, defaultValue: "Scheduled"),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GymId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -525,6 +608,20 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Admins",
+                columns: new[] { "Id", "SubscriptionId" },
+                values: new object[] { new Guid("0c97fb2a-479e-44b1-9353-dea3d9f418e1"), null });
+
+            migrationBuilder.InsertData(
+                table: "LoginOptions",
+                columns: new[] { "Id", "DisplayOrder", "Label", "Route" },
+                values: new object[,]
+                {
+                    { 1, 1, "Member", "/login/member" },
+                    { 2, 2, "Studio", "/login/studio" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "NavMenuItems",
                 columns: new[] { "Id", "IconName", "IsExpandable", "Key", "Label", "Route", "SortOrder" },
                 values: new object[,]
@@ -543,7 +640,12 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "NavFlyouts",
                 columns: new[] { "Id", "NavMenuItemId", "Title" },
-                values: new object[] { new Guid("1b000001-0000-0000-0000-000000000000"), new Guid("1a000004-0000-0000-0000-000000000000"), "Client Segments" });
+                values: new object[,]
+                {
+                    { new Guid("1b000001-0000-0000-0000-000000000000"), new Guid("1a000004-0000-0000-0000-000000000000"), "Client Segments" },
+                    { new Guid("1b000002-0000-0000-0000-000000000000"), new Guid("1a000003-0000-0000-0000-000000000000"), "Marketing" },
+                    { new Guid("1b000003-0000-0000-0000-000000000000"), new Guid("1a000005-0000-0000-0000-000000000000"), "Training" }
+                });
 
             migrationBuilder.InsertData(
                 table: "NavSections",
@@ -557,7 +659,11 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     { new Guid("1c000005-0000-0000-0000-000000000000"), "Gender Based", new Guid("1b000001-0000-0000-0000-000000000000"), 5 },
                     { new Guid("1c000006-0000-0000-0000-000000000000"), "Multi-Club Based", new Guid("1b000001-0000-0000-0000-000000000000"), 6 },
                     { new Guid("1c000007-0000-0000-0000-000000000000"), "Custom Groups", new Guid("1b000001-0000-0000-0000-000000000000"), 7 },
-                    { new Guid("1c000008-0000-0000-0000-000000000000"), "Archived", new Guid("1b000001-0000-0000-0000-000000000000"), 8 }
+                    { new Guid("1c000008-0000-0000-0000-000000000000"), "Archived", new Guid("1b000001-0000-0000-0000-000000000000"), 8 },
+                    { new Guid("1c000009-0000-0000-0000-000000000000"), "Communication", new Guid("1b000002-0000-0000-0000-000000000000"), 1 },
+                    { new Guid("1c000010-0000-0000-0000-000000000000"), "Engagement", new Guid("1b000002-0000-0000-0000-000000000000"), 2 },
+                    { new Guid("1c000011-0000-0000-0000-000000000000"), "Data", new Guid("1b000002-0000-0000-0000-000000000000"), 3 },
+                    { new Guid("1c000012-0000-0000-0000-000000000000"), "Training", new Guid("1b000003-0000-0000-0000-000000000000"), 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -591,7 +697,19 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     { new Guid("1d000024-0000-0000-0000-000000000000"), "Active Clients", new Guid("1c000006-0000-0000-0000-000000000000"), null, 1 },
                     { new Guid("1d000025-0000-0000-0000-000000000000"), "Inactive Clients", new Guid("1c000006-0000-0000-0000-000000000000"), null, 2 },
                     { new Guid("1d000026-0000-0000-0000-000000000000"), "Batches", new Guid("1c000007-0000-0000-0000-000000000000"), null, 1 },
-                    { new Guid("1d000027-0000-0000-0000-000000000000"), "Archived Clients", new Guid("1c000008-0000-0000-0000-000000000000"), null, 1 }
+                    { new Guid("1d000027-0000-0000-0000-000000000000"), "Archived Clients", new Guid("1c000008-0000-0000-0000-000000000000"), null, 1 },
+                    { new Guid("1d000028-0000-0000-0000-000000000000"), "E-Mail", new Guid("1c000009-0000-0000-0000-000000000000"), null, 1 },
+                    { new Guid("1d000029-0000-0000-0000-000000000000"), "SMS", new Guid("1c000009-0000-0000-0000-000000000000"), null, 2 },
+                    { new Guid("1d000030-0000-0000-0000-000000000000"), "WhatsApp", new Guid("1c000009-0000-0000-0000-000000000000"), null, 3 },
+                    { new Guid("1d000031-0000-0000-0000-000000000000"), "Push Notification", new Guid("1c000009-0000-0000-0000-000000000000"), null, 4 },
+                    { new Guid("1d000032-0000-0000-0000-000000000000"), "Offers", new Guid("1c000010-0000-0000-0000-000000000000"), null, 1 },
+                    { new Guid("1d000033-0000-0000-0000-000000000000"), "Discount Code", new Guid("1c000010-0000-0000-0000-000000000000"), null, 2 },
+                    { new Guid("1d000034-0000-0000-0000-000000000000"), "Unqualified Data", new Guid("1c000011-0000-0000-0000-000000000000"), null, 1 },
+                    { new Guid("1d000035-0000-0000-0000-000000000000"), "Custom Mailer List", new Guid("1c000011-0000-0000-0000-000000000000"), null, 2 },
+                    { new Guid("1d000036-0000-0000-0000-000000000000"), "PT Dashboard", new Guid("1c000012-0000-0000-0000-000000000000"), null, 1 },
+                    { new Guid("1d000037-0000-0000-0000-000000000000"), "Exercise Library", new Guid("1c000012-0000-0000-0000-000000000000"), null, 2 },
+                    { new Guid("1d000038-0000-0000-0000-000000000000"), "Meal Plan Templates", new Guid("1c000012-0000-0000-0000-000000000000"), null, 3 },
+                    { new Guid("1d000039-0000-0000-0000-000000000000"), "Assessment Templates", new Guid("1c000012-0000-0000-0000-000000000000"), null, 4 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -754,6 +872,18 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 column: "GymId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Staff_GymId_StaffCode",
+                table: "Staff",
+                columns: new[] { "GymId", "StaffCode" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudioUsers_Email",
+                table: "StudioUsers",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SupportRequests_GymId",
                 table: "SupportRequests",
                 column: "GymId");
@@ -777,6 +907,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Admins");
+
             migrationBuilder.DropTable(
                 name: "CommunicationLogs");
 
@@ -802,6 +935,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 name: "Expenses");
 
             migrationBuilder.DropTable(
+                name: "Gyms");
+
+            migrationBuilder.DropTable(
                 name: "GymServices");
 
             migrationBuilder.DropTable(
@@ -815,6 +951,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Invoices");
+
+            migrationBuilder.DropTable(
+                name: "LoginOptions");
 
             migrationBuilder.DropTable(
                 name: "MarketingCampaigns");
@@ -836,6 +975,12 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Staff");
+
+            migrationBuilder.DropTable(
+                name: "StudioUsers");
+
+            migrationBuilder.DropTable(
+                name: "Subscriptions");
 
             migrationBuilder.DropTable(
                 name: "SupportRequests");

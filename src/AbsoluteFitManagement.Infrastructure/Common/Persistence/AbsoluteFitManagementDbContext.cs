@@ -1,6 +1,7 @@
 using System.Reflection;
 using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Domain.Admins;
+using AbsoluteFitManagement.Domain.Common;
 using AbsoluteFitManagement.Domain.Corporates;
 using AbsoluteFitManagement.Domain.Enquiries;
 using AbsoluteFitManagement.Domain.Finance;
@@ -33,6 +34,7 @@ public class AbsoluteFitManagementDbContext : DbContext, IUnitOfWork
     public DbSet<NavFlyout> NavFlyouts { get; set; } = null!;
     public DbSet<NavSection> NavSections { get; set; } = null!;
     public DbSet<NavSectionItem> NavSectionItems { get; set; } = null!;
+    public DbSet<QuickAddMenuItem> QuickAddMenuItems { get; set; } = null!;
 
     // Enquiry pipeline
     public DbSet<Enquiry> Enquiries { get; set; } = null!;
@@ -76,17 +78,18 @@ public class AbsoluteFitManagementDbContext : DbContext, IUnitOfWork
     public DbSet<MarketingCampaign> MarketingCampaigns { get; set; } = null!;
     public DbSet<CommunicationLog> CommunicationLogs { get; set; } = null!;
 
-    public AbsoluteFitManagementDbContext(DbContextOptions options) : base(options)
-    {
-    }
+    public AbsoluteFitManagementDbContext(DbContextOptions options) : base(options) { }
 
-    public async Task CommitChangesAsync()
-    {
-        await SaveChangesAsync();
-    }
+    public async Task CommitChangesAsync() => await SaveChangesAsync();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // TPC: every concrete entity owns all its columns in its own flat table.
+        // Abstract base classes (Entity, AuditableEntity, GymScopedEntity, PersonEntity)
+        // are not mapped to any table; each concrete type carries all inherited properties.
+        modelBuilder.Entity<Entity>().UseTpcMappingStrategy();
+        modelBuilder.Entity<Entity>().HasKey(x => x.Id);
+
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
     }

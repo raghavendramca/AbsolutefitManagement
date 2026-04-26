@@ -8,7 +8,7 @@ public class StudioUserConfiguration : IEntityTypeConfiguration<StudioUser>
 {
     public void Configure(EntityTypeBuilder<StudioUser> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("StudioUsers");
 
         builder.Property(x => x.Id)
             .ValueGeneratedNever();

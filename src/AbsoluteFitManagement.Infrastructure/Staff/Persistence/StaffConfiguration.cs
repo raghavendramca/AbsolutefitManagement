@@ -9,7 +9,6 @@ public class StaffConfiguration : IEntityTypeConfiguration<StaffMember>
     public void Configure(EntityTypeBuilder<StaffMember> builder)
     {
         builder.ToTable("Staff");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.StaffCode);

@@ -9,7 +9,6 @@ public class SupportRequestConfiguration : IEntityTypeConfiguration<SupportReque
     public void Configure(EntityTypeBuilder<SupportRequest> builder)
     {
         builder.ToTable("SupportRequests");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.MemberId);

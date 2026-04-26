@@ -9,7 +9,6 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
     public void Configure(EntityTypeBuilder<InvoiceItem> builder)
     {
         builder.ToTable("InvoiceItems");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.InvoiceId);
         builder.Property(x => x.Description).HasMaxLength(300);

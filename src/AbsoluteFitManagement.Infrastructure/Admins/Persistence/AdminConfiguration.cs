@@ -1,4 +1,4 @@
-﻿using AbsoluteFitManagement.Domain.Admins;
+using AbsoluteFitManagement.Domain.Admins;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +8,7 @@ public class AdminConfiguration : IEntityTypeConfiguration<Admin>
 {
     public void Configure(EntityTypeBuilder<Admin> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("Admins");
 
         builder.Property(x => x.Id)
             .ValueGeneratedNever();

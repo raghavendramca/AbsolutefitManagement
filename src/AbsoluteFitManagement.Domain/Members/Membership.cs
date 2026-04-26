@@ -1,12 +1,11 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Members;
 
-public class Membership
+public class Membership : GymScopedEntity
 {
-    public Guid Id { get; init; }
     public Guid MemberId { get; init; }
     public Guid PlanId { get; init; }
-    public Guid GymId { get; init; }
-
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public decimal AmountPaid { get; set; }
@@ -17,7 +16,6 @@ public class Membership
     // Active | Expired | Cancelled
     public string Status { get; set; } = "Active";
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; init; }
 
     public Membership(
         Guid gymId,
@@ -29,9 +27,8 @@ public class Membership
         string paymentStatus = "Pending",
         string? notes = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         MemberId = memberId;
         PlanId = planId;
         StartDate = startDate;
@@ -40,8 +37,7 @@ public class Membership
         PaymentStatus = paymentStatus;
         Status = "Active";
         Notes = notes;
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public Membership() { }
+    protected Membership() { }
 }

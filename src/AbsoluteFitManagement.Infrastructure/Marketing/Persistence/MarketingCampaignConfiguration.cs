@@ -9,7 +9,6 @@ public class MarketingCampaignConfiguration : IEntityTypeConfiguration<Marketing
     public void Configure(EntityTypeBuilder<MarketingCampaign> builder)
     {
         builder.ToTable("MarketingCampaigns");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.Name).HasMaxLength(200);

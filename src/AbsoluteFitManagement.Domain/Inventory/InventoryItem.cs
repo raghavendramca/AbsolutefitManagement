@@ -1,20 +1,18 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Inventory;
 
-public class InventoryItem
+public class InventoryItem : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
     public Guid? CategoryId { get; init; }
-
     public string Name { get; set; } = null!;
     public string? SKU { get; set; }
-    public string Unit { get; set; } = "Pcs";     // Pcs | Kg | Ltr | Box | Set
+    public string Unit { get; set; } = "Pcs";
     public int QuantityInStock { get; set; }
     public int ReorderLevel { get; set; }
     public decimal UnitPrice { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; init; }
 
     public InventoryItem(
         Guid gymId,
@@ -27,9 +25,8 @@ public class InventoryItem
         int reorderLevel = 0,
         string? description = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         CategoryId = categoryId;
         Name = name;
         SKU = sku;
@@ -39,8 +36,7 @@ public class InventoryItem
         UnitPrice = unitPrice;
         Description = description;
         IsActive = true;
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public InventoryItem() { }
+    protected InventoryItem() { }
 }

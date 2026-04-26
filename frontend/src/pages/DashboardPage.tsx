@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { enquiriesApi } from '../api/enquiries';
-import { navigationApi, type NavMenuItemDto } from '../api/navigation';
+import { navigationApi, type NavMenuItemDto, type QuickAddMenuItemDto } from '../api/navigation';
 import { staffApi, type StaffMember } from '../api/staff';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
 import AddEnquiryDialog from '../components/AddEnquiryDialog';
 import './DashboardPage.css';
 
-const STAFF_NAMES = ['Swetha Raghavendra', 'Rahul Kumar', 'Priya Nair'];
 const DATE_OPTIONS = ['Today', 'Yesterday', 'This Week', 'This Month', 'Last Month'];
 const SEARCH_FIELDS = ['Member Name', 'Phone', 'Email'];
+
 
 // ─── Sidebar Icons ────────────────────────────────────────────────────────────
 
@@ -105,7 +105,7 @@ function IcoChevron() {
 }
 
 // Maps the iconName string from the API to the matching icon component
-const ICON_MAP: Record<string, () => JSX.Element> = {
+const ICON_MAP: Record<string, () => React.JSX.Element> = {
   dashboard:  IcoDashboard,
   enquiries:  IcoEnquiries,
   marketing:  IcoMarketing,
@@ -185,9 +185,16 @@ export default function DashboardPage() {
   const [staffDesignation, setStaffDesignation] = useState('');
   const [staffAdminRightsFilter, setStaffAdminRightsFilter] = useState('');
 
-  // ── Fetch nav menu ────────────────────────────────────────────────────────
+  // ── Quick-add dropdown state ──────────────────────────────────────────────
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddItems, setQuickAddItems] = useState<QuickAddMenuItemDto[]>([]);
+  const quickAddRef = useRef<HTMLDivElement>(null);
+
+  // ── Fetch nav menu + quick-add items ─────────────────────────────────────
   useEffect(() => {
     navigationApi.getNavMenu().then(setNavItems).catch(() => {});
+    // Role is derived from auth context in a full implementation; 'Admin' here shows all items
+    navigationApi.getQuickAddItems('Admin').then(setQuickAddItems).catch(() => {});
   }, []);
 
   // ── Fetch enquiries ───────────────────────────────────────────────────────
@@ -199,20 +206,37 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, [tenantId, gymId]);
 
-  // ── Fetch staff ───────────────────────────────────────────────────────────
+  // ── Fetch staff (on mount so names are available in the Add Enquiry dialog)
   useEffect(() => {
-    if (!gymId || activeNav !== 'staff') return;
+    if (!gymId) return;
     setStaffLoading(true);
     staffApi.list(gymId)
       .then(setStaffList)
       .catch(() => {})
       .finally(() => setStaffLoading(false));
-  }, [gymId, activeNav]);
+  }, [gymId]);
+
+  // ── Close quick-add dropdown on outside click ─────────────────────────────
+  useEffect(() => {
+    if (!quickAddOpen) return;
+    function handleOutside(e: MouseEvent) {
+      if (quickAddRef.current && !quickAddRef.current.contains(e.target as Node)) {
+        setQuickAddOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [quickAddOpen]);
 
   async function handleSave(data: CreateEnquiryRequest) {
     if (!tenantId || !gymId) return;
     const created = await enquiriesApi.create(tenantId, gymId, data);
     setEnquiries(prev => [created, ...prev]);
+  }
+
+  function handleQuickAdd(key: string) {
+    setQuickAddOpen(false);
+    if (key === 'enquiry') setShowDialog(true);
   }
 
   async function handleToggleStaff(id: string) {
@@ -383,8 +407,36 @@ export default function DashboardPage() {
             <button className="db-btn-go-top">Go</button>
           </div>
           <div className="db-topbar-icons">
-            {topIcons.map((icon, i) => (
-              <button key={i} className="db-icon-btn">{icon}</button>
+            {/* Search icon */}
+            <button className="db-icon-btn">{topIcons[0]}</button>
+
+            {/* Quick-add "+" button with dropdown */}
+            <div className="db-quick-add-wrap" ref={quickAddRef}>
+              <button
+                className={`db-icon-btn${quickAddOpen ? ' db-icon-btn-active' : ''}`}
+                onClick={() => setQuickAddOpen(o => !o)}
+                title="Quick add"
+              >
+                {topIcons[1]}
+              </button>
+              {quickAddOpen && (
+                <div className="db-quick-add-dropdown">
+                  {quickAddItems.map(item => (
+                    <button
+                      key={item.key}
+                      className="db-quick-add-item"
+                      onClick={() => handleQuickAdd(item.key)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Remaining icons */}
+            {topIcons.slice(2).map((icon, i) => (
+              <button key={i + 2} className="db-icon-btn">{icon}</button>
             ))}
             <div className="db-avatar">SR</div>
           </div>
@@ -634,7 +686,7 @@ export default function DashboardPage() {
         <AddEnquiryDialog
           onClose={() => setShowDialog(false)}
           onSave={handleSave}
-          staffNames={STAFF_NAMES}
+          staffNames={staffList.map(s => s.fullName)}
         />
       )}
     </div>

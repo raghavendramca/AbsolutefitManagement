@@ -9,7 +9,6 @@ public class TrainingClassConfiguration : IEntityTypeConfiguration<TrainingClass
     public void Configure(EntityTypeBuilder<TrainingClass> builder)
     {
         builder.ToTable("TrainingClasses");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.Name).HasMaxLength(200);

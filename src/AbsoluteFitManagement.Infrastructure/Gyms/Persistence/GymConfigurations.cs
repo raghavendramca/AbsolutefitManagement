@@ -9,7 +9,7 @@ public class GymConfigurations : IEntityTypeConfiguration<Gym>
 {
     public void Configure(EntityTypeBuilder<Gym> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.ToTable("Gyms");
 
         builder.Property(x => x.Id)
             .ValueGeneratedNever();

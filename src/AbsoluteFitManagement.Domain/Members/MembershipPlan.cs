@@ -1,17 +1,15 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Members;
 
-public class MembershipPlan
+public class MembershipPlan : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
-
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public int DurationMonths { get; set; }
     public decimal Price { get; set; }
-    public int? SessionsIncluded { get; set; }    // null = unlimited
+    public int? SessionsIncluded { get; set; }
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; init; }
 
     public MembershipPlan(
         Guid gymId,
@@ -21,17 +19,15 @@ public class MembershipPlan
         string? description = null,
         int? sessionsIncluded = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         Name = name;
         DurationMonths = durationMonths;
         Price = price;
         Description = description;
         SessionsIncluded = sessionsIncluded;
         IsActive = true;
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public MembershipPlan() { }
+    protected MembershipPlan() { }
 }

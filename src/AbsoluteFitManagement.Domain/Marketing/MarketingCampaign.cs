@@ -1,10 +1,9 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Marketing;
 
-public class MarketingCampaign
+public class MarketingCampaign : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
-
     public string Name { get; set; } = null!;
 
     // Email | SMS | WhatsApp
@@ -20,7 +19,6 @@ public class MarketingCampaign
     public DateTime? ScheduledAt { get; set; }
     public DateTime? SentAt { get; set; }
     public int RecipientCount { get; set; }
-    public DateTime CreatedAt { get; init; }
 
     public MarketingCampaign(
         Guid gymId,
@@ -31,9 +29,8 @@ public class MarketingCampaign
         string? subject = null,
         DateTime? scheduledAt = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         Name = name;
         Channel = channel;
         Subject = subject;
@@ -41,8 +38,7 @@ public class MarketingCampaign
         TargetAudience = targetAudience;
         Status = "Draft";
         ScheduledAt = scheduledAt;
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public MarketingCampaign() { }
+    protected MarketingCampaign() { }
 }

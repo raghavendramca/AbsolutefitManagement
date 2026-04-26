@@ -9,7 +9,6 @@ public class SessionBookingConfiguration : IEntityTypeConfiguration<SessionBooki
     public void Configure(EntityTypeBuilder<SessionBooking> builder)
     {
         builder.ToTable("SessionBookings");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.SessionId);
         builder.Property(x => x.MemberId);

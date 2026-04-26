@@ -1,6 +1,7 @@
 using ErrorOr;
 using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Domain.Enquiries;
+using AbsoluteFitManagement.Domain.Enquiries.Factories;
 using MediatR;
 
 namespace AbsoluteFitManagement.Application.Enquiries.Commands.CreateEnquiry;
@@ -10,15 +11,18 @@ public class CreateEnquiryCommandHandler : IRequestHandler<CreateEnquiryCommand,
     private readonly IEnquiriesRepository _enquiriesRepository;
     private readonly IGymsRepository _gymsRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly EnquiryFactory _enquiryFactory;
 
     public CreateEnquiryCommandHandler(
         IEnquiriesRepository enquiriesRepository,
         IGymsRepository gymsRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        EnquiryFactory enquiryFactory)
     {
         _enquiriesRepository = enquiriesRepository;
         _gymsRepository = gymsRepository;
         _unitOfWork = unitOfWork;
+        _enquiryFactory = enquiryFactory;
     }
 
     public async Task<ErrorOr<Enquiry>> Handle(CreateEnquiryCommand request, CancellationToken cancellationToken)
@@ -27,7 +31,7 @@ public class CreateEnquiryCommandHandler : IRequestHandler<CreateEnquiryCommand,
         if (!gymExists)
             return Error.NotFound(description: "Gym not found");
 
-        var enquiry = new Enquiry(
+        var enquiry = _enquiryFactory.Create(
             gymId: request.GymId,
             fullName: request.FullName,
             countryCode: request.CountryCode,
@@ -41,7 +45,12 @@ public class CreateEnquiryCommandHandler : IRequestHandler<CreateEnquiryCommand,
             followUpStaffName: request.FollowUpStaffName,
             followUpDateTime: request.FollowUpDateTime,
             callTag: request.CallTag,
-            message: request.Message);
+            message: request.Message,
+            trialScheduledAt: request.TrialScheduledAt,
+            trialService: request.TrialService,
+            trialStaffName: request.TrialStaffName,
+            trialClass: request.TrialClass,
+            trialSession: request.TrialSession);
 
         await _enquiriesRepository.AddAsync(enquiry);
         await _unitOfWork.CommitChangesAsync();

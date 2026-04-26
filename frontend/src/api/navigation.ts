@@ -30,7 +30,16 @@ export interface NavMenuItemDto {
   flyout?: NavFlyoutDto;
 }
 
+export interface QuickAddMenuItemDto {
+  key: string;
+  label: string;
+  sortOrder: number;
+  requiredRole: string | null;
+}
+
 export const navigationApi = {
   getLoginOptions: () => api.get<LoginOption[]>('/navigation/login-options'),
   getNavMenu: () => api.get<NavMenuItemDto[]>('/navigation/menu'),
+  getQuickAddItems: (role: 'Admin' | 'Staff' = 'Admin') =>
+    api.get<QuickAddMenuItemDto[]>(`/navigation/quick-add-items?role=${role}`),
 };

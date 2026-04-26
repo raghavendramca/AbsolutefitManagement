@@ -18,4 +18,9 @@ public record CreateEnquiryCommand(
     string? FollowUpStaffName,
     DateTime? FollowUpDateTime,
     string? CallTag,
-    string? Message) : IRequest<ErrorOr<Enquiry>>;
+    string? Message,
+    DateTime? TrialScheduledAt,
+    string? TrialService,
+    string? TrialStaffName,
+    string? TrialClass,
+    string? TrialSession) : IRequest<ErrorOr<Enquiry>>;

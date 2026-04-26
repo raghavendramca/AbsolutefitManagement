@@ -1,12 +1,11 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Finance;
 
-public class Expense
+public class Expense : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
     public Guid? CategoryId { get; init; }
-    public Guid? StaffId { get; init; }           // paid to / incurred by
-
+    public Guid? StaffId { get; init; }
     public string Title { get; set; } = null!;
     public decimal Amount { get; set; }
     public DateOnly ExpenseDate { get; set; }
@@ -15,7 +14,6 @@ public class Expense
     public string? PaymentMode { get; set; }
     public string? Reference { get; set; }
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; init; }
 
     public Expense(
         Guid gymId,
@@ -28,9 +26,8 @@ public class Expense
         string? reference = null,
         string? notes = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         CategoryId = categoryId;
         StaffId = staffId;
         Title = title;
@@ -39,8 +36,7 @@ public class Expense
         PaymentMode = paymentMode;
         Reference = reference;
         Notes = notes;
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public Expense() { }
+    protected Expense() { }
 }

@@ -1,19 +1,18 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Finance;
 
-public class ExpenseCategory
+public class ExpenseCategory : GymScopedEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
     public string Name { get; set; } = null!;
     public bool IsActive { get; set; } = true;
 
     public ExpenseCategory(Guid gymId, string name, Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         Name = name;
         IsActive = true;
     }
 
-    public ExpenseCategory() { }
+    protected ExpenseCategory() { }
 }

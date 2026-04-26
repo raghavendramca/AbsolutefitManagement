@@ -9,7 +9,6 @@ public class TrainingSessionConfiguration : IEntityTypeConfiguration<TrainingSes
     public void Configure(EntityTypeBuilder<TrainingSession> builder)
     {
         builder.ToTable("TrainingSessions");
-        builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
         builder.Property(x => x.ClassId);

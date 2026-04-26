@@ -1,19 +1,25 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Finance;
 
-public class InvoiceItem
+public class InvoiceItem : Entity
 {
-    public Guid Id { get; init; }
     public Guid InvoiceId { get; init; }
-
     public string Description { get; set; } = null!;
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
-    public decimal TaxRate { get; set; }       // percentage, e.g. 18 for 18%
-    public decimal Amount { get; set; }        // Quantity * UnitPrice
+    public decimal TaxRate { get; set; }
+    public decimal Amount { get; set; }
 
-    public InvoiceItem(Guid invoiceId, string description, int quantity, decimal unitPrice, decimal taxRate = 0, Guid? id = null)
+    public InvoiceItem(
+        Guid invoiceId,
+        string description,
+        int quantity,
+        decimal unitPrice,
+        decimal taxRate = 0,
+        Guid? id = null)
+        : base(id ?? Guid.NewGuid())
     {
-        Id = id ?? Guid.NewGuid();
         InvoiceId = invoiceId;
         Description = description;
         Quantity = quantity;
@@ -22,5 +28,5 @@ public class InvoiceItem
         Amount = quantity * unitPrice;
     }
 
-    public InvoiceItem() { }
+    protected InvoiceItem() { }
 }

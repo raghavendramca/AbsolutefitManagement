@@ -60,4 +60,55 @@ public class NavigationController : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>
+    /// Returns active quick-add menu items filtered by the caller's role.
+    /// Pass ?role=Admin to include admin-only items.
+    /// </summary>
+    [HttpGet("quick-add-items")]
+    public async Task<IActionResult> GetQuickAddItems([FromQuery] string role = "Staff")
+    {
+        var isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+
+        var items = await _db.QuickAddMenuItems
+            .Where(x => x.IsActive &&
+                        (x.RequiredRole == null || (isAdmin && x.RequiredRole == "Admin")))
+            .OrderBy(x => x.SortOrder)
+            .Select(x => new QuickAddMenuItemResponse(x.Key, x.Label, x.SortOrder, x.RequiredRole))
+            .ToListAsync();
+
+        return Ok(items);
+    }
+
+    /// <summary>
+    /// Admin: toggle the IsActive flag for a quick-add menu item.
+    /// </summary>
+    [HttpPatch("quick-add-items/{key}/toggle")]
+    public async Task<IActionResult> ToggleQuickAddItem(string key)
+    {
+        var item = await _db.QuickAddMenuItems.FirstOrDefaultAsync(x => x.Key == key);
+        if (item is null) return NotFound();
+
+        item.IsActive = !item.IsActive;
+        await _db.SaveChangesAsync();
+
+        return Ok(new QuickAddMenuItemResponse(item.Key, item.Label, item.SortOrder, item.RequiredRole));
+    }
+
+    /// <summary>
+    /// Admin: update RequiredRole for a quick-add menu item (null = all staff, "Admin" = admin only).
+    /// </summary>
+    [HttpPatch("quick-add-items/{key}/role")]
+    public async Task<IActionResult> SetQuickAddItemRole(string key, [FromBody] SetQuickAddRoleRequest request)
+    {
+        var item = await _db.QuickAddMenuItems.FirstOrDefaultAsync(x => x.Key == key);
+        if (item is null) return NotFound();
+
+        item.RequiredRole = string.IsNullOrWhiteSpace(request.RequiredRole) ? null : request.RequiredRole;
+        await _db.SaveChangesAsync();
+
+        return Ok(new QuickAddMenuItemResponse(item.Key, item.Label, item.SortOrder, item.RequiredRole));
+    }
 }
+
+public record SetQuickAddRoleRequest(string? RequiredRole);

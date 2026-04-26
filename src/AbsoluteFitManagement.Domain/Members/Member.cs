@@ -1,16 +1,10 @@
+using AbsoluteFitManagement.Domain.Common;
+
 namespace AbsoluteFitManagement.Domain.Members;
 
-public class Member
+public class Member : PersonEntity
 {
-    public Guid Id { get; init; }
-    public Guid GymId { get; init; }
-    public Guid? EnquiryId { get; init; }      // set when converted from enquiry
-
-    public string FullName { get; set; } = null!;
-    public string CountryCode { get; set; } = "+91";
-    public string ContactNumber { get; set; } = null!;
-    public string? Email { get; set; }
-    public string? Gender { get; set; }
+    public Guid? EnquiryId { get; init; }
     public DateOnly? DateOfBirth { get; set; }
     public string? Address { get; set; }
     public string? EmergencyContactName { get; set; }
@@ -20,7 +14,6 @@ public class Member
 
     // Active | Inactive | Suspended | Expired
     public string Status { get; set; } = "Active";
-    public DateTime CreatedAt { get; init; }
 
     public Member(
         Guid gymId,
@@ -34,21 +27,14 @@ public class Member
         string? address = null,
         Guid? enquiryId = null,
         Guid? id = null)
+        : base(id ?? Guid.NewGuid(), gymId, fullName, countryCode, contactNumber, email, gender)
     {
-        Id = id ?? Guid.NewGuid();
-        GymId = gymId;
         EnquiryId = enquiryId;
-        FullName = fullName;
-        CountryCode = countryCode;
-        ContactNumber = contactNumber;
-        Email = email;
-        Gender = gender;
         DateOfBirth = dateOfBirth;
         Address = address;
         JoinDate = joinDate;
         Status = "Active";
-        CreatedAt = DateTime.UtcNow;
     }
 
-    public Member() { }
+    protected Member() { }
 }
