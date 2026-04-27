@@ -19,7 +19,8 @@ public class NavFlyoutConfiguration : IEntityTypeConfiguration<NavFlyout>
         builder.HasData(
             new NavFlyout(NavMenuSeedIds.ClientsFlyout,   NavMenuSeedIds.Clients,   "Client Segments"),
             new NavFlyout(NavMenuSeedIds.MarketingFlyout, NavMenuSeedIds.Marketing, "Marketing"),
-            new NavFlyout(NavMenuSeedIds.TrainingFlyout,  NavMenuSeedIds.Training,  "Training")
+            new NavFlyout(NavMenuSeedIds.TrainingFlyout,  NavMenuSeedIds.Training,  "Training"),
+            new NavFlyout(NavMenuSeedIds.SetupFlyout,     NavMenuSeedIds.Setup,     "Setup")
         );
     }
 }

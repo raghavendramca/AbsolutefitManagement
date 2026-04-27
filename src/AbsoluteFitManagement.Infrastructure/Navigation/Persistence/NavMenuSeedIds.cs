@@ -101,4 +101,71 @@ internal static class NavMenuSeedIds
     internal static readonly Guid ItemExerciseLibrary     = new("1d000037-0000-0000-0000-000000000000");
     internal static readonly Guid ItemMealPlanTemplates   = new("1d000038-0000-0000-0000-000000000000");
     internal static readonly Guid ItemAssessmentTemplates = new("1d000039-0000-0000-0000-000000000000");
+
+    // ── NavFlyouts (Setup) ───────────────────────────────────────────────────
+    internal static readonly Guid SetupFlyout = new("1b000004-0000-0000-0000-000000000000");
+
+    // ── NavSections (Setup flyout) ───────────────────────────────────────────
+    internal static readonly Guid SecSetupGeneral          = new("1c000013-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupMarketing        = new("1c000014-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupClientMgmt       = new("1c000015-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupTraining         = new("1c000016-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupStaffMgmt        = new("1c000017-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupInventory        = new("1c000018-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupExpense          = new("1c000019-0000-0000-0000-000000000000");
+    internal static readonly Guid SecSetupIntegrations     = new("1c000020-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: General ─────────────────────────────────────
+    internal static readonly Guid SetupGettingStarted      = new("1d000040-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupProfile             = new("1d000041-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupManageServices      = new("1d000042-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupManagePackages      = new("1d000043-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupFormCustomization   = new("1d000044-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupBillTemplate        = new("1d000045-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupDefineTax           = new("1d000046-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupCheckinNotification = new("1d000047-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupClubAgreement       = new("1d000048-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupTaskSetup           = new("1d000049-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupTrial               = new("1d000050-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupServiceResource     = new("1d000051-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupIdCard              = new("1d000052-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupBulkDataDeletion    = new("1d000053-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupReportFormat        = new("1d000054-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupHelp                = new("1d000055-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupImportEnquiry       = new("1d000056-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Marketing ───────────────────────────────────
+    internal static readonly Guid SetupEmailTemplates      = new("1d000057-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupSmsTemplates        = new("1d000058-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupWhatsAppTemplates   = new("1d000059-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Client Management ───────────────────────────
+    internal static readonly Guid SetupMembershipPlans     = new("1d000060-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupPackages            = new("1d000061-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupAddOns              = new("1d000062-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Training ────────────────────────────────────
+    internal static readonly Guid SetupTrainerProfiles     = new("1d000063-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupClassTypes          = new("1d000064-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupSchedules           = new("1d000065-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Staff Management ────────────────────────────
+    internal static readonly Guid SetupRolesPermissions    = new("1d000066-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupAttendanceSettings  = new("1d000067-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupTargets             = new("1d000068-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Inventory ───────────────────────────────────
+    internal static readonly Guid SetupInventoryCategories = new("1d000069-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupProducts            = new("1d000070-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupSuppliers           = new("1d000071-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Expense ─────────────────────────────────────
+    internal static readonly Guid SetupExpenseCategories   = new("1d000072-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupVendors             = new("1d000073-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupRecurringExpenses   = new("1d000074-0000-0000-0000-000000000000");
+
+    // ── NavSectionItems — Setup: Integrations ────────────────────────────────
+    internal static readonly Guid SetupPaymentGateway      = new("1d000075-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupSmsGateway          = new("1d000076-0000-0000-0000-000000000000");
+    internal static readonly Guid SetupEmailGateway        = new("1d000077-0000-0000-0000-000000000000");
 }

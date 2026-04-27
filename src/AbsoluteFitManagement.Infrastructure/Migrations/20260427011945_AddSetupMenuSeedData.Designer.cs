@@ -3,6 +3,7 @@ using System;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AbsoluteFitManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AbsoluteFitManagementDbContext))]
-    partial class AbsoluteFitManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427011945_AddSetupMenuSeedData")]
+    partial class AddSetupMenuSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -1907,72 +1910,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.ToTable("MembershipPlans", (string)null);
                 });
 
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Packages.GymPackage", b =>
-                {
-                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.HasIndex("GymId");
-
-                    b.ToTable("GymPackages", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Packages.GymPackageItem", b =>
-                {
-                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<decimal>("Discount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("DiscountType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("%");
-
-                    b.Property<Guid>("PackageId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("ServiceFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ServiceName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.HasIndex("PackageId");
-
-                    b.ToTable("GymPackageItems", (string)null);
-                });
-
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Services.GymService", b =>
                 {
                     b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<string>("CategoryType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Brand");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -1994,197 +1934,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SacCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Tax")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
                     b.HasIndex("GymId");
 
                     b.ToTable("GymServices", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Services.ServiceVariation", b =>
-                {
-                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<bool>("AppointmentsApplicable")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("EligibleForReferralBonus")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("MaxFeeLimit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("MaxMembers")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("MinFeeLimit")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("OtpVerification")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("PromoteOnline")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("ReferralBonusFromPurchase")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("RegistrationFee")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("ServiceFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("ServiceId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Tax")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("No Tax");
-
-                    b.Property<int>("TimeHours")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TimeMinutes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Transferable")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Upgradable")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ValidityDays")
-                        .HasColumnType("INTEGER");
-
-                    b.HasIndex("GymId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("ServiceVariations", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.GymProfile", b =>
-                {
-                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("AreaSqft")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("BrandName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("BusinessType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("India");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("₹");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("Locality")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("OperatingHoursJson")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Region")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("StateRegion")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Timezone")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.HasIndex("GymId")
-                        .IsUnique();
-
-                    b.ToTable("GymProfiles", (string)null);
                 });
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Staff.StaffMember", b =>
@@ -2492,15 +2244,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Packages.GymPackageItem", b =>
-                {
-                    b.HasOne("AbsoluteFitManagement.Domain.Packages.GymPackage", null)
-                        .WithMany("Items")
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.NavFlyout", b =>
                 {
                     b.Navigation("Sections");
@@ -2512,11 +2255,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.NavSection", b =>
-                {
-                    b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Packages.GymPackage", b =>
                 {
                     b.Navigation("Items");
                 });

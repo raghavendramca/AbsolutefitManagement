@@ -37,7 +37,17 @@ public class NavSectionConfiguration : IEntityTypeConfiguration<NavSection>
             new NavSection(NavMenuSeedIds.SecData,          marketingFlyout, "Data",          3),
 
             // Training
-            new NavSection(NavMenuSeedIds.SecTraining, trainingFlyout, "Training", 1)
+            new NavSection(NavMenuSeedIds.SecTraining, trainingFlyout, "Training", 1),
+
+            // Setup
+            new NavSection(NavMenuSeedIds.SecSetupGeneral,      NavMenuSeedIds.SetupFlyout, "General",           1),
+            new NavSection(NavMenuSeedIds.SecSetupMarketing,    NavMenuSeedIds.SetupFlyout, "Marketing",         2),
+            new NavSection(NavMenuSeedIds.SecSetupClientMgmt,   NavMenuSeedIds.SetupFlyout, "Client Management", 3),
+            new NavSection(NavMenuSeedIds.SecSetupTraining,     NavMenuSeedIds.SetupFlyout, "Training",          4),
+            new NavSection(NavMenuSeedIds.SecSetupStaffMgmt,    NavMenuSeedIds.SetupFlyout, "Staff Management",  5),
+            new NavSection(NavMenuSeedIds.SecSetupInventory,    NavMenuSeedIds.SetupFlyout, "Inventory",         6),
+            new NavSection(NavMenuSeedIds.SecSetupExpense,      NavMenuSeedIds.SetupFlyout, "Expense",           7),
+            new NavSection(NavMenuSeedIds.SecSetupIntegrations, NavMenuSeedIds.SetupFlyout, "Integrations",      8)
         );
     }
 }

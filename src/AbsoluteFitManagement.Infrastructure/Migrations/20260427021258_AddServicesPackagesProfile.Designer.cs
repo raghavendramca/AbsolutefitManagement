@@ -3,6 +3,7 @@ using System;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AbsoluteFitManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AbsoluteFitManagementDbContext))]
-    partial class AbsoluteFitManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427021258_AddServicesPackagesProfile")]
+    partial class AddServicesPackagesProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -1967,13 +1970,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                 {
                     b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
 
-                    b.Property<string>("CategoryType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("Brand");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -1992,14 +1988,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SacCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Tax")
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasIndex("GymId");

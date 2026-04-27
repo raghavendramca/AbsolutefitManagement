@@ -13,6 +13,9 @@ public class GymServiceConfiguration : IEntityTypeConfiguration<GymService>
         builder.Property(x => x.GymId);
         builder.Property(x => x.Name).HasMaxLength(200);
         builder.Property(x => x.Description).HasMaxLength(500);
+        builder.Property(x => x.CategoryType).HasMaxLength(50).HasDefaultValue("Brand");
+        builder.Property(x => x.SacCode).HasMaxLength(100);
+        builder.Property(x => x.Tax).HasMaxLength(100);
         builder.Property(x => x.IsActive).HasDefaultValue(true);
         builder.HasIndex(x => x.GymId);
     }
