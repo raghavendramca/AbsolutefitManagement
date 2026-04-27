@@ -23,4 +23,5 @@ public record CreateEnquiryCommand(
     string? TrialService,
     string? TrialStaffName,
     string? TrialClass,
-    string? TrialSession) : IRequest<ErrorOr<Enquiry>>;
+    string? TrialSession,
+    string? ExtendedFieldsJson) : IRequest<ErrorOr<Enquiry>>;

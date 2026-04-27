@@ -18,6 +18,9 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.Property(x => x.Email).HasMaxLength(200);
         builder.Property(x => x.Gender).HasMaxLength(10);
         builder.Property(x => x.Address).HasMaxLength(500);
+        builder.Property(x => x.Locality).HasMaxLength(200);
+        builder.Property(x => x.LeadSource).HasMaxLength(100);
+        builder.Property(x => x.ExtendedFieldsJson).HasColumnType("TEXT");
         builder.Property(x => x.EmergencyContactName).HasMaxLength(200);
         builder.Property(x => x.EmergencyContactPhone).HasMaxLength(20);
         builder.Property(x => x.PhotoUrl).HasMaxLength(500);

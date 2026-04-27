@@ -24,13 +24,15 @@ public class EnquiryFactory : EntityFactory<Enquiry>
         string? trialStaffName,
         string? trialClass,
         string? trialSession,
+        string? extendedFieldsJson = null,
         Guid? id = null)
     {
         var enquiry = new Enquiry(
             gymId, fullName, countryCode, contactNumber, email, gender,
             trialType, enquiryDate, serviceName, leadSource,
             followUpStaffName, followUpDateTime, callTag, message,
-            trialScheduledAt, trialService, trialStaffName, trialClass, trialSession, id);
+            trialScheduledAt, trialService, trialStaffName, trialClass, trialSession,
+            extendedFieldsJson, id);
         OnCreated(enquiry);
         return enquiry;
     }

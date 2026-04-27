@@ -325,3 +325,58 @@
   padding: 12px 16px; margin-bottom: 8px;
 }
 .pkg-list-count { font-size: 12px; color: #9ca3af; }
+
+/* ── Form Customization ────────────────────────────────────────────────────── */
+.fc-wrap { padding: 0 32px 40px; overflow-y: auto; max-height: calc(100vh - 120px); }
+.fc-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 24px; padding-top: 12px;
+}
+.fc-tab {
+  padding: 9px 20px; font-size: 13px; font-weight: 600; color: #6b7280;
+  cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+  background: none; border-top: none; border-left: none; border-right: none;
+  transition: color 0.15s;
+}
+.fc-tab:hover { color: #374151; }
+.fc-tab-active {
+  color: #f97316; border-bottom-color: #f97316;
+}
+.fc-body { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.fc-section {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 16px 20px;
+}
+.fc-section-title {
+  font-size: 13px; font-weight: 700; color: #111827;
+  margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid #f3f4f6;
+}
+.fc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid #f9fafb; gap: 10px;
+}
+.fc-row:last-child { border-bottom: none; padding-bottom: 0; }
+.fc-label { font-size: 13px; color: #374151; flex: 1; min-width: 100px; }
+.fc-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.fc-control-group { display: flex; align-items: center; gap: 5px; }
+.fc-control-label { font-size: 11px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+.fc-toggle {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px 3px 6px; border-radius: 20px; border: none;
+  font-size: 11px; font-weight: 700; cursor: pointer; line-height: 1;
+  transition: background 0.15s;
+}
+.fc-toggle-on { background: #16a34a; color: #fff; }
+.fc-toggle-off { background: #eab308; color: #fff; }
+.fc-toggle-knob {
+  display: inline-block; width: 9px; height: 9px;
+  background: #fff; border-radius: 50%; flex-shrink: 0;
+}
+.fc-footer { margin-top: 24px; display: flex; justify-content: center; }
+.fc-save-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 10px 48px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.fc-save-btn:disabled { opacity: 0.6; cursor: default; }
+.fc-save-btn:hover:not(:disabled) { background: #ea6c08; }
+.fc-notice { font-size: 12px; color: #6b7280; font-style: italic; margin-top: 8px; text-align: center; }

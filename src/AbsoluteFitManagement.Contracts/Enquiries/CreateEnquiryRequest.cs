@@ -18,4 +18,5 @@ public record CreateEnquiryRequest(
     string? TrialService,
     string? TrialStaffName,
     string? TrialClass,
-    string? TrialSession);
+    string? TrialSession,
+    string? ExtendedFieldsJson);

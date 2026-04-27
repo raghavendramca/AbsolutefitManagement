@@ -3,6 +3,7 @@ using System;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AbsoluteFitManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AbsoluteFitManagementDbContext))]
-    partial class AbsoluteFitManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427065743_AddFormCustomization")]
+    partial class AddFormCustomization
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -1196,9 +1199,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<DateTime>("EnquiryDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ExtendedFieldsJson")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime?>("FollowUpDateTime")
                         .HasColumnType("TEXT");
 
@@ -1787,9 +1787,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<Guid?>("EnquiryId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ExtendedFieldsJson")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -1803,14 +1800,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("JoinDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LeadSource")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Locality")
-                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PhotoUrl")

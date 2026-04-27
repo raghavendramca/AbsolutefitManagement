@@ -6,8 +6,12 @@ import { staffApi, type StaffMember } from '../api/staff';
 import { servicesApi, type GymServiceDto, type ServiceVariationDto, type CreateServiceVariationRequest, type UpdateServiceRequest } from '../api/services';
 import { packagesApi, type GymPackageDto, type CreatePackageItemRequest } from '../api/packages';
 import { profileApi, type GymProfileDto, DAYS, parseOperatingHours, defaultHours, type OperatingHourSlot } from '../api/profile';
+import { formCustomizationApi, type FormFieldConfig } from '../api/formCustomization';
+import { membersApi, type CreateMemberDto } from '../api/members';
+import { getFormSections } from '../formSchemas/formSchemaRegistry';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
 import AddEnquiryDialog from '../components/AddEnquiryDialog';
+import AddMemberDialog from '../components/AddMemberDialog';
 import './DashboardPage.css';
 import './setup-additions.css';
 
@@ -1241,6 +1245,161 @@ function ManagePackagesContent({ subscriptionId, gymId }: { subscriptionId: stri
   );
 }
 
+// ─── Setup: Form Customization ────────────────────────────────────────────────
+
+const FORM_TABS = ['Enquiry Form', 'Member Form', 'Additional Details', 'Fitness Profile', 'Apparel and Shoes'];
+
+const FORM_TYPE_KEY: Record<string, string> = {
+  'Enquiry Form':      'EnquiryForm',
+  'Member Form':       'MemberForm',
+  'Additional Details':'AdditionalDetails',
+  'Fitness Profile':   'FitnessProfile',
+  'Apparel and Shoes': 'ApparelAndShoes',
+};
+
+function buildDefaultFields(schema: ReturnType<typeof getFormSections>): FormFieldConfig[] {
+  return schema.flatMap(s => s.fields.map(f => ({ key: f.key, isEnabled: false, isMandatory: false, hasPlugin: false })));
+}
+
+function mergeWithDefaults(schema: ReturnType<typeof getFormSections>, saved: FormFieldConfig[]): FormFieldConfig[] {
+  const map = new Map(saved.map(f => [f.key, f]));
+  return schema.flatMap(s => s.fields.map(f => map.get(f.key) ?? { key: f.key, isEnabled: false, isMandatory: false, hasPlugin: false }));
+}
+
+function FieldToggle({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button className={`fc-toggle ${on ? 'fc-toggle-on' : 'fc-toggle-off'}`} onClick={onClick}>
+      <span className="fc-toggle-knob" />
+      <span>{on ? 'Yes' : 'OFF'}</span>
+    </button>
+  );
+}
+
+function FormCustomizationContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [activeTab, setActiveTab] = useState('Enquiry Form');
+  const [fields, setFields] = useState<FormFieldConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const formType = FORM_TYPE_KEY[activeTab];
+  const schema = getFormSections(formType);
+
+  useEffect(() => {
+    setLoading(true);
+    setSaved(false);
+    const ft = FORM_TYPE_KEY[activeTab];
+    const sc = getFormSections(ft);
+    formCustomizationApi.get(subscriptionId, gymId, ft)
+      .then(dto => {
+        try {
+          const parsed: FormFieldConfig[] = JSON.parse(dto.fieldsJson);
+          if (sc.length > 0) {
+            setFields(mergeWithDefaults(sc, parsed));
+          } else {
+            setFields(parsed.length > 0 ? parsed : []);
+          }
+        } catch {
+          setFields(sc.length > 0 ? buildDefaultFields(sc) : []);
+        }
+      })
+      .catch(() => setFields(sc.length > 0 ? buildDefaultFields(sc) : []))
+      .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscriptionId, gymId, activeTab]);
+
+  function toggle(key: string, prop: 'isEnabled' | 'isMandatory' | 'hasPlugin') {
+    setFields(prev => prev.map(f => {
+      if (f.key !== key) return f;
+      const next = { ...f, [prop]: !f[prop] };
+      // disabling a field clears mandatory and plugin
+      if (prop === 'isEnabled' && !next.isEnabled) {
+        next.isMandatory = false;
+        next.hasPlugin = false;
+      }
+      return next;
+    }));
+    setSaved(false);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await formCustomizationApi.upsert(subscriptionId, gymId, formType, fields);
+      setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fieldMap = new Map(fields.map(f => [f.key, f]));
+
+  return (
+    <div className="fc-wrap">
+      <div className="fc-tabs">
+        {FORM_TABS.map(tab => (
+          <button
+            key={tab}
+            className={`fc-tab ${activeTab === tab ? 'fc-tab-active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading…</div>
+      ) : schema.length === 0 ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', fontSize: '14px' }}>
+          Configuration for <strong>{activeTab}</strong> is coming soon.
+        </div>
+      ) : (
+        <>
+          <div className="fc-body">
+            {schema.map(section => (
+              <div key={section.title} className="fc-section">
+                <div className="fc-section-title">{section.title}</div>
+                {section.fields.map(meta => {
+                  const cfg = fieldMap.get(meta.key) ?? { key: meta.key, isEnabled: false, isMandatory: false, hasPlugin: false };
+                  return (
+                    <div key={meta.key} className="fc-row">
+                      <span className="fc-label">{meta.label}</span>
+                      <div className="fc-controls">
+                        <FieldToggle on={cfg.isEnabled} onClick={() => toggle(meta.key, 'isEnabled')} />
+                        {meta.showMandatory && cfg.isEnabled && (
+                          <div className="fc-control-group">
+                            <span className="fc-control-label">Mandatory</span>
+                            <FieldToggle on={cfg.isMandatory} onClick={() => toggle(meta.key, 'isMandatory')} />
+                          </div>
+                        )}
+                        {meta.showPlugin && cfg.isEnabled && (
+                          <div className="fc-control-group">
+                            <span className="fc-control-label">Plugin</span>
+                            <FieldToggle on={cfg.hasPlugin} onClick={() => toggle(meta.key, 'hasPlugin')} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <div className="fc-footer">
+            <div>
+              <button className="fc-save-btn" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              {saved && <div className="fc-notice">Settings saved successfully.</div>}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Setup: Generic "Coming Soon" ─────────────────────────────────────────────
 
 function ComingSoon({ item, section }: { item: string; section: string }) {
@@ -1322,6 +1481,9 @@ function SetupContent({
   if (item === 'Manage Packages') {
     return <>{breadcrumb}<ManagePackagesContent subscriptionId={subscriptionId} gymId={gymId} /></>;
   }
+  if (item === 'Form Customization') {
+    return <>{breadcrumb}<FormCustomizationContent subscriptionId={subscriptionId} gymId={gymId} /></>;
+  }
 
   return <ComingSoon item={item} section={section} />;
 }
@@ -1348,6 +1510,7 @@ export default function DashboardPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
+  const [showMemberDialog, setShowMemberDialog] = useState(false);
   const [dateFilter, setDateFilter] = useState('Today');
   const [searchField, setSearchField] = useState('Member Name');
   const [searchText, setSearchText] = useState('');
@@ -1414,6 +1577,12 @@ export default function DashboardPage() {
   function handleQuickAdd(key: string) {
     setQuickAddOpen(false);
     if (key === 'enquiry') setShowDialog(true);
+    if (key === 'member')  setShowMemberDialog(true);
+  }
+
+  async function handleSaveMember(data: CreateMemberDto) {
+    if (!tenantId || !gymId) return;
+    await membersApi.create(tenantId, gymId, data);
   }
 
   async function handleToggleStaff(id: string) {
@@ -1866,11 +2035,22 @@ export default function DashboardPage() {
         </main>
       </div>
 
-      {showDialog && (
+      {showDialog && tenantId && gymId && (
         <AddEnquiryDialog
+          subscriptionId={tenantId}
+          gymId={gymId}
           onClose={() => setShowDialog(false)}
           onSave={handleSave}
           staffNames={staffList.map(s => s.fullName)}
+        />
+      )}
+
+      {showMemberDialog && tenantId && gymId && (
+        <AddMemberDialog
+          subscriptionId={tenantId}
+          gymId={gymId}
+          onClose={() => setShowMemberDialog(false)}
+          onSave={handleSaveMember}
         />
       )}
     </div>

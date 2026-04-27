@@ -31,6 +31,7 @@ public class EnquiryConfiguration : IEntityTypeConfiguration<Enquiry>
         builder.Property(x => x.TrialClass).HasMaxLength(200);
         builder.Property(x => x.TrialSession).HasMaxLength(200);
         builder.Property(x => x.Status).HasMaxLength(20).HasDefaultValue("Enquiry");
+        builder.Property(x => x.ExtendedFieldsJson).HasColumnType("TEXT");
         builder.Property(x => x.CreatedAt);
 
         builder.HasIndex(x => x.GymId);

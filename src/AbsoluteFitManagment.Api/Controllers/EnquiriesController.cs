@@ -41,7 +41,8 @@ public class EnquiriesController : ApiController
             TrialService: request.TrialService,
             TrialStaffName: request.TrialStaffName,
             TrialClass: request.TrialClass,
-            TrialSession: request.TrialSession);
+            TrialSession: request.TrialSession,
+            ExtendedFieldsJson: request.ExtendedFieldsJson);
 
         var result = await _mediator.Send(command);
 
@@ -69,5 +70,5 @@ public class EnquiriesController : ApiController
         e.Gender, e.TrialType, e.EnquiryDate, e.ServiceName, e.LeadSource,
         e.FollowUpStaffName, e.FollowUpDateTime, e.CallTag, e.Message,
         e.TrialScheduledAt, e.TrialService, e.TrialStaffName, e.TrialClass, e.TrialSession,
-        e.Status, e.CreatedAt);
+        e.ExtendedFieldsJson, e.Status, e.CreatedAt);
 }

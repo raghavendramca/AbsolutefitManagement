@@ -20,7 +20,17 @@
       "PowerShell($procId = 28980)",
       "Bash(curl -s \"http://localhost:5215/subscriptions/A1B2C3D4-E5F6-7890-ABCD-EF0123456789/gyms/11111111-1111-1111-1111-111111111111/enquiries\")",
       "PowerShell(Stop-Process -Name \"AbsoluteFitManagement.Api\" -Force -ErrorAction SilentlyContinue)",
-      "PowerShell(netstat -ano)"
+      "PowerShell(netstat -ano)",
+      "Bash(xargs grep *)",
+      "Bash(Stop-Process -Id 15368 -Force -ErrorAction SilentlyContinue)",
+      "Bash(Start-Sleep -Seconds 1)",
+      "Bash(Write-Host \"Done\")",
+      "PowerShell(Stop-Process -Id 15368 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(\"Stopped\")",
+      "PowerShell(Stop-Process -Force)",
+      "PowerShell(\"stopped\")",
+      "Bash(npx tsc *)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5215 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }; \"done\")"
     ]
   }
 }

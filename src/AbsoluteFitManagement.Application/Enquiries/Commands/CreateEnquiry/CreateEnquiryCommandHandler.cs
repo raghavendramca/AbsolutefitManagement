@@ -50,7 +50,8 @@ public class CreateEnquiryCommandHandler : IRequestHandler<CreateEnquiryCommand,
             trialService: request.TrialService,
             trialStaffName: request.TrialStaffName,
             trialClass: request.TrialClass,
-            trialSession: request.TrialSession);
+            trialSession: request.TrialSession,
+            extendedFieldsJson: request.ExtendedFieldsJson);
 
         await _enquiriesRepository.AddAsync(enquiry);
         await _unitOfWork.CommitChangesAsync();

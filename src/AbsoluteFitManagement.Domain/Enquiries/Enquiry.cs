@@ -30,6 +30,9 @@ public class Enquiry : PersonEntity
     // Enquiry | TrialScheduled | Converted | Lost
     public string Status { get; set; } = "Enquiry";
 
+    // JSON blob storing additional configurable fields (dateOfBirth, locality, goal, etc.)
+    public string? ExtendedFieldsJson { get; init; }
+
     public Enquiry(
         Guid gymId,
         string fullName,
@@ -50,6 +53,7 @@ public class Enquiry : PersonEntity
         string? trialStaffName,
         string? trialClass,
         string? trialSession,
+        string? extendedFieldsJson = null,
         Guid? id = null)
         : base(id ?? Guid.NewGuid(), gymId, fullName, countryCode, contactNumber, email, gender)
     {
@@ -66,6 +70,7 @@ public class Enquiry : PersonEntity
         TrialStaffName = trialStaffName;
         TrialClass = trialClass;
         TrialSession = trialSession;
+        ExtendedFieldsJson = extendedFieldsJson;
         Status = trialType == "NoTrial" ? "Enquiry" : "TrialScheduled";
     }
 

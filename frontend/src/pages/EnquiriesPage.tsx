@@ -132,8 +132,10 @@ export default function EnquiriesPage() {
         </div>
       )}
 
-      {showDialog && (
+      {showDialog && subscriptionId && gymId && (
         <AddEnquiryDialog
+          subscriptionId={subscriptionId}
+          gymId={gymId}
           onClose={() => setShowDialog(false)}
           onSave={handleSave}
           staffNames={STAFF_NAMES}

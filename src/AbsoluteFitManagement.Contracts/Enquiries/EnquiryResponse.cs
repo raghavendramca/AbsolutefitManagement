@@ -21,5 +21,6 @@ public record EnquiryResponse(
     string? TrialStaffName,
     string? TrialClass,
     string? TrialSession,
+    string? ExtendedFieldsJson,
     string Status,
     DateTime CreatedAt);

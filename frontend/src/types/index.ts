@@ -26,6 +26,7 @@ export interface Enquiry {
   trialStaffName?: string;
   trialClass?: string;
   trialSession?: string;
+  extendedFieldsJson?: string;
   status: EnquiryStatus;
   createdAt: string;
 }
@@ -50,6 +51,7 @@ export interface CreateEnquiryRequest {
   trialStaffName?: string;
   trialClass?: string;
   trialSession?: string;
+  extendedFieldsJson?: string;
 }
 
 export interface Subscription {
