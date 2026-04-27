@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { enquiriesApi } from '../api/enquiries';
 import { navigationApi, type NavMenuItemDto, type QuickAddMenuItemDto } from '../api/navigation';
 import { staffApi, type StaffMember } from '../api/staff';
-import { servicesApi, type GymServiceDto, type ServiceVariationDto, type CreateServiceVariationRequest } from '../api/services';
+import { servicesApi, type GymServiceDto, type ServiceVariationDto, type CreateServiceVariationRequest, type UpdateServiceRequest } from '../api/services';
 import { packagesApi, type GymPackageDto, type CreatePackageItemRequest } from '../api/packages';
 import { profileApi, type GymProfileDto, DAYS, parseOperatingHours, defaultHours, type OperatingHourSlot } from '../api/profile';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
@@ -402,7 +402,23 @@ const SERVICE_CATEGORIES = [
   'General Membership', 'Personal Training', 'Group Training',
   'Nutrition Counselling', 'Teachers Training', 'Workshop/Event', 'Trial', 'PT Trial',
 ];
-const SERVICE_TYPES = ['1 Session', 'Multiple Sessions', 'Monthly', 'Quarterly', 'Yearly'];
+const SERVICE_TYPES = ['1 Session', 'Multiple Sessions', 'Membership', 'Day pass', 'Monthly', 'Quarterly', 'Yearly'];
+const TAX_OPTIONS = ['No Tax', 'GST 5%', 'GST 12%', 'GST 18%'];
+
+function formatDuration(v: ServiceVariationDto): string {
+  const type = v.serviceType.toLowerCase();
+  if (type === 'membership') {
+    const months = Math.round(v.validityDays / 30) || 1;
+    return `7 Days Per week. Valid for ${months} month(s).`;
+  }
+  if (type === 'multiple sessions') {
+    const mins = String(v.timeMinutes).padStart(2, '0');
+    return `${v.validityDays} Sessions. ${v.timeHours} Hours ${mins} minutes per session. Valid for ${v.validityDays} day(s).`;
+  }
+  return `Valid for ${v.validityDays} day(s)`;
+}
+
+// ── Add/Edit Variation Modal ──────────────────────────────────────────────────
 
 function AddVariationModal({
   service,
@@ -496,7 +512,7 @@ function AddVariationModal({
             </div>
             <div className="var-field"><label>Tax</label>
               <select value={form.tax} onChange={e => set('tax', e.target.value)}>
-                <option>No Tax</option><option>GST 18%</option><option>GST 5%</option>
+                {TAX_OPTIONS.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
             <div className="var-field"><label>Choose Category*</label>
@@ -555,49 +571,414 @@ function AddVariationModal({
   );
 }
 
-function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
-  const [services, setServices] = useState<GymServiceDto[]>([]);
-  const [variationCounts, setVariationCounts] = useState<Record<string, number>>({});
+// ── Add / Edit Service Form ───────────────────────────────────────────────────
+
+const DEFAULT_SERVICE_FORM = {
+  name: '',
+  description: '',
+  categoryType: 'Brand',
+  sacCode: '',
+  tax: '',
+};
+
+function ServiceForm({
+  initial,
+  title,
+  onSave,
+  onCancel,
+}: {
+  initial: typeof DEFAULT_SERVICE_FORM;
+  title: string;
+  onSave: (data: typeof DEFAULT_SERVICE_FORM) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [form, setForm] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  function set(k: keyof typeof form, v: string) {
+    setForm(prev => ({ ...prev, [k]: v }));
+  }
+
+  async function handleSubmit() {
+    if (!form.name.trim()) { setError('Service name is required.'); return; }
+    setSaving(true);
+    setError('');
+    try {
+      await onSave(form);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="svc-form-wrap">
+      <div className="svc-form-card">
+        <div className="svc-form-header">{title}</div>
+
+        <div className="svc-form-field">
+          <label className="svc-form-label">Category Type*</label>
+          <div className="svc-form-radios">
+            <label className="svc-form-radio-opt">
+              <input type="radio" name="categoryType" value="Brand"
+                checked={form.categoryType === 'Brand'}
+                onChange={() => set('categoryType', 'Brand')} />
+              <span>
+                <strong>Brand:</strong> You will be able to sell this service at the studio, company&rsquo;s website, member mobile app and plug-in.
+              </span>
+            </label>
+            <label className="svc-form-radio-opt">
+              <input type="radio" name="categoryType" value="aktivity"
+                checked={form.categoryType === 'aktivity'}
+                onChange={() => set('categoryType', 'aktivity')} />
+              <span>
+                <strong>aktivity:</strong> You will be able to sell this service on Yoactiv website and Yoactiv app.
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="svc-form-field">
+          <label className="svc-form-label">Service / Activity Name*</label>
+          <input
+            className={`svc-form-input${!form.name && error ? ' svc-form-input-err' : ''}`}
+            type="text"
+            value={form.name}
+            onChange={e => set('name', e.target.value)}
+            placeholder="Enter service name"
+          />
+        </div>
+
+        <div className="svc-form-field">
+          <label className="svc-form-label">SAC Code</label>
+          <input className="svc-form-input svc-form-input-narrow" type="text"
+            value={form.sacCode} onChange={e => set('sacCode', e.target.value)} />
+        </div>
+
+        <div className="svc-form-field">
+          <label className="svc-form-label">Tax</label>
+          <select className="svc-form-select" value={form.tax} onChange={e => set('tax', e.target.value)}>
+            <option value="">Select</option>
+            {TAX_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+
+        {error && <p className="svc-form-error">{error}</p>}
+
+        <div className="svc-form-actions">
+          <button className="setup-save-btn" onClick={handleSubmit} disabled={saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+          <button className="setup-cancel-btn" onClick={onCancel}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Variations List View ──────────────────────────────────────────────────────
+
+function VariationsListView({
+  service,
+  subscriptionId,
+  gymId,
+  onBack,
+}: {
+  service: GymServiceDto;
+  subscriptionId: string;
+  gymId: string;
+  onBack: () => void;
+}) {
+  const [variations, setVariations] = useState<ServiceVariationDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [typeFilter, setTypeFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [showAddService, setShowAddService] = useState(false);
-  const [newServiceName, setNewServiceName] = useState('');
-  const [variationService, setVariationService] = useState<GymServiceDto | null>(null);
+  const [searchInput, setSearchInput] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [openOptionsMenu, setOpenOptionsMenu] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    servicesApi.list(subscriptionId, gymId).then(list => {
-      setServices(list);
-      const counts: Record<string, number> = {};
-      list.forEach(s => { counts[s.id] = s.variationCount; });
-      setVariationCounts(counts);
-    }).catch(() => {});
-  }, [subscriptionId, gymId]);
+    servicesApi.listVariations(subscriptionId, gymId, service.id)
+      .then(setVariations)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [subscriptionId, gymId, service.id]);
 
   useEffect(() => {
     if (!openOptionsMenu) return;
     function handleOutside(e: MouseEvent) {
-      if (!(e.target as HTMLElement).closest('.svc-options-btn-group')) {
-        setOpenOptionsMenu(null);
-      }
+      if (!(e.target as HTMLElement).closest('.svc-var-options-wrap')) setOpenOptionsMenu(null);
     }
     document.addEventListener('mousedown', handleOutside);
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [openOptionsMenu]);
 
-  async function handleAddService() {
-    if (!newServiceName.trim()) return;
-    const s = await servicesApi.create(subscriptionId, gymId, { name: newServiceName.trim() });
-    setServices(prev => [...prev, s]);
-    setVariationCounts(prev => ({ ...prev, [s.id]: 0 }));
-    setNewServiceName('');
-    setShowAddService(false);
+  function handleVariationSaved(v: ServiceVariationDto) {
+    setVariations(prev => [...prev, v]);
   }
 
-  function handleVariationSaved(v: ServiceVariationDto) {
-    setVariationCounts(prev => ({
-      ...prev,
-      [v.serviceId]: (prev[v.serviceId] ?? 0) + 1,
-    }));
+  async function handleDeleteVariation(variationId: string) {
+    if (!window.confirm('Delete this variation?')) return;
+    setDeleting(variationId);
+    try {
+      await servicesApi.deleteVariation(subscriptionId, gymId, service.id, variationId);
+      setVariations(prev => prev.filter(v => v.id !== variationId));
+    } finally {
+      setDeleting(null);
+      setOpenOptionsMenu(null);
+    }
+  }
+
+  const allTypes = Array.from(new Set(variations.map(v => v.serviceType)));
+
+  const filtered = variations.filter(v => {
+    const matchType = !typeFilter || v.serviceType === typeFilter;
+    const matchSearch = !search || v.name.toLowerCase().includes(search.toLowerCase());
+    return matchType && matchSearch;
+  });
+
+  const shortId = (id: string) => parseInt(id.replace(/-/g, '').substring(0, 8), 16) % 1000000;
+
+  return (
+    <div className="svc-var-list-wrap">
+      <div className="svc-var-toolbar">
+        <div className="svc-var-toolbar-left">
+          <button className="svc-back-btn" onClick={onBack}>Back</button>
+          <select className="svc-var-filter-select" value="">
+            <option>{service.name}</option>
+          </select>
+          <select className="svc-var-filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+            <option value="">All Type</option>
+            {allTypes.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <input className="svc-var-search" type="text" placeholder="Search"
+            value={searchInput} onChange={e => setSearchInput(e.target.value)} />
+          <button className="db-btn-go" onClick={() => setSearch(searchInput)}>Go</button>
+        </div>
+        <button className="svc-var-add-btn" onClick={() => setShowAddModal(true)}>Add Variation</button>
+      </div>
+
+      {loading ? (
+        <p className="db-state-msg">Loading variations…</p>
+      ) : (
+        <div className="db-table-wrap">
+          <table className="db-table svc-var-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Variation Id</th>
+                <th>Service Variations</th>
+                <th>Service Type</th>
+                <th>Duration</th>
+                <th>Service Fee</th>
+                <th>Online Sale</th>
+                <th>Status</th>
+                <th>Options</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((v, idx) => (
+                <tr key={v.id}>
+                  <td>
+                    <span className="svc-drag-handle">
+                      <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12">
+                        <circle cx="5" cy="4" r="1.2"/><circle cx="11" cy="4" r="1.2"/>
+                        <circle cx="5" cy="8" r="1.2"/><circle cx="11" cy="8" r="1.2"/>
+                        <circle cx="5" cy="12" r="1.2"/><circle cx="11" cy="12" r="1.2"/>
+                      </svg>
+                    </span>
+                    {idx + 1}
+                  </td>
+                  <td className="svc-var-id">{shortId(v.id)}</td>
+                  <td className="svc-var-name">{v.name}</td>
+                  <td>{v.serviceType}</td>
+                  <td className="svc-var-duration">{formatDuration(v)}</td>
+                  <td>₹ {v.serviceFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td>{v.promoteOnline ? 'Yes' : 'No'}</td>
+                  <td>
+                    <button className={`db-toggle ${v.isActive ? 'db-toggle-on' : 'db-toggle-off'}`}>
+                      <span className="db-toggle-label">{v.isActive ? 'On' : 'Off'}</span>
+                      <span className="db-toggle-knob" />
+                    </button>
+                  </td>
+                  <td>
+                    <div className="svc-var-options-wrap">
+                      <button
+                        className="svc-options-arrow-btn"
+                        onClick={() => setOpenOptionsMenu(openOptionsMenu === v.id ? null : v.id)}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="12" height="12">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                      {openOptionsMenu === v.id && (
+                        <div className="svc-options-dropdown">
+                          <button
+                            className="svc-options-item svc-options-item-danger"
+                            onClick={() => handleDeleteVariation(v.id)}
+                            disabled={deleting === v.id}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
+                              <polyline points="3 6 5 6 21 6"/>
+                              <path d="M19 6l-1 14H6L5 6"/>
+                              <path d="M10 11v6M14 11v6"/>
+                            </svg>
+                            {deleting === v.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={9} className="db-state-msg">No variations found.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showAddModal && (
+        <AddVariationModal
+          service={service}
+          subscriptionId={subscriptionId}
+          gymId={gymId}
+          onClose={() => setShowAddModal(false)}
+          onSaved={handleVariationSaved}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Manage Services (main list) ───────────────────────────────────────────────
+
+type SvcView = 'list' | 'add' | 'edit' | 'variations';
+
+function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [services, setServices] = useState<GymServiceDto[]>([]);
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [view, setView] = useState<SvcView>('list');
+  const [selectedService, setSelectedService] = useState<GymServiceDto | null>(null);
+  const [openOptionsMenu, setOpenOptionsMenu] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  useEffect(() => {
+    servicesApi.list(subscriptionId, gymId).then(setServices).catch(() => {});
+  }, [subscriptionId, gymId]);
+
+  useEffect(() => {
+    if (!openOptionsMenu) return;
+    function handleOutside(e: MouseEvent) {
+      if (!(e.target as HTMLElement).closest('.svc-options-btn-group')) setOpenOptionsMenu(null);
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [openOptionsMenu]);
+
+  async function handleAddService(data: typeof DEFAULT_SERVICE_FORM) {
+    const s = await servicesApi.create(subscriptionId, gymId, {
+      name: data.name,
+      description: data.description || undefined,
+      categoryType: data.categoryType,
+      sacCode: data.sacCode || undefined,
+      tax: data.tax || undefined,
+    });
+    setServices(prev => [...prev, s]);
+    setView('list');
+  }
+
+  async function handleEditService(data: typeof DEFAULT_SERVICE_FORM) {
+    if (!selectedService) return;
+    const updated = await servicesApi.update(subscriptionId, gymId, selectedService.id, {
+      name: data.name,
+      description: data.description || undefined,
+      categoryType: data.categoryType,
+      sacCode: data.sacCode || undefined,
+      tax: data.tax || undefined,
+      isActive: selectedService.isActive,
+    } as UpdateServiceRequest);
+    setServices(prev => prev.map(s => s.id === updated.id ? updated : s));
+    setView('list');
+  }
+
+  async function handleToggleActive(svc: GymServiceDto) {
+    const updated = await servicesApi.update(subscriptionId, gymId, svc.id, {
+      name: svc.name,
+      description: svc.description,
+      categoryType: svc.categoryType,
+      sacCode: svc.sacCode,
+      tax: svc.tax,
+      isActive: !svc.isActive,
+    } as UpdateServiceRequest);
+    setServices(prev => prev.map(s => s.id === updated.id ? updated : s));
+  }
+
+  async function handleDelete(svc: GymServiceDto) {
+    if (!window.confirm(`Delete service "${svc.name}"?`)) return;
+    setDeleting(svc.id);
+    setOpenOptionsMenu(null);
+    try {
+      await servicesApi.delete(subscriptionId, gymId, svc.id);
+      setServices(prev => prev.filter(s => s.id !== svc.id));
+    } finally {
+      setDeleting(null);
+    }
+  }
+
+  function openEdit(svc: GymServiceDto) {
+    setSelectedService(svc);
+    setOpenOptionsMenu(null);
+    setView('edit');
+  }
+
+  function openVariations(svc: GymServiceDto) {
+    setSelectedService(svc);
+    setView('variations');
+  }
+
+  if (view === 'add') {
+    return (
+      <ServiceForm
+        title="Add Service"
+        initial={DEFAULT_SERVICE_FORM}
+        onSave={handleAddService}
+        onCancel={() => setView('list')}
+      />
+    );
+  }
+
+  if (view === 'edit' && selectedService) {
+    return (
+      <ServiceForm
+        title={`Edit Service — ${selectedService.name}`}
+        initial={{
+          name: selectedService.name,
+          description: selectedService.description ?? '',
+          categoryType: selectedService.categoryType,
+          sacCode: selectedService.sacCode ?? '',
+          tax: selectedService.tax ?? '',
+        }}
+        onSave={handleEditService}
+        onCancel={() => { setView('list'); setSelectedService(null); }}
+      />
+    );
+  }
+
+  if (view === 'variations' && selectedService) {
+    return (
+      <VariationsListView
+        service={selectedService}
+        subscriptionId={subscriptionId}
+        gymId={gymId}
+        onBack={() => { setView('list'); setSelectedService(null); }}
+      />
+    );
   }
 
   const filtered = search.trim()
@@ -608,30 +989,15 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
     <div className="svc-wrap">
       <div className="svc-toolbar">
         <div className="svc-search-group">
-          <input className="svc-search" type="text" placeholder="Search" value={search} onChange={e => setSearch(e.target.value)} />
-          <button className="db-btn-go">Go</button>
+          <input className="svc-search" type="text" placeholder="Search"
+            value={searchInput} onChange={e => setSearchInput(e.target.value)} />
+          <button className="db-btn-go" onClick={() => setSearch(searchInput)}>Go</button>
         </div>
         <div className="svc-actions">
-          <button className="setup-outline-btn" onClick={() => setShowAddService(true)}>Add New Service</button>
+          <button className="setup-outline-btn" onClick={() => setView('add')}>Add New Service</button>
           <button className="setup-outline-btn">Playgrounds</button>
         </div>
       </div>
-
-      {showAddService && (
-        <div className="svc-add-row">
-          <input
-            className="svc-add-input"
-            type="text"
-            placeholder="Service name"
-            value={newServiceName}
-            autoFocus
-            onChange={e => setNewServiceName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleAddService(); if (e.key === 'Escape') setShowAddService(false); }}
-          />
-          <button className="setup-save-btn" onClick={handleAddService}>Save</button>
-          <button className="setup-cancel-btn" onClick={() => setShowAddService(false)}>Cancel</button>
-        </div>
-      )}
 
       <div className="db-table-wrap">
         <table className="db-table svc-table">
@@ -660,23 +1026,31 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
                 </td>
                 <td>{svc.name}</td>
                 <td>
-                  <span className="svc-variation-count">{variationCounts[svc.id] ?? 0} View</span>
+                  <button className="svc-variation-count" onClick={() => openVariations(svc)}>
+                    {svc.variationCount} View
+                  </button>
                 </td>
                 <td>
-                  <button className={`db-toggle ${svc.isActive ? 'db-toggle-on' : 'db-toggle-off'}`}>
+                  <button
+                    className={`db-toggle ${svc.isActive ? 'db-toggle-on' : 'db-toggle-off'}`}
+                    onClick={() => handleToggleActive(svc)}
+                  >
                     <span className="db-toggle-label">{svc.isActive ? 'On' : 'Off'}</span>
                     <span className="db-toggle-knob" />
                   </button>
                 </td>
                 <td>
-                  <button className={`db-toggle ${svc.isActive ? 'db-toggle-on' : 'db-toggle-off'}`}>
+                  <button
+                    className={`db-toggle ${svc.isActive ? 'db-toggle-on' : 'db-toggle-off'}`}
+                    onClick={() => handleToggleActive(svc)}
+                  >
                     <span className="db-toggle-label">{svc.isActive ? 'On' : 'Off'}</span>
                     <span className="db-toggle-knob" />
                   </button>
                 </td>
                 <td>
                   <div className="svc-options-btn-group">
-                    <button className="svc-add-var-btn" onClick={() => setVariationService(svc)}>
+                    <button className="svc-add-var-btn" onClick={() => openVariations(svc)}>
                       + Add Variation
                     </button>
                     <button
@@ -689,7 +1063,7 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
                     </button>
                     {openOptionsMenu === svc.id && (
                       <div className="svc-options-dropdown">
-                        <button className="svc-options-item">
+                        <button className="svc-options-item" onClick={() => openEdit(svc)}>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -703,13 +1077,17 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
                           </svg>
                           Access control
                         </button>
-                        <button className="svc-options-item svc-options-item-danger">
+                        <button
+                          className="svc-options-item svc-options-item-danger"
+                          onClick={() => handleDelete(svc)}
+                          disabled={deleting === svc.id}
+                        >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6l-1 14H6L5 6"/>
                             <path d="M10 11v6M14 11v6"/>
                           </svg>
-                          Delete
+                          {deleting === svc.id ? 'Deleting…' : 'Delete'}
                         </button>
                       </div>
                     )}
@@ -723,15 +1101,10 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
           </tbody>
         </table>
       </div>
-
-      {variationService && (
-        <AddVariationModal
-          service={variationService}
-          subscriptionId={subscriptionId}
-          gymId={gymId}
-          onClose={() => setVariationService(null)}
-          onSaved={handleVariationSaved}
-        />
+      {filtered.length > 0 && (
+        <div className="svc-load-more-row">
+          <button className="svc-load-more-btn">Load More</button>
+        </div>
       )}
     </div>
   );

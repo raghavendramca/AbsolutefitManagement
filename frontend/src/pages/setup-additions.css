@@ -200,6 +200,77 @@
   display: flex; gap: 10px; padding: 14px 20px; border-top: 1px solid #e5e7eb;
 }
 
+/* ── Service Form (Add / Edit) ─────────────────────────────────────────────── */
+.svc-form-wrap { padding: 0 32px 32px; }
+.svc-form-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 28px 32px; margin-top: 16px; max-width: 700px;
+}
+.svc-form-header {
+  font-size: 15px; font-weight: 700; color: #111827;
+  margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;
+}
+.svc-form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.svc-form-label { font-size: 13px; font-weight: 600; color: #374151; }
+.svc-form-input {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 12px;
+  font-size: 13px; color: #111827; background: #fff; width: 100%; box-sizing: border-box;
+}
+.svc-form-input-narrow { max-width: 220px; }
+.svc-form-input-err { border-color: #ef4444; }
+.svc-form-select {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 12px;
+  font-size: 13px; color: #111827; background: #fff; max-width: 260px;
+}
+.svc-form-radios { display: flex; flex-direction: column; gap: 10px; }
+.svc-form-radio-opt {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  font-size: 13px; color: #374151; line-height: 1.5;
+}
+.svc-form-radio-opt input[type="radio"] { margin-top: 3px; flex-shrink: 0; accent-color: #f97316; }
+.svc-form-error { font-size: 13px; color: #dc2626; margin-bottom: 8px; }
+.svc-form-actions { display: flex; gap: 10px; margin-top: 8px; }
+
+/* ── Variations List View ──────────────────────────────────────────────────── */
+.svc-var-list-wrap { padding: 0 32px 32px; }
+.svc-var-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 12px; gap: 10px; flex-wrap: wrap;
+}
+.svc-var-toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.svc-back-btn {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 14px;
+  font-size: 13px; background: #fff; cursor: pointer; color: #374151;
+}
+.svc-back-btn:hover { background: #f9fafb; }
+.svc-var-filter-select {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 10px;
+  font-size: 13px; background: #fff; color: #374151;
+}
+.svc-var-search {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px;
+  font-size: 13px; width: 180px;
+}
+.svc-var-add-btn {
+  background: #fff; color: #374151; border: 1px solid #d1d5db; border-radius: 6px;
+  padding: 6px 16px; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.svc-var-add-btn:hover { background: #f9fafb; }
+.svc-var-table th, .svc-var-table td { text-align: left; white-space: nowrap; }
+.svc-var-table td:nth-child(5) { white-space: normal; max-width: 260px; font-size: 12px; color: #6b7280; }
+.svc-var-id { font-size: 12px; color: #6b7280; }
+.svc-var-name { font-weight: 500; }
+.svc-var-duration { color: #6b7280; }
+.svc-var-options-wrap { position: relative; display: inline-flex; }
+
+/* ── Load More ─────────────────────────────────────────────────────────────── */
+.svc-load-more-row { text-align: center; padding: 12px 0; }
+.svc-load-more-btn {
+  background: #fff; border: 1px solid #d1d5db; border-radius: 6px;
+  padding: 7px 24px; font-size: 13px; cursor: pointer; color: #374151;
+}
+.svc-load-more-btn:hover { background: #f9fafb; }
+
 /* ── Manage Packages ───────────────────────────────────────────────────────── */
 .pkg-wrap { padding: 0 32px 32px; }
 .pkg-form {
