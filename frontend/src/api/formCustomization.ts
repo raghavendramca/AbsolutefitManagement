@@ -7,6 +7,19 @@ export interface FormFieldConfig {
   hasPlugin: boolean;
 }
 
+export type AdditionalDetailFieldType = 'TextBox' | 'MultiLine' | 'DropDown' | 'RadioButton' | 'MultipleSelection';
+
+export interface AdditionalDetailField {
+  id: string;
+  fieldType: AdditionalDetailFieldType;
+  caption: string;
+  placeholder: string;
+  required: boolean;
+  options: string[];
+  showInEnquiry: boolean;
+  showInMember: boolean;
+}
+
 export interface FormCustomizationDto {
   id: string;
   gymId: string;
@@ -20,7 +33,7 @@ export const formCustomizationApi = {
       `/subscriptions/${subscriptionId}/gyms/${gymId}/form-customization?formType=${encodeURIComponent(formType)}`
     ),
 
-  upsert: (subscriptionId: string, gymId: string, formType: string, fields: FormFieldConfig[]) =>
+  upsert: (subscriptionId: string, gymId: string, formType: string, fields: readonly unknown[]) =>
     api.put<FormCustomizationDto>(
       `/subscriptions/${subscriptionId}/gyms/${gymId}/form-customization`,
       { formType, fieldsJson: JSON.stringify(fields) }

@@ -3,6 +3,9 @@ export interface FieldMeta {
   label: string;
   showMandatory: boolean;
   showPlugin: boolean;
+  defaultEnabled?: boolean;   // defaults to true when omitted
+  defaultMandatory?: boolean; // defaults to false when omitted
+  defaultPlugin?: boolean;    // defaults to false when omitted
 }
 
 export interface SectionMeta {

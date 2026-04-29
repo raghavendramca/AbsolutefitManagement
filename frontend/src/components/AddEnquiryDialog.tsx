@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { CreateEnquiryRequest, TrialType, CallTag } from '../types';
-import { formCustomizationApi, type FormFieldConfig } from '../api/formCustomization';
+import { formCustomizationApi, type FormFieldConfig, type AdditionalDetailField } from '../api/formCustomization';
 import './AddEnquiryDialog.css';
 
 const COUNTRY_CODES = [
@@ -49,6 +49,8 @@ export default function AddEnquiryDialog({ subscriptionId, gymId, onClose, onSav
 
   // Form customization config
   const [cfgMap, setCfgMap] = useState<Map<string, FormFieldConfig>>(new Map());
+  const [additionalFields, setAdditionalFields] = useState<AdditionalDetailField[]>([]);
+  const [additionalValues, setAdditionalValues] = useState<Record<string, string | string[]>>({});
 
   useEffect(() => {
     formCustomizationApi.get(subscriptionId, gymId, 'EnquiryForm')
@@ -59,6 +61,19 @@ export default function AddEnquiryDialog({ subscriptionId, gymId, onClose, onSav
         } catch { /* use defaults */ }
       })
       .catch(() => { /* use defaults */ });
+
+    formCustomizationApi.get(subscriptionId, gymId, 'AdditionalDetails')
+      .then(dto => {
+        try {
+          const parsed: AdditionalDetailField[] = JSON.parse(dto.fieldsJson);
+          const forEnquiry = Array.isArray(parsed) ? parsed.filter(f => f.showInEnquiry) : [];
+          setAdditionalFields(forEnquiry);
+          const initVals: Record<string, string | string[]> = {};
+          forEnquiry.forEach(f => { initVals[f.id] = f.fieldType === 'MultipleSelection' ? [] : ''; });
+          setAdditionalValues(initVals);
+        } catch { /* no additional fields */ }
+      })
+      .catch(() => { /* no additional fields */ });
   }, [subscriptionId, gymId]);
 
   // ── Fixed fields (always shown) ─────────────────────────────────────────────
@@ -151,6 +166,17 @@ export default function AddEnquiryDialog({ subscriptionId, gymId, onClose, onSav
       }
     }
 
+    // Validate required additional detail fields
+    for (const af of additionalFields) {
+      if (!af.required) continue;
+      const val = additionalValues[af.id];
+      const isEmpty = Array.isArray(val) ? val.length === 0 : !val?.toString().trim();
+      if (isEmpty) {
+        setError(`${af.caption || af.fieldType} is required.`);
+        return;
+      }
+    }
+
     if (fieldEnabled(cfgMap, 'scheduleTrial')) {
       if (trialType === 'TrialAppointment') {
         if (!trialDateTime)  { setError('Date & Time is required for Trial Appointment.'); return; }
@@ -207,6 +233,13 @@ export default function AddEnquiryDialog({ subscriptionId, gymId, onClose, onSav
     if (fieldEnabled(cfgMap, 'medium')       && medium)       extended.medium       = medium;
     if (fieldEnabled(cfgMap, 'campaignTerm') && campaignTerm) extended.campaignTerm = campaignTerm;
     if (fieldEnabled(cfgMap, 'publisher')    && publisher)    extended.publisher    = publisher;
+
+    // Additional detail fields
+    for (const af of additionalFields) {
+      const val = additionalValues[af.id];
+      if (Array.isArray(val) && val.length > 0) extended[`ad_${af.id}`] = val.join(',');
+      else if (typeof val === 'string' && val.trim()) extended[`ad_${af.id}`] = val.trim();
+    }
 
     setError('');
     setSaving(true);
@@ -603,6 +636,87 @@ export default function AddEnquiryDialog({ subscriptionId, gymId, onClose, onSav
               )}
             </div>
           </div>
+
+          {/* ── Additional Detail Fields ─────────────────── */}
+          {additionalFields.length > 0 && (
+            <div className="aeq-additional-section">
+              <p className="aeq-section-title aeq-section-gap">Additional Details</p>
+              <div className="aeq-additional-grid">
+                {additionalFields.map(af => (
+                  <div key={af.id} className="aeq-field">
+                    <label>
+                      {af.caption || af.fieldType}
+                      {af.required && <span className="aeq-req"> *</span>}
+                    </label>
+                    {af.fieldType === 'TextBox' && (
+                      <input
+                        type="text"
+                        placeholder={af.placeholder}
+                        value={(additionalValues[af.id] as string) ?? ''}
+                        onChange={e => setAdditionalValues(prev => ({ ...prev, [af.id]: e.target.value }))}
+                      />
+                    )}
+                    {af.fieldType === 'MultiLine' && (
+                      <textarea
+                        rows={3}
+                        placeholder={af.placeholder}
+                        value={(additionalValues[af.id] as string) ?? ''}
+                        onChange={e => setAdditionalValues(prev => ({ ...prev, [af.id]: e.target.value }))}
+                      />
+                    )}
+                    {af.fieldType === 'DropDown' && (
+                      <select
+                        value={(additionalValues[af.id] as string) ?? ''}
+                        onChange={e => setAdditionalValues(prev => ({ ...prev, [af.id]: e.target.value }))}
+                      >
+                        <option value="">Select</option>
+                        {af.options.filter(Boolean).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    )}
+                    {af.fieldType === 'RadioButton' && (
+                      <div className="aeq-radio-group">
+                        {af.options.filter(Boolean).map(opt => (
+                          <label key={opt} className="aeq-radio-label">
+                            <input
+                              type="radio"
+                              name={`ad_${af.id}`}
+                              value={opt}
+                              checked={(additionalValues[af.id] as string) === opt}
+                              onChange={() => setAdditionalValues(prev => ({ ...prev, [af.id]: opt }))}
+                            />
+                            {opt}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    {af.fieldType === 'MultipleSelection' && (
+                      <div className="aeq-radio-group">
+                        {af.options.filter(Boolean).map(opt => {
+                          const vals = (additionalValues[af.id] as string[]) ?? [];
+                          return (
+                            <label key={opt} className="aeq-radio-label">
+                              <input
+                                type="checkbox"
+                                value={opt}
+                                checked={vals.includes(opt)}
+                                onChange={e => {
+                                  const next = e.target.checked
+                                    ? [...vals, opt]
+                                    : vals.filter(v => v !== opt);
+                                  setAdditionalValues(prev => ({ ...prev, [af.id]: next }));
+                                }}
+                              />
+                              {opt}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {error && <p className="aeq-error">{error}</p>}
 

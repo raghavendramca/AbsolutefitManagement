@@ -326,6 +326,101 @@
 }
 .pkg-list-count { font-size: 12px; color: #9ca3af; }
 
+/* ── Additional Details Grid ───────────────────────────────────────────────── */
+.ad-wrap { padding: 0 0 40px; }
+.ad-layout { display: flex; gap: 16px; align-items: flex-start; }
+.ad-main { flex: 1; min-width: 0; overflow-x: auto; }
+.ad-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ad-head-row { background: #111827; color: #fff; }
+.ad-head-row th {
+  padding: 10px 12px; font-size: 12px; font-weight: 600; text-align: left;
+  border: 1px solid #374151; white-space: nowrap;
+}
+.ad-th-type        { min-width: 180px; }
+.ad-th-placeholder { min-width: 140px; }
+.ad-th-required    { width: 72px; text-align: center !important; }
+.ad-th-options     { min-width: 180px; }
+.ad-th-check       { width: 70px; text-align: center !important; }
+.ad-th-move        { width: 80px; text-align: center !important; }
+.ad-th-action      { width: 90px; text-align: center !important; }
+
+.ad-clear-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 5px;
+  padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+  white-space: nowrap;
+}
+.ad-clear-btn:hover { background: #ea6c08; }
+
+.ad-row-even { background: #fff; }
+.ad-row-odd  { background: #f9fafb; }
+.ad-row-even td, .ad-row-odd td {
+  padding: 10px 12px; border: 1px solid #e5e7eb; vertical-align: top;
+}
+
+.ad-empty { text-align: center; padding: 40px !important; color: #9ca3af; font-size: 13px; }
+
+.ad-td-type { vertical-align: top; }
+.ad-type-label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 5px; }
+.ad-caption-input {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #d1d5db; border-radius: 5px; padding: 5px 8px;
+  font-size: 12px; color: #111827;
+}
+.ad-placeholder-input {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #d1d5db; border-radius: 5px; padding: 5px 8px;
+  font-size: 12px; color: #111827;
+}
+
+.ad-td-check { text-align: center; vertical-align: middle; }
+.ad-checkbox { width: 15px; height: 15px; accent-color: #f97316; cursor: pointer; }
+
+.ad-td-options { vertical-align: top; }
+.ad-options-cell { display: flex; flex-direction: column; gap: 6px; }
+.ad-add-option-btn {
+  background: #e11d48; color: #fff; border: none; border-radius: 5px;
+  padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  align-self: flex-start;
+}
+.ad-add-option-btn:hover { background: #be123c; }
+.ad-option-row { display: flex; align-items: center; gap: 5px; }
+.ad-option-input {
+  flex: 1; border: 1px solid #d1d5db; border-radius: 5px;
+  padding: 4px 7px; font-size: 12px;
+}
+.ad-option-del {
+  background: none; border: none; color: #ef4444; cursor: pointer;
+  font-size: 13px; font-weight: 700; padding: 2px 4px; line-height: 1;
+  flex-shrink: 0;
+}
+.ad-option-del:hover { color: #b91c1c; }
+
+.ad-td-move { text-align: center; vertical-align: middle; white-space: nowrap; }
+.ad-move-btn {
+  background: none; border: 1px solid #d1d5db; border-radius: 4px;
+  color: #f97316; cursor: pointer; padding: 2px 6px; font-size: 12px; margin: 1px;
+}
+.ad-move-btn:hover:not(:disabled) { background: #fff7ed; }
+.ad-move-btn:disabled { color: #d1d5db; cursor: default; border-color: #f3f4f6; }
+
+.ad-td-del { text-align: center; vertical-align: middle; }
+.ad-del-btn {
+  background: none; border: none; color: #ef4444; cursor: pointer;
+  padding: 4px; display: inline-flex; align-items: center; border-radius: 4px;
+}
+.ad-del-btn:hover { background: #fef2f2; color: #b91c1c; }
+
+.ad-sidebar {
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0; padding-top: 2px;
+}
+.ad-type-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; text-align: center; min-width: 140px;
+}
+.ad-type-btn:hover { background: #ea6c08; }
+
 /* ── Form Customization ────────────────────────────────────────────────────── */
 .fc-wrap { padding: 0 32px 40px; overflow-y: auto; max-height: calc(100vh - 120px); }
 .fc-tabs {
@@ -380,3 +475,97 @@
 .fc-save-btn:disabled { opacity: 0.6; cursor: default; }
 .fc-save-btn:hover:not(:disabled) { background: #ea6c08; }
 .fc-notice { font-size: 12px; color: #6b7280; font-style: italic; margin-top: 8px; text-align: center; }
+
+/* ── Fitness Profile ────────────────────────────────────────────────────────── */
+.fp-wrap { display: flex; flex-direction: column; }
+
+.fp-subtabs {
+  display: flex; gap: 0; padding: 0 0 0 0;
+  border-bottom: 1px solid #dee2e6;
+}
+.fp-subtab {
+  padding: 10px 18px; font-size: 13px; font-weight: 500; color: #6b7280;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s;
+}
+.fp-subtab:hover { color: #111827; }
+.fp-subtab-active { color: #e8611a; border-bottom-color: #e8611a; }
+
+.fp-body { padding: 20px 24px; }
+
+.fp-form { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.fp-form-label { font-size: 13px; font-weight: 500; color: #374151; min-width: 140px; }
+.fp-form-row { display: flex; align-items: center; gap: 6px; }
+.fp-form-input {
+  padding: 6px 10px; font-size: 13px; border: 1px solid #ced4da;
+  border-radius: 4px; outline: none; width: 220px;
+}
+.fp-form-input:focus { border-color: #e8611a; }
+.fp-form-req { color: #dc3545; font-size: 13px; }
+.fp-submit-btn {
+  background: #e8611a; color: #fff; border: none; border-radius: 4px;
+  padding: 7px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.fp-submit-btn:hover:not(:disabled) { background: #cf5516; }
+.fp-submit-btn:disabled { opacity: 0.6; cursor: default; }
+
+.fp-loading { padding: 32px; text-align: center; color: #9ca3af; font-size: 14px; }
+
+.fp-pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0; margin-bottom: 4px; font-size: 13px; color: #374151;
+}
+.fp-page-nav { display: flex; gap: 4px; }
+.fp-page-nav button {
+  background: transparent; border: 1px solid #dee2e6; border-radius: 3px;
+  padding: 3px 8px; font-size: 11px; cursor: pointer; color: #374151;
+}
+.fp-page-nav button:disabled { opacity: 0.4; cursor: default; }
+.fp-page-nav button:hover:not(:disabled) { background: #f3f4f6; }
+.fp-page-label { font-size: 13px; color: #374151; }
+
+.fp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fp-th { padding: 8px 12px; text-align: left; background: #f8f9fa; font-weight: 600; color: #374151; border-bottom: 2px solid #dee2e6; }
+.fp-th-sno  { width: 60px; }
+.fp-th-name { }
+.fp-th-edit { width: 70px; text-align: center; }
+.fp-th-sort { width: 90px; text-align: center; }
+.fp-th-opt  { width: 80px; text-align: center; }
+
+.fp-td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.fp-td-sno  { color: #6b7280; }
+.fp-td-name { }
+.fp-td-edit { text-align: center; }
+.fp-td-sort { text-align: center; }
+.fp-td-opt  { text-align: center; }
+
+.fp-row-even { background: #fff; }
+.fp-row-odd  { background: #f9fafb; }
+.fp-empty { padding: 24px; text-align: center; color: #9ca3af; }
+
+.fp-edit-input {
+  padding: 4px 8px; font-size: 13px; border: 1px solid #e8611a;
+  border-radius: 3px; outline: none; width: 100%;
+}
+.fp-edit-save {
+  background: #16a34a; color: #fff; border: none; border-radius: 3px;
+  padding: 3px 8px; font-size: 13px; cursor: pointer;
+}
+.fp-edit-btn {
+  background: transparent; border: none; cursor: pointer;
+  color: #3b82f6; padding: 2px 6px;
+}
+.fp-edit-btn:hover { color: #1d4ed8; }
+
+.fp-sort-btns { display: flex; gap: 4px; justify-content: center; }
+.fp-sort-btns button {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 14px; color: #374151; padding: 0 3px; line-height: 1;
+}
+.fp-sort-btns button:disabled { opacity: 0.3; cursor: default; }
+.fp-sort-btns button:hover:not(:disabled) { color: #e8611a; }
+
+.fp-toggle-btn { background: transparent; border: none; cursor: pointer; padding: 0; }
+.fp-toggle-on  { color: #16a34a; }
+.fp-toggle-off { color: #9ca3af; }
+.fp-toggle-btn:hover { opacity: 0.8; }

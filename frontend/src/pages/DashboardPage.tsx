@@ -6,7 +6,9 @@ import { staffApi, type StaffMember } from '../api/staff';
 import { servicesApi, type GymServiceDto, type ServiceVariationDto, type CreateServiceVariationRequest, type UpdateServiceRequest } from '../api/services';
 import { packagesApi, type GymPackageDto, type CreatePackageItemRequest } from '../api/packages';
 import { profileApi, type GymProfileDto, DAYS, parseOperatingHours, defaultHours, type OperatingHourSlot } from '../api/profile';
-import { formCustomizationApi, type FormFieldConfig } from '../api/formCustomization';
+import { formCustomizationApi, type FormFieldConfig, type AdditionalDetailField, type AdditionalDetailFieldType } from '../api/formCustomization';
+import { fitnessProfileApi, type FitnessProfileItemDto, type FitnessCategory } from '../api/fitnessProfile';
+import { apparelItemsApi, type ApparelItemDto, type ApparelCategory } from '../api/apparelItems';
 import { membersApi, type CreateMemberDto } from '../api/members';
 import { getFormSections } from '../formSchemas/formSchemaRegistry';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
@@ -1245,6 +1247,382 @@ function ManagePackagesContent({ subscriptionId, gymId }: { subscriptionId: stri
   );
 }
 
+// ─── Setup: Fitness Profile ───────────────────────────────────────────────────
+
+const FITNESS_SUBTABS: { label: string; category: FitnessCategory }[] = [
+  { label: 'Level',                   category: 'Level'          },
+  { label: 'Division',                category: 'Division'       },
+  { label: 'Certification',           category: 'Certification'  },
+  { label: 'Injuries and Conditions', category: 'InjuryCondition'},
+  { label: 'Activity Level',          category: 'ActivityLevel'  },
+];
+
+const FP_PAGE_SIZE = 20;
+
+function FitnessProfileContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [activeCategory, setActiveCategory] = useState<FitnessCategory>('Level');
+  const [items, setItems] = useState<FitnessProfileItemDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [inputVal, setInputVal] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editVal, setEditVal] = useState('');
+  const [page, setPage] = useState(1);
+
+  const activeSubtab = FITNESS_SUBTABS.find(t => t.category === activeCategory)!;
+  const totalPages = Math.max(1, Math.ceil(items.length / FP_PAGE_SIZE));
+  const pageItems = items.slice((page - 1) * FP_PAGE_SIZE, page * FP_PAGE_SIZE);
+
+  useEffect(() => {
+    setLoading(true);
+    setPage(1);
+    setEditId(null);
+    fitnessProfileApi.list(subscriptionId, gymId, activeCategory)
+      .then(setItems)
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [subscriptionId, gymId, activeCategory]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const name = inputVal.trim();
+    if (!name) return;
+    setSubmitting(true);
+    try {
+      const created = await fitnessProfileApi.create(subscriptionId, gymId, activeCategory, name);
+      setItems(prev => [...prev, created]);
+      setInputVal('');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleUpdate(id: string) {
+    const name = editVal.trim();
+    if (!name) return;
+    const updated = await fitnessProfileApi.update(subscriptionId, gymId, id, name);
+    setItems(prev => prev.map(it => it.id === id ? updated : it));
+    setEditId(null);
+  }
+
+  async function handleToggle(id: string) {
+    const updated = await fitnessProfileApi.toggle(subscriptionId, gymId, id);
+    setItems(prev => prev.map(it => it.id === id ? updated : it));
+  }
+
+  async function handleMove(id: string, moveUp: boolean) {
+    const result = await fitnessProfileApi.move(subscriptionId, gymId, activeCategory, id, moveUp);
+    setItems(result);
+  }
+
+  return (
+    <div className="fp-wrap">
+      <div className="fp-subtabs">
+        {FITNESS_SUBTABS.map(t => (
+          <button
+            key={t.category}
+            className={`fp-subtab ${activeCategory === t.category ? 'fp-subtab-active' : ''}`}
+            onClick={() => setActiveCategory(t.category)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="fp-body">
+        <form className="fp-form" onSubmit={handleSubmit}>
+          <label className="fp-form-label">{activeSubtab.label}</label>
+          <div className="fp-form-row">
+            <input
+              className="fp-form-input"
+              value={inputVal}
+              onChange={e => setInputVal(e.target.value)}
+              placeholder=""
+              required
+            />
+            <span className="fp-form-req">*</span>
+            <button className="fp-submit-btn" type="submit" disabled={submitting}>Submit</button>
+          </div>
+        </form>
+
+        {loading ? (
+          <div className="fp-loading">Loading…</div>
+        ) : (
+          <>
+            <div className="fp-pagination">
+              <div className="fp-page-nav">
+                <button onClick={() => setPage(1)} disabled={page === 1}>|◀</button>
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>◀</button>
+              </div>
+              <span className="fp-page-label">Page {page} of {totalPages}</span>
+              <div className="fp-page-nav">
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>▶</button>
+                <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>▶|</button>
+              </div>
+            </div>
+
+            <table className="fp-table">
+              <thead>
+                <tr>
+                  <th className="fp-th fp-th-sno">S.No</th>
+                  <th className="fp-th fp-th-name">Name</th>
+                  <th className="fp-th fp-th-edit">Edit</th>
+                  <th className="fp-th fp-th-sort">Sort</th>
+                  <th className="fp-th fp-th-opt">Option</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.length === 0 ? (
+                  <tr><td colSpan={5} className="fp-empty">No items yet. Use the form above to add one.</td></tr>
+                ) : pageItems.map((item, idx) => {
+                  const globalIdx = (page - 1) * FP_PAGE_SIZE + idx;
+                  const isFirst = globalIdx === 0;
+                  const isLast = globalIdx === items.length - 1;
+                  const isEditing = editId === item.id;
+                  return (
+                    <tr key={item.id} className={idx % 2 === 0 ? 'fp-row-even' : 'fp-row-odd'}>
+                      <td className="fp-td fp-td-sno">{globalIdx + 1}</td>
+                      <td className="fp-td fp-td-name">
+                        {isEditing ? (
+                          <input
+                            className="fp-edit-input"
+                            value={editVal}
+                            onChange={e => setEditVal(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleUpdate(item.id); if (e.key === 'Escape') setEditId(null); }}
+                            autoFocus
+                          />
+                        ) : (
+                          <span style={{ color: item.isEnabled ? undefined : '#aaa' }}>{item.name}</span>
+                        )}
+                      </td>
+                      <td className="fp-td fp-td-edit">
+                        {isEditing ? (
+                          <button className="fp-edit-save" onClick={() => handleUpdate(item.id)}>✓</button>
+                        ) : (
+                          <button className="fp-edit-btn" onClick={() => { setEditId(item.id); setEditVal(item.name); }} title="Edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                        )}
+                      </td>
+                      <td className="fp-td fp-td-sort">
+                        <div className="fp-sort-btns">
+                          <button disabled={isFirst} onClick={() => handleMove(item.id, true)} title="Move up">↑</button>
+                          <button disabled={isLast} onClick={() => handleMove(item.id, false)} title="Move down">↓</button>
+                        </div>
+                      </td>
+                      <td className="fp-td fp-td-opt">
+                        <button
+                          className={`fp-toggle-btn ${item.isEnabled ? 'fp-toggle-on' : 'fp-toggle-off'}`}
+                          onClick={() => handleToggle(item.id)}
+                          title={item.isEnabled ? 'Click To Disable' : 'Click To Enable'}
+                        >
+                          <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+                            <circle cx="8" cy="8" r="7" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Setup: Apparel and Shoes ─────────────────────────────────────────────────
+
+const APPAREL_SUBTABS: { label: string; category: ApparelCategory }[] = [
+  { label: 'T-Shirt Size', category: 'TShirtSize'  },
+  { label: 'Shorts Size',  category: 'ShortsSize'  },
+  { label: 'Shoes Size',   category: 'ShoesSize'   },
+];
+
+const AP_PAGE_SIZE = 20;
+
+function ApparelContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [activeCategory, setActiveCategory] = useState<ApparelCategory>('TShirtSize');
+  const [items, setItems] = useState<ApparelItemDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [inputVal, setInputVal] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editVal, setEditVal] = useState('');
+  const [page, setPage] = useState(1);
+
+  const activeSubtab = APPAREL_SUBTABS.find(t => t.category === activeCategory)!;
+  const totalPages = Math.max(1, Math.ceil(items.length / AP_PAGE_SIZE));
+  const pageItems = items.slice((page - 1) * AP_PAGE_SIZE, page * AP_PAGE_SIZE);
+
+  useEffect(() => {
+    setLoading(true);
+    setPage(1);
+    setEditId(null);
+    apparelItemsApi.list(subscriptionId, gymId, activeCategory)
+      .then(setItems)
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [subscriptionId, gymId, activeCategory]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const name = inputVal.trim();
+    if (!name) return;
+    setSubmitting(true);
+    try {
+      const created = await apparelItemsApi.create(subscriptionId, gymId, activeCategory, name);
+      setItems(prev => [...prev, created]);
+      setInputVal('');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleUpdate(id: string) {
+    const name = editVal.trim();
+    if (!name) return;
+    const updated = await apparelItemsApi.update(subscriptionId, gymId, id, name);
+    setItems(prev => prev.map(it => it.id === id ? updated : it));
+    setEditId(null);
+  }
+
+  async function handleToggle(id: string) {
+    const updated = await apparelItemsApi.toggle(subscriptionId, gymId, id);
+    setItems(prev => prev.map(it => it.id === id ? updated : it));
+  }
+
+  async function handleMove(id: string, moveUp: boolean) {
+    const result = await apparelItemsApi.move(subscriptionId, gymId, activeCategory, id, moveUp);
+    setItems(result);
+  }
+
+  return (
+    <div className="fp-wrap">
+      <div className="fp-subtabs">
+        {APPAREL_SUBTABS.map(t => (
+          <button
+            key={t.category}
+            className={`fp-subtab ${activeCategory === t.category ? 'fp-subtab-active' : ''}`}
+            onClick={() => setActiveCategory(t.category)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="fp-body">
+        <form className="fp-form" onSubmit={handleSubmit}>
+          <label className="fp-form-label">{activeSubtab.label}</label>
+          <div className="fp-form-row">
+            <input
+              className="fp-form-input"
+              value={inputVal}
+              onChange={e => setInputVal(e.target.value)}
+              placeholder=""
+              required
+            />
+            <span className="fp-form-req">*</span>
+            <button className="fp-submit-btn" type="submit" disabled={submitting}>Submit</button>
+          </div>
+        </form>
+
+        {loading ? (
+          <div className="fp-loading">Loading…</div>
+        ) : (
+          <>
+            <div className="fp-pagination">
+              <div className="fp-page-nav">
+                <button onClick={() => setPage(1)} disabled={page === 1}>|◀</button>
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>◀</button>
+              </div>
+              <span className="fp-page-label">Page {page} of {totalPages}</span>
+              <div className="fp-page-nav">
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>▶</button>
+                <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>▶|</button>
+              </div>
+            </div>
+
+            <table className="fp-table">
+              <thead>
+                <tr>
+                  <th className="fp-th fp-th-sno">S.No</th>
+                  <th className="fp-th fp-th-name">Name</th>
+                  <th className="fp-th fp-th-edit">Edit</th>
+                  <th className="fp-th fp-th-sort">Sort</th>
+                  <th className="fp-th fp-th-opt">Option</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.length === 0 ? (
+                  <tr><td colSpan={5} className="fp-empty">No items yet. Use the form above to add one.</td></tr>
+                ) : pageItems.map((item, idx) => {
+                  const globalIdx = (page - 1) * AP_PAGE_SIZE + idx;
+                  const isFirst = globalIdx === 0;
+                  const isLast = globalIdx === items.length - 1;
+                  const isEditing = editId === item.id;
+                  return (
+                    <tr key={item.id} className={idx % 2 === 0 ? 'fp-row-even' : 'fp-row-odd'}>
+                      <td className="fp-td fp-td-sno">{globalIdx + 1}</td>
+                      <td className="fp-td fp-td-name">
+                        {isEditing ? (
+                          <input
+                            className="fp-edit-input"
+                            value={editVal}
+                            onChange={e => setEditVal(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleUpdate(item.id); if (e.key === 'Escape') setEditId(null); }}
+                            autoFocus
+                          />
+                        ) : (
+                          <span style={{ color: item.isEnabled ? undefined : '#aaa' }}>{item.name}</span>
+                        )}
+                      </td>
+                      <td className="fp-td fp-td-edit">
+                        {isEditing ? (
+                          <button className="fp-edit-save" onClick={() => handleUpdate(item.id)}>✓</button>
+                        ) : (
+                          <button className="fp-edit-btn" onClick={() => { setEditId(item.id); setEditVal(item.name); }} title="Edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                        )}
+                      </td>
+                      <td className="fp-td fp-td-sort">
+                        <div className="fp-sort-btns">
+                          <button disabled={isFirst} onClick={() => handleMove(item.id, true)} title="Move up">↑</button>
+                          <button disabled={isLast} onClick={() => handleMove(item.id, false)} title="Move down">↓</button>
+                        </div>
+                      </td>
+                      <td className="fp-td fp-td-opt">
+                        <button
+                          className={`fp-toggle-btn ${item.isEnabled ? 'fp-toggle-on' : 'fp-toggle-off'}`}
+                          onClick={() => handleToggle(item.id)}
+                          title={item.isEnabled ? 'Click To Disable' : 'Click To Enable'}
+                        >
+                          <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+                            <circle cx="8" cy="8" r="7" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Setup: Form Customization ────────────────────────────────────────────────
 
 const FORM_TABS = ['Enquiry Form', 'Member Form', 'Additional Details', 'Fitness Profile', 'Apparel and Shoes'];
@@ -1257,13 +1635,256 @@ const FORM_TYPE_KEY: Record<string, string> = {
   'Apparel and Shoes': 'ApparelAndShoes',
 };
 
+const AD_FIELD_LABELS: Record<AdditionalDetailFieldType, string> = {
+  TextBox:          'Text Box',
+  MultiLine:        'Multi Line',
+  DropDown:         'Drop Down',
+  RadioButton:      'Radio Button',
+  MultipleSelection:'Multiple Selection',
+};
+
+const AD_TYPES_WITH_OPTIONS: AdditionalDetailFieldType[] = ['DropDown', 'RadioButton', 'MultipleSelection'];
+
+function AdditionalDetailsGrid({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [rows, setRows]     = useState<AdditionalDetailField[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving]   = useState(false);
+  const [saved, setSaved]     = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    setSaved(false);
+    formCustomizationApi.get(subscriptionId, gymId, 'AdditionalDetails')
+      .then(dto => {
+        try {
+          const parsed: AdditionalDetailField[] = JSON.parse(dto.fieldsJson);
+          setRows(Array.isArray(parsed) ? parsed : []);
+        } catch { setRows([]); }
+      })
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false));
+  }, [subscriptionId, gymId]);
+
+  function addField(fieldType: AdditionalDetailFieldType) {
+    const newRow: AdditionalDetailField = {
+      id: crypto.randomUUID(),
+      fieldType,
+      caption: '',
+      placeholder: '',
+      required: false,
+      options: AD_TYPES_WITH_OPTIONS.includes(fieldType) ? [''] : [],
+      showInEnquiry: false,
+      showInMember: false,
+    };
+    setRows(prev => [...prev, newRow]);
+    setSaved(false);
+  }
+
+  function updateRow(id: string, patch: Partial<AdditionalDetailField>) {
+    setRows(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
+    setSaved(false);
+  }
+
+  function deleteRow(id: string) {
+    setRows(prev => prev.filter(r => r.id !== id));
+    setSaved(false);
+  }
+
+  function moveRow(id: string, dir: 'up' | 'down') {
+    setRows(prev => {
+      const i = prev.findIndex(r => r.id === id);
+      if (i < 0) return prev;
+      if (dir === 'up'   && i === 0)              return prev;
+      if (dir === 'down' && i === prev.length - 1) return prev;
+      const next = [...prev];
+      const j = dir === 'up' ? i - 1 : i + 1;
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+    setSaved(false);
+  }
+
+  function addOption(id: string) {
+    setRows(prev => prev.map(r => r.id === id ? { ...r, options: [...r.options, ''] } : r));
+    setSaved(false);
+  }
+
+  function updateOption(id: string, oi: number, val: string) {
+    setRows(prev => prev.map(r => {
+      if (r.id !== id) return r;
+      const opts = [...r.options];
+      opts[oi] = val;
+      return { ...r, options: opts };
+    }));
+    setSaved(false);
+  }
+
+  function deleteOption(id: string, oi: number) {
+    setRows(prev => prev.map(r =>
+      r.id === id ? { ...r, options: r.options.filter((_, i) => i !== oi) } : r
+    ));
+    setSaved(false);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await formCustomizationApi.upsert(subscriptionId, gymId, 'AdditionalDetails', rows);
+      setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading…</div>;
+
+  return (
+    <div className="ad-wrap">
+      <div className="ad-layout">
+        <div className="ad-main">
+          <table className="ad-table">
+            <thead>
+              <tr className="ad-head-row">
+                <th className="ad-th-type">Type</th>
+                <th className="ad-th-placeholder">Placeholder</th>
+                <th className="ad-th-required">Required</th>
+                <th className="ad-th-options">Options</th>
+                <th className="ad-th-check">Enquiry</th>
+                <th className="ad-th-check">Member</th>
+                <th className="ad-th-move">Move</th>
+                <th className="ad-th-action">
+                  <button className="ad-clear-btn" onClick={() => { setRows([]); setSaved(false); }}>
+                    Clear All
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="ad-empty">
+                    No fields added. Use the buttons on the right to add fields.
+                  </td>
+                </tr>
+              ) : rows.map((row, idx) => (
+                <tr key={row.id} className={idx % 2 === 0 ? 'ad-row-even' : 'ad-row-odd'}>
+                  <td className="ad-td-type">
+                    <div className="ad-type-label">{AD_FIELD_LABELS[row.fieldType]}</div>
+                    <input
+                      className="ad-caption-input"
+                      placeholder="Caption"
+                      value={row.caption}
+                      onChange={e => updateRow(row.id, { caption: e.target.value })}
+                    />
+                  </td>
+                  <td className="ad-td-placeholder">
+                    {(row.fieldType === 'TextBox' || row.fieldType === 'MultiLine') && (
+                      <input
+                        className="ad-placeholder-input"
+                        placeholder="Placeholder Text"
+                        value={row.placeholder}
+                        onChange={e => updateRow(row.id, { placeholder: e.target.value })}
+                      />
+                    )}
+                  </td>
+                  <td className="ad-td-check">
+                    <input
+                      type="checkbox"
+                      className="ad-checkbox"
+                      checked={row.required}
+                      onChange={e => updateRow(row.id, { required: e.target.checked })}
+                    />
+                  </td>
+                  <td className="ad-td-options">
+                    {AD_TYPES_WITH_OPTIONS.includes(row.fieldType) && (
+                      <div className="ad-options-cell">
+                        <button className="ad-add-option-btn" onClick={() => addOption(row.id)}>
+                          Add Option
+                        </button>
+                        {row.options.map((opt, oi) => (
+                          <div key={oi} className="ad-option-row">
+                            <input
+                              className="ad-option-input"
+                              placeholder="Option text"
+                              value={opt}
+                              onChange={e => updateOption(row.id, oi, e.target.value)}
+                            />
+                            <button className="ad-option-del" onClick={() => deleteOption(row.id, oi)}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td className="ad-td-check">
+                    <input
+                      type="checkbox"
+                      className="ad-checkbox"
+                      checked={row.showInEnquiry}
+                      onChange={e => updateRow(row.id, { showInEnquiry: e.target.checked })}
+                    />
+                  </td>
+                  <td className="ad-td-check">
+                    <input
+                      type="checkbox"
+                      className="ad-checkbox"
+                      checked={row.showInMember}
+                      onChange={e => updateRow(row.id, { showInMember: e.target.checked })}
+                    />
+                  </td>
+                  <td className="ad-td-move">
+                    <button className="ad-move-btn" onClick={() => moveRow(row.id, 'up')}   disabled={idx === 0}>▲</button>
+                    <button className="ad-move-btn" onClick={() => moveRow(row.id, 'down')} disabled={idx === rows.length - 1}>▼</button>
+                  </td>
+                  <td className="ad-td-del">
+                    <button className="ad-del-btn" onClick={() => deleteRow(row.id)} title="Delete field">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                        <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="fc-footer">
+            <div>
+              <button className="fc-save-btn" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              {saved && <div className="fc-notice">Settings saved successfully.</div>}
+            </div>
+          </div>
+        </div>
+
+        <div className="ad-sidebar">
+          {(['TextBox', 'MultiLine', 'DropDown', 'RadioButton', 'MultipleSelection'] as AdditionalDetailFieldType[]).map(type => (
+            <button key={type} className="ad-type-btn" onClick={() => addField(type)}>
+              {AD_FIELD_LABELS[type]}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function buildDefaultFields(schema: ReturnType<typeof getFormSections>): FormFieldConfig[] {
-  return schema.flatMap(s => s.fields.map(f => ({ key: f.key, isEnabled: false, isMandatory: false, hasPlugin: false })));
+  return schema.flatMap(s => s.fields.map(f => ({
+    key: f.key,
+    isEnabled: f.defaultEnabled ?? true,
+    isMandatory: f.defaultMandatory ?? false,
+    hasPlugin: f.defaultPlugin ?? false,
+  })));
 }
 
 function mergeWithDefaults(schema: ReturnType<typeof getFormSections>, saved: FormFieldConfig[]): FormFieldConfig[] {
   const map = new Map(saved.map(f => [f.key, f]));
-  return schema.flatMap(s => s.fields.map(f => map.get(f.key) ?? { key: f.key, isEnabled: false, isMandatory: false, hasPlugin: false }));
+  return schema.flatMap(s => s.fields.map(f => map.get(f.key) ?? {
+    key: f.key,
+    isEnabled: f.defaultEnabled ?? true,
+    isMandatory: f.defaultMandatory ?? false,
+    hasPlugin: f.defaultPlugin ?? false,
+  }));
 }
 
 function FieldToggle({ on, onClick }: { on: boolean; onClick: () => void }) {
@@ -1350,6 +1971,12 @@ function FormCustomizationContent({ subscriptionId, gymId }: { subscriptionId: s
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>Loading…</div>
+      ) : activeTab === 'Additional Details' ? (
+        <AdditionalDetailsGrid subscriptionId={subscriptionId} gymId={gymId} />
+      ) : activeTab === 'Fitness Profile' ? (
+        <FitnessProfileContent subscriptionId={subscriptionId} gymId={gymId} />
+      ) : activeTab === 'Apparel and Shoes' ? (
+        <ApparelContent subscriptionId={subscriptionId} gymId={gymId} />
       ) : schema.length === 0 ? (
         <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', fontSize: '14px' }}>
           Configuration for <strong>{activeTab}</strong> is coming soon.

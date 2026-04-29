@@ -1,4 +1,5 @@
 using AbsoluteFitManagement.Domain.Gyms;
+using AbsoluteFitManagement.Domain.Setup;
 using AbsoluteFitManagement.Domain.Staff;
 using AbsoluteFitManagement.Domain.Subscriptions;
 using AbsoluteFitManagement.Domain.Users;
@@ -31,6 +32,7 @@ public static class DataSeeder
         await SeedAdditionalGymsAsync(db, logger);
         await SeedAdminUserAsync(db, logger);
         await SeedStaffAsync(db, logger);
+        await SeedFitnessProfileItemsAsync(db, logger);
     }
 
     private static async Task SeedSubscriptionAndGymsAsync(
@@ -150,5 +152,74 @@ public static class DataSeeder
         await db.SaveChangesAsync();
 
         logger.LogInformation("Seeded {Count} staff members for gym Marathahalli.", staffList.Length);
+    }
+
+    private static async Task SeedFitnessProfileItemsAsync(
+        AbsoluteFitManagementDbContext db, ILogger logger)
+    {
+        var gymIds = new[] { SeedGym1Id, SeedGym2Id, SeedGym3Id, SeedGym4Id, SeedGym5Id };
+
+        var activityLevelNames = new[]
+        {
+            "I have never trained before",
+            "1 day per week",
+            "2 days per week",
+            "4 days per week",
+            "5 days per week",
+            "6 days per week",
+            "7 days per week",
+        };
+
+        var injuryConditionNames = new[]
+        {
+            "Asthma/COPD",
+            "Back Pain",
+            "Bone Fracture",
+            "Carpal Tunnel",
+            "Diabetes",
+            "Digestive Disorder",
+            "Dizziness/Vertigo",
+            "Epilepsy",
+            "Foot Pain",
+            "Glaucoma",
+            "Heart Disease/Condition",
+            "Hernia/Diastasis Recti",
+            "High Blood Pressure",
+            "High Cholestrol",
+            "Hip Pain",
+            "Hip Replacement",
+            "Injury Recent",
+            "Joint Pain",
+            "Knee Replacement",
+            "Leg Pain",
+            "Metabolic Disorders (thyroid,kidney,etc)",
+            "Multiple Sclerosis",
+            "Neck Pain/Disorder",
+            "Osteopenia/Osteoporosis",
+            "Pacemaker",
+        };
+
+        foreach (var gymId in gymIds)
+        {
+            if (!await db.FitnessProfileItems.AnyAsync(f => f.GymId == gymId && f.Category == "ActivityLevel"))
+            {
+                var items = activityLevelNames
+                    .Select((name, i) => new FitnessProfileItem(gymId, "ActivityLevel", name, i + 1))
+                    .ToList();
+                await db.FitnessProfileItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} ActivityLevel items for gym {GymId}.", items.Count, gymId);
+            }
+
+            if (!await db.FitnessProfileItems.AnyAsync(f => f.GymId == gymId && f.Category == "InjuryCondition"))
+            {
+                var items = injuryConditionNames
+                    .Select((name, i) => new FitnessProfileItem(gymId, "InjuryCondition", name, i + 1))
+                    .ToList();
+                await db.FitnessProfileItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} InjuryCondition items for gym {GymId}.", items.Count, gymId);
+            }
+        }
+
+        await db.SaveChangesAsync();
     }
 }

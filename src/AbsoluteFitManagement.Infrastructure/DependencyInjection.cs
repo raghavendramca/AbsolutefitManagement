@@ -38,6 +38,8 @@ public static class DependencyInjection
         services.AddScoped<IGymPackagesRepository, GymPackagesRepository>();
         services.AddScoped<IGymProfileRepository, GymProfileRepository>();
         services.AddScoped<IFormCustomizationRepository, FormCustomizationRepository>();
+        services.AddScoped<IFitnessProfileItemRepository, FitnessProfileItemRepository>();
+        services.AddScoped<IApparelItemRepository, ApparelItemRepository>();
         services.AddScoped<IMembersRepository, MembersRepository>();
         services.AddScoped<IUnitOfWork>(sp =>
             sp.GetRequiredService<AbsoluteFitManagementDbContext>());

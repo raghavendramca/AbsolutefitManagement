@@ -233,3 +233,11 @@
 
 .aeq-save-btn:hover:not(:disabled) { background: #cf5516; }
 .aeq-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Additional Details section */
+.aeq-additional-section { padding: 0 24px; }
+.aeq-additional-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}

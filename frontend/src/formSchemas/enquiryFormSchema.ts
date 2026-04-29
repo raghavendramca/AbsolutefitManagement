@@ -8,12 +8,12 @@ class EnquiryFormSchema implements IFormSchema {
       {
         title: 'Personal Details',
         fields: [
-          { key: 'email',       label: 'Email',        showMandatory: true,  showPlugin: true  },
-          { key: 'gender',      label: 'Gender',       showMandatory: true,  showPlugin: true  },
-          { key: 'dateOfBirth', label: 'Date of Birth',showMandatory: false, showPlugin: false },
-          { key: 'address',     label: 'Address',      showMandatory: false, showPlugin: false },
-          { key: 'locality',    label: 'Locality',     showMandatory: true,  showPlugin: true  },
-          { key: 'city',        label: 'City',         showMandatory: false, showPlugin: false },
+          { key: 'email',       label: 'Email',        showMandatory: true,  showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
+          { key: 'gender',      label: 'Gender',       showMandatory: true,  showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
+          { key: 'dateOfBirth', label: 'Date of Birth',showMandatory: true,  showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
+          { key: 'address',     label: 'Address',      showMandatory: true,  showPlugin: false, defaultMandatory: true  },
+          { key: 'locality',    label: 'Locality',     showMandatory: true,  showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
+          { key: 'city',        label: 'City',         showMandatory: true,  showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
           { key: 'nationalId',  label: 'National ID',  showMandatory: false, showPlugin: false },
           { key: 'enquiryId',   label: 'Enquiry ID',   showMandatory: false, showPlugin: false },
           { key: 'goal',        label: 'Goal',         showMandatory: false, showPlugin: false },
@@ -25,10 +25,10 @@ class EnquiryFormSchema implements IFormSchema {
       {
         title: 'Lead Information',
         fields: [
-          { key: 'customerType', label: 'Customer type', showMandatory: false, showPlugin: false },
-          { key: 'leadSource',   label: 'Lead source',   showMandatory: true,  showPlugin: false },
-          { key: 'enquiryType',  label: 'Enquiry Type',  showMandatory: true,  showPlugin: false },
-          { key: 'company',      label: 'Company',       showMandatory: false, showPlugin: false },
+          { key: 'customerType', label: 'Customer type', showMandatory: true,  showPlugin: false, defaultMandatory: true  },
+          { key: 'leadSource',   label: 'Lead source',   showMandatory: true,  showPlugin: false, defaultMandatory: true  },
+          { key: 'enquiryType',  label: 'Enquiry Type',  showMandatory: true,  showPlugin: false, defaultMandatory: true  },
+          { key: 'company',      label: 'Company',       showMandatory: true,  showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
           { key: 'campaign',     label: 'Campaign',      showMandatory: false, showPlugin: false },
           { key: 'subCampaign',  label: 'SubCampaign',   showMandatory: false, showPlugin: false },
           { key: 'utmSource',    label: 'UTM Source',    showMandatory: false, showPlugin: false },
@@ -40,13 +40,13 @@ class EnquiryFormSchema implements IFormSchema {
       {
         title: 'Emergency contact',
         fields: [
-          { key: 'emergencyContact', label: 'Emergency contact', showMandatory: false, showPlugin: false },
+          { key: 'emergencyContact', label: 'Emergency contact', showMandatory: true, showPlugin: true, defaultMandatory: true, defaultPlugin: true },
         ],
       },
       {
         title: 'Schedule enquiry follow-up',
         fields: [
-          { key: 'scheduleFollowUp', label: 'Schedule enquiry follow-up', showMandatory: true, showPlugin: false },
+          { key: 'scheduleFollowUp', label: 'Schedule enquiry follow-up', showMandatory: true, showPlugin: false, defaultMandatory: true },
         ],
       },
       {
@@ -58,21 +58,21 @@ class EnquiryFormSchema implements IFormSchema {
       {
         title: 'Professional Information',
         fields: [
-          { key: 'primaryContact',      label: 'Primary Contact',   showMandatory: false, showPlugin: false },
-          { key: 'hrDetails',           label: 'HR Details',        showMandatory: false, showPlugin: false },
-          { key: 'secondaryContactPro', label: 'Secondary Contact', showMandatory: false, showPlugin: false },
+          { key: 'primaryContact',      label: 'Primary Contact',   showMandatory: true, showPlugin: true,  defaultMandatory: true, defaultPlugin: true  },
+          { key: 'hrDetails',           label: 'HR Details',        showMandatory: true, showPlugin: false, defaultMandatory: true  },
+          { key: 'secondaryContactPro', label: 'Secondary Contact', showMandatory: true, showPlugin: false, defaultMandatory: true  },
         ],
       },
       {
         title: 'Additional information',
         fields: [
-          { key: 'additionalInfo', label: 'Additional information', showMandatory: false, showPlugin: false },
+          { key: 'additionalInfo', label: 'Additional information', showMandatory: false, showPlugin: true, defaultPlugin: true },
         ],
       },
       {
         title: 'Fitness Goal',
         fields: [
-          { key: 'fitnessGoal', label: 'Fitness Goal', showMandatory: false, showPlugin: false },
+          { key: 'fitnessGoal', label: 'Fitness Goal', showMandatory: true, showPlugin: true, defaultMandatory: true, defaultPlugin: true },
         ],
       },
       {

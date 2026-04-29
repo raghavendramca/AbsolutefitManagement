@@ -193,3 +193,13 @@
 @media (max-width: 600px) {
   .amd-columns { grid-template-columns: 1fr; }
 }
+
+/* Additional Details section */
+.amd-additional-section { padding: 16px 24px 0; }
+.amd-additional-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+}
+.amd-radio-group { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px; }
+.amd-radio-label { display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; }

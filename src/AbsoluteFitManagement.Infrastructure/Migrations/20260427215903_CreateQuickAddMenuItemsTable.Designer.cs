@@ -3,6 +3,7 @@ using System;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AbsoluteFitManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AbsoluteFitManagementDbContext))]
-    partial class AbsoluteFitManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427215903_CreateQuickAddMenuItemsTable")]
+    partial class CreateQuickAddMenuItemsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -2109,62 +2112,6 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("ServiceVariations", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.ApparelItem", b =>
-                {
-                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasIndex("GymId", "Category", "SortOrder");
-
-                    b.ToTable("ApparelItems", (string)null);
-                });
-
-            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.FitnessProfileItem", b =>
-                {
-                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("GymId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsEnabled")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasIndex("GymId", "Category", "SortOrder");
-
-                    b.ToTable("FitnessProfileItems", (string)null);
                 });
 
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.FormCustomization", b =>
