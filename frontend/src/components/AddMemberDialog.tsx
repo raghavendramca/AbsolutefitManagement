@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { formCustomizationApi, type FormFieldConfig, type AdditionalDetailField } from '../api/formCustomization';
+import { fitnessProfileApi, type FitnessProfileItemDto } from '../api/fitnessProfile';
+import { apparelItemsApi, type ApparelItemDto } from '../api/apparelItems';
 import type { CreateMemberDto } from '../api/members';
 import './AddMemberDialog.css';
 
@@ -15,10 +17,7 @@ const GENDERS       = ['Male', 'Female', 'Other'];
 const BLOOD_GROUPS  = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 const LEAD_SOURCES  = ['Walk-in', 'Phone Call', 'Instagram', 'Facebook', 'Google', 'Referral', 'Other'];
 const CUSTOMER_TYPES = ['Individual', 'Corporate', 'Student', 'Senior'];
-const FITNESS_GOALS = ['Weight Loss', 'Weight Gain', 'Muscle Building', 'Endurance', 'Flexibility', 'General Fitness'];
-const ACTIVITY_LEVELS = ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active'];
-const EXPERTISE_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
-const TSHIRT_SIZES  = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+const FITNESS_GOAL_TYPES = ['Weight Loss', 'Weight Gain', 'Muscle Building', 'Endurance', 'Flexibility', 'General Fitness'];
 
 interface Props {
   subscriptionId: string;
@@ -53,6 +52,18 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
   const [additionalFields, setAdditionalFields] = useState<AdditionalDetailField[]>([]);
   const [additionalValues, setAdditionalValues] = useState<Record<string, string | string[]>>({});
 
+  // ── Fitness profile item lists (loaded from API) ──────────────────────────────
+  const [injuryItems,        setInjuryItems]        = useState<FitnessProfileItemDto[]>([]);
+  const [activityItems,      setActivityItems]      = useState<FitnessProfileItemDto[]>([]);
+  const [levelItems,         setLevelItems]         = useState<FitnessProfileItemDto[]>([]);
+  const [divisionItems,      setDivisionItems]      = useState<FitnessProfileItemDto[]>([]);
+  const [certificationItems, setCertificationItems] = useState<FitnessProfileItemDto[]>([]);
+
+  // ── Apparel item lists (loaded from API) ──────────────────────────────────────
+  const [tshirtItems, setTshirtItems] = useState<ApparelItemDto[]>([]);
+  const [shortsItems, setShortsItems] = useState<ApparelItemDto[]>([]);
+  const [shoesItems,  setShoesItems]  = useState<ApparelItemDto[]>([]);
+
   useEffect(() => {
     formCustomizationApi.get(subscriptionId, gymId, 'MemberForm')
       .then(dto => {
@@ -75,6 +86,34 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
         } catch { /* no additional fields */ }
       })
       .catch(() => { /* no additional fields */ });
+
+    // Load all fitness profile item categories upfront
+    fitnessProfileApi.list(subscriptionId, gymId, 'InjuryCondition')
+      .then(items => setInjuryItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+    fitnessProfileApi.list(subscriptionId, gymId, 'ActivityLevel')
+      .then(items => setActivityItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+    fitnessProfileApi.list(subscriptionId, gymId, 'Level')
+      .then(items => setLevelItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+    fitnessProfileApi.list(subscriptionId, gymId, 'Division')
+      .then(items => setDivisionItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+    fitnessProfileApi.list(subscriptionId, gymId, 'Certification')
+      .then(items => setCertificationItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+
+    // Load all apparel item categories upfront
+    apparelItemsApi.list(subscriptionId, gymId, 'TShirtSize')
+      .then(items => setTshirtItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+    apparelItemsApi.list(subscriptionId, gymId, 'ShortsSize')
+      .then(items => setShortsItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
+    apparelItemsApi.list(subscriptionId, gymId, 'ShoesSize')
+      .then(items => setShoesItems(items.filter(i => i.isEnabled)))
+      .catch(() => {});
   }, [subscriptionId, gymId]);
 
   // ── Fixed fields ─────────────────────────────────────────────────────────────
@@ -124,12 +163,15 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
   const [secContactNumber, setSecContactNumber] = useState('');
 
   // ── Fitness profile ───────────────────────────────────────────────────────────
-  const [injuries,      setInjuries]      = useState('');
-  const [fitnessGoal,   setFitnessGoal]   = useState('');
-  const [activityLevel, setActivityLevel] = useState('');
-  const [expertiseLevel,setExpertiseLevel]= useState('');
-  const [division,      setDivision]      = useState('');
-  const [certification, setCertification] = useState('');
+  const [selectedInjuries,   setSelectedInjuries]   = useState<string[]>([]);
+  const [fitnessGoalType,    setFitnessGoalType]    = useState('');
+  const [fitnessGoalStart,   setFitnessGoalStart]   = useState('');
+  const [fitnessGoalEnd,     setFitnessGoalEnd]     = useState('');
+  const [fitnessGoalRemarks, setFitnessGoalRemarks] = useState('');
+  const [activityLevel,      setActivityLevel]      = useState('');
+  const [expertiseLevel,     setExpertiseLevel]     = useState('');
+  const [division,           setDivision]           = useState('');
+  const [certification,      setCertification]      = useState('');
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
@@ -145,6 +187,12 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
     return fieldMandatory(cfgMap, fieldKey)
       ? <span className="amd-req"> *</span>
       : null;
+  }
+
+  function toggleInjury(name: string, checked: boolean) {
+    setSelectedInjuries(prev =>
+      checked ? [...prev, name] : prev.filter(n => n !== name)
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -202,8 +250,16 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
     if (fieldEnabled(cfgMap, 'mem_shoesSize')     && shoesSize)     extended.shoesSize     = shoesSize;
     if (fieldEnabled(cfgMap, 'mem_secContactName')   && secContactName)   extended.secContactName   = secContactName;
     if (fieldEnabled(cfgMap, 'mem_secContactNumber') && secContactNumber) extended.secContactNumber = secContactNumber;
-    if (fieldEnabled(cfgMap, 'mem_injuriesConditions') && injuries)      extended.injuries      = injuries;
-    if (fieldEnabled(cfgMap, 'mem_fitnessGoal')   && fitnessGoal)   extended.fitnessGoal   = fitnessGoal;
+
+    // Fitness profile fields
+    if (fieldEnabled(cfgMap, 'mem_injuriesConditions') && selectedInjuries.length > 0)
+      extended.injuries = selectedInjuries.join(',');
+    if (fieldEnabled(cfgMap, 'mem_fitnessGoal')) {
+      if (fitnessGoalType)    extended.fitnessGoalType    = fitnessGoalType;
+      if (fitnessGoalStart)   extended.fitnessGoalStart   = fitnessGoalStart;
+      if (fitnessGoalEnd)     extended.fitnessGoalEnd     = fitnessGoalEnd;
+      if (fitnessGoalRemarks) extended.fitnessGoalRemarks = fitnessGoalRemarks;
+    }
     if (fieldEnabled(cfgMap, 'mem_activityLevel') && activityLevel) extended.activityLevel = activityLevel;
     if (fieldEnabled(cfgMap, 'mem_expertiseLevel')&& expertiseLevel)extended.expertiseLevel= expertiseLevel;
     if (fieldEnabled(cfgMap, 'mem_division')      && division)      extended.division      = division;
@@ -241,6 +297,19 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
       setSaving(false);
     }
   }
+
+  const hasFitnessFields =
+    fieldEnabled(cfgMap, 'mem_injuriesConditions') ||
+    fieldEnabled(cfgMap, 'mem_fitnessGoal') ||
+    fieldEnabled(cfgMap, 'mem_activityLevel') ||
+    fieldEnabled(cfgMap, 'mem_expertiseLevel') ||
+    fieldEnabled(cfgMap, 'mem_division') ||
+    fieldEnabled(cfgMap, 'mem_certification');
+
+  const hasExpertise =
+    fieldEnabled(cfgMap, 'mem_expertiseLevel') ||
+    fieldEnabled(cfgMap, 'mem_division') ||
+    fieldEnabled(cfgMap, 'mem_certification');
 
   return (
     <div className="amd-overlay" ref={overlayRef} onClick={handleOverlayClick}>
@@ -503,7 +572,7 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
                     <label>T-Shirt Size</label>
                     <select value={tshirtSize} onChange={e => setTshirtSize(e.target.value)}>
                       <option value="">Select</option>
-                      {TSHIRT_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+                      {tshirtItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
                     </select>
                   </div>
                 )}
@@ -513,7 +582,7 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
                     <label>Shorts Size</label>
                     <select value={shortsSize} onChange={e => setShortsSize(e.target.value)}>
                       <option value="">Select</option>
-                      {TSHIRT_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+                      {shortsItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
                     </select>
                   </div>
                 )}
@@ -521,83 +590,130 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
                 {fieldEnabled(cfgMap, 'mem_shoesSize') && (
                   <div className="amd-field">
                     <label>Shoes Size</label>
-                    <input type="text" placeholder="e.g. UK 8" value={shoesSize} onChange={e => setShoesSize(e.target.value)} />
+                    <select value={shoesSize} onChange={e => setShoesSize(e.target.value)}>
+                      <option value="">Select</option>
+                      {shoesItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+                    </select>
                   </div>
                 )}
               </div>
             </div>
           )}
 
+          {/* ── Fitness Profile Tab ─────────────────────────────────────────────── */}
           {activeTab === 'Fitness Profile' && (
-            <div className="amd-columns">
-              <div className="amd-col">
-                <p className="amd-section-title">Fitness Profile</p>
+            <div className="amd-fp-content">
 
-                {fieldEnabled(cfgMap, 'mem_injuriesConditions') && (
-                  <div className="amd-field">
-                    <label>Injuries &amp; Conditions</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Describe any injuries or medical conditions"
-                      value={injuries}
-                      onChange={e => setInjuries(e.target.value)}
-                    />
+              {/* Injuries and Conditions — multi-column checkbox grid */}
+              {fieldEnabled(cfgMap, 'mem_injuriesConditions') && (
+                <div>
+                  <p className="amd-section-title">Injuries and conditions</p>
+                  {injuryItems.length > 0 ? (
+                    <div className="amd-injury-grid">
+                      {injuryItems.map(item => (
+                        <label key={item.id} className="amd-injury-label">
+                          <input
+                            type="checkbox"
+                            checked={selectedInjuries.includes(item.name)}
+                            onChange={e => toggleInjury(item.name, e.target.checked)}
+                          />
+                          {item.name}
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="amd-fp-empty">No injury/condition items configured in Setup → Fitness Profile.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Fitness Goals */}
+              {fieldEnabled(cfgMap, 'mem_fitnessGoal') && (
+                <div>
+                  <p className="amd-section-title">Fitness Goals</p>
+                  <div className="amd-fp-goals-row">
+                    <div className="amd-field">
+                      <label>Goal Type</label>
+                      <select value={fitnessGoalType} onChange={e => setFitnessGoalType(e.target.value)}>
+                        <option value="">Select</option>
+                        {FITNESS_GOAL_TYPES.map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </div>
+                    <div className="amd-field">
+                      <label>Start date</label>
+                      <input type="date" value={fitnessGoalStart} onChange={e => setFitnessGoalStart(e.target.value)} />
+                    </div>
+                    <div className="amd-field">
+                      <label>End date</label>
+                      <input type="date" value={fitnessGoalEnd} onChange={e => setFitnessGoalEnd(e.target.value)} />
+                    </div>
+                    <div className="amd-field">
+                      <label>Goal remarks</label>
+                      <input
+                        type="text"
+                        maxLength={140}
+                        placeholder="Maximum 140 characters"
+                        value={fitnessGoalRemarks}
+                        onChange={e => setFitnessGoalRemarks(e.target.value)}
+                      />
+                    </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {fieldEnabled(cfgMap, 'mem_fitnessGoal') && (
-                  <div className="amd-field">
-                    <label>Fitness Goal</label>
-                    <select value={fitnessGoal} onChange={e => setFitnessGoal(e.target.value)}>
-                      <option value="">Select</option>
-                      {FITNESS_GOALS.map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
+              {/* Expertise — Level, Division, Certification */}
+              {hasExpertise && (
+                <div>
+                  <p className="amd-section-title">Expertise</p>
+                  <div className="amd-fp-expertise-row">
+                    {fieldEnabled(cfgMap, 'mem_expertiseLevel') && (
+                      <div className="amd-field">
+                        <label>Level</label>
+                        <select value={expertiseLevel} onChange={e => setExpertiseLevel(e.target.value)}>
+                          <option value="">Select</option>
+                          {levelItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+                        </select>
+                      </div>
+                    )}
+                    {fieldEnabled(cfgMap, 'mem_division') && (
+                      <div className="amd-field">
+                        <label>Division</label>
+                        <select value={division} onChange={e => setDivision(e.target.value)}>
+                          <option value="">Select</option>
+                          {divisionItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+                        </select>
+                      </div>
+                    )}
+                    {fieldEnabled(cfgMap, 'mem_certification') && (
+                      <div className="amd-field">
+                        <label>Certification</label>
+                        <select value={certification} onChange={e => setCertification(e.target.value)}>
+                          <option value="">Select</option>
+                          {certificationItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
+                        </select>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              )}
 
-                {fieldEnabled(cfgMap, 'mem_activityLevel') && (
-                  <div className="amd-field">
+              {/* Activity Level */}
+              {fieldEnabled(cfgMap, 'mem_activityLevel') && (
+                <div>
+                  <p className="amd-section-title">Activity Level</p>
+                  <div className="amd-field amd-fp-activity-field">
                     <label>Activity Level</label>
                     <select value={activityLevel} onChange={e => setActivityLevel(e.target.value)}>
                       <option value="">Select</option>
-                      {ACTIVITY_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                      {activityItems.map(i => <option key={i.id} value={i.name}>{i.name}</option>)}
                     </select>
                   </div>
-                )}
+                </div>
+              )}
 
-                {fieldEnabled(cfgMap, 'mem_expertiseLevel') && (
-                  <div className="amd-field">
-                    <label>Expertise Level</label>
-                    <select value={expertiseLevel} onChange={e => setExpertiseLevel(e.target.value)}>
-                      <option value="">Select</option>
-                      {EXPERTISE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
-                  </div>
-                )}
-
-                {fieldEnabled(cfgMap, 'mem_division') && (
-                  <div className="amd-field">
-                    <label>Division</label>
-                    <input type="text" value={division} onChange={e => setDivision(e.target.value)} />
-                  </div>
-                )}
-
-                {fieldEnabled(cfgMap, 'mem_certification') && (
-                  <div className="amd-field">
-                    <label>Certification</label>
-                    <input type="text" value={certification} onChange={e => setCertification(e.target.value)} />
-                  </div>
-                )}
-
-                {!fieldEnabled(cfgMap, 'mem_injuriesConditions') &&
-                 !fieldEnabled(cfgMap, 'mem_fitnessGoal') &&
-                 !fieldEnabled(cfgMap, 'mem_activityLevel') &&
-                 !fieldEnabled(cfgMap, 'mem_expertiseLevel') &&
-                 !fieldEnabled(cfgMap, 'mem_division') &&
-                 !fieldEnabled(cfgMap, 'mem_certification') && (
-                  <p className="amd-empty-tab">No fitness profile fields are enabled in Form Customization.</p>
-                )}
-              </div>
+              {!hasFitnessFields && (
+                <p className="amd-empty-tab">No fitness profile fields are enabled in Form Customization.</p>
+              )}
             </div>
           )}
 

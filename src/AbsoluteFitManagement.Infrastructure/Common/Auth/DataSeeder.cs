@@ -33,6 +33,7 @@ public static class DataSeeder
         await SeedAdminUserAsync(db, logger);
         await SeedStaffAsync(db, logger);
         await SeedFitnessProfileItemsAsync(db, logger);
+        await SeedApparelItemsAsync(db, logger);
     }
 
     private static async Task SeedSubscriptionAndGymsAsync(
@@ -197,6 +198,41 @@ public static class DataSeeder
             "Neck Pain/Disorder",
             "Osteopenia/Osteoporosis",
             "Pacemaker",
+            "Parkinson's Disease",
+            "Pregnancy",
+            "Scoliosis",
+            "Shoulder Pain/Condition",
+            "Smoking",
+            "Stroke",
+            "Surgery",
+        };
+
+        var levelNames = new[]
+        {
+            "Beginner",
+            "Intermediate",
+            "Advanced",
+            "Expert",
+        };
+
+        var divisionNames = new[]
+        {
+            "Open",
+            "Amateur",
+            "Elite",
+            "Masters",
+            "Junior",
+        };
+
+        var certificationNames = new[]
+        {
+            "CPT (Certified Personal Trainer)",
+            "CSCS (Strength & Conditioning)",
+            "Yoga Instructor",
+            "Pilates Instructor",
+            "Nutrition Coach",
+            "CrossFit L1",
+            "CrossFit L2",
         };
 
         foreach (var gymId in gymIds)
@@ -217,6 +253,78 @@ public static class DataSeeder
                     .ToList();
                 await db.FitnessProfileItems.AddRangeAsync(items);
                 logger.LogInformation("Seeded {Count} InjuryCondition items for gym {GymId}.", items.Count, gymId);
+            }
+
+            if (!await db.FitnessProfileItems.AnyAsync(f => f.GymId == gymId && f.Category == "Level"))
+            {
+                var items = levelNames
+                    .Select((name, i) => new FitnessProfileItem(gymId, "Level", name, i + 1))
+                    .ToList();
+                await db.FitnessProfileItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} Level items for gym {GymId}.", items.Count, gymId);
+            }
+
+            if (!await db.FitnessProfileItems.AnyAsync(f => f.GymId == gymId && f.Category == "Division"))
+            {
+                var items = divisionNames
+                    .Select((name, i) => new FitnessProfileItem(gymId, "Division", name, i + 1))
+                    .ToList();
+                await db.FitnessProfileItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} Division items for gym {GymId}.", items.Count, gymId);
+            }
+
+            if (!await db.FitnessProfileItems.AnyAsync(f => f.GymId == gymId && f.Category == "Certification"))
+            {
+                var items = certificationNames
+                    .Select((name, i) => new FitnessProfileItem(gymId, "Certification", name, i + 1))
+                    .ToList();
+                await db.FitnessProfileItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} Certification items for gym {GymId}.", items.Count, gymId);
+            }
+        }
+
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedApparelItemsAsync(
+        AbsoluteFitManagementDbContext db, ILogger logger)
+    {
+        var gymIds = new[] { SeedGym1Id, SeedGym2Id, SeedGym3Id, SeedGym4Id, SeedGym5Id };
+
+        var tshirtSizes = new[] { "XS", "S", "M", "L", "XL", "XXL", "XXXL" };
+        var shortsSizes = new[] { "XS", "S", "M", "L", "XL", "XXL", "XXXL" };
+        var shoesSizes  = new[]
+        {
+            "UK 5", "UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "UK 12",
+        };
+
+        foreach (var gymId in gymIds)
+        {
+            if (!await db.ApparelItems.AnyAsync(a => a.GymId == gymId && a.Category == "TShirtSize"))
+            {
+                var items = tshirtSizes
+                    .Select((name, i) => new ApparelItem(gymId, "TShirtSize", name, i + 1))
+                    .ToList();
+                await db.ApparelItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} TShirtSize items for gym {GymId}.", items.Count, gymId);
+            }
+
+            if (!await db.ApparelItems.AnyAsync(a => a.GymId == gymId && a.Category == "ShortsSize"))
+            {
+                var items = shortsSizes
+                    .Select((name, i) => new ApparelItem(gymId, "ShortsSize", name, i + 1))
+                    .ToList();
+                await db.ApparelItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} ShortsSize items for gym {GymId}.", items.Count, gymId);
+            }
+
+            if (!await db.ApparelItems.AnyAsync(a => a.GymId == gymId && a.Category == "ShoesSize"))
+            {
+                var items = shoesSizes
+                    .Select((name, i) => new ApparelItem(gymId, "ShoesSize", name, i + 1))
+                    .ToList();
+                await db.ApparelItems.AddRangeAsync(items);
+                logger.LogInformation("Seeded {Count} ShoesSize items for gym {GymId}.", items.Count, gymId);
             }
         }
 
