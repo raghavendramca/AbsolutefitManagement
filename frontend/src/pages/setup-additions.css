@@ -569,3 +569,392 @@
 .fp-toggle-on  { color: #16a34a; }
 .fp-toggle-off { color: #9ca3af; }
 .fp-toggle-btn:hover { opacity: 0.8; }
+
+/* ── Bill Template ──────────────────────────────────────────────────────────── */
+.bt-wrap { padding: 0 32px 40px; overflow-y: auto; max-height: calc(100vh - 120px); }
+.bt-note {
+  font-size: 13px; color: #16a34a; background: #f0fdf4;
+  border: 1px solid #bbf7d0; border-radius: 6px;
+  padding: 10px 16px; margin-bottom: 20px;
+}
+.bt-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 24px; padding-top: 12px;
+}
+.bt-tab {
+  padding: 9px 18px; font-size: 13px; font-weight: 600; color: #6b7280;
+  cursor: pointer; border: none; background: transparent;
+  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  white-space: nowrap; transition: color 0.15s;
+}
+.bt-tab:hover { color: #374151; }
+.bt-tab-active { color: #f97316; border-bottom-color: #f97316; }
+
+.bt-tab-header {
+  display: flex; justify-content: flex-end; margin-bottom: 16px;
+}
+.bt-add-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.bt-add-btn:hover { background: #ea6c08; }
+
+.bt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.bt-table th {
+  text-align: left; padding: 10px 14px; font-weight: 600; font-size: 12px;
+  color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px;
+  border-bottom: 2px solid #e5e7eb; background: #f9fafb;
+}
+.bt-table td { padding: 11px 14px; border-bottom: 1px solid #f3f4f6; color: #374151; vertical-align: middle; }
+.bt-table tr:hover td { background: #fafafa; }
+.bt-view-link { color: #f97316; cursor: pointer; font-weight: 500; background: none; border: none; font-size: 13px; }
+.bt-view-link:hover { text-decoration: underline; }
+.bt-edit-link { color: #3b82f6; cursor: pointer; font-weight: 500; background: none; border: none; font-size: 13px; margin-left: 10px; }
+.bt-edit-link:hover { text-decoration: underline; }
+
+.bt-toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+.bt-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.bt-toggle-track {
+  width: 40px; height: 22px; background: #d1d5db; border-radius: 11px;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.bt-toggle-track.on { background: #16a34a; }
+.bt-toggle-knob {
+  position: absolute; left: 3px; top: 3px;
+  width: 16px; height: 16px; background: #fff; border-radius: 50%;
+  transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.bt-toggle-track.on + .bt-toggle-knob,
+.bt-toggle input:checked ~ .bt-toggle-track + .bt-toggle-knob { left: 21px; }
+
+/* Bill Template modal */
+.bt-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center; z-index: 2000;
+}
+.bt-modal {
+  background: #fff; border-radius: 10px; width: 100%; max-width: 520px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18); padding: 28px 32px;
+}
+.bt-modal-title { font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 20px; }
+.bt-modal-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+.bt-modal-field label { font-size: 13px; font-weight: 500; color: #374151; }
+.bt-modal-field input, .bt-modal-field textarea, .bt-modal-field select {
+  padding: 8px 10px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px;
+  outline: none; font-family: inherit;
+}
+.bt-modal-field input:focus, .bt-modal-field textarea:focus, .bt-modal-field select:focus {
+  border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.12);
+}
+.bt-modal-field textarea { resize: vertical; min-height: 80px; }
+.bt-modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.bt-modal-error { color: #dc2626; font-size: 12px; margin-top: 8px; }
+
+/* Settings panel for other tabs */
+.bt-settings-panel { max-width: 560px; }
+.bt-settings-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; margin: 20px 0 12px; }
+.bt-settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+.bt-settings-label { font-size: 13px; color: #374151; font-weight: 500; }
+.bt-settings-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.bt-settings-field label { font-size: 13px; font-weight: 500; color: #374151; }
+.bt-settings-field input, .bt-settings-field textarea, .bt-settings-field select {
+  padding: 8px 10px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px;
+  outline: none; font-family: inherit; max-width: 360px;
+}
+.bt-settings-field input:focus, .bt-settings-field textarea:focus, .bt-settings-field select:focus {
+  border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.12);
+}
+.bt-settings-field textarea { resize: vertical; min-height: 120px; max-width: 100%; }
+.bt-settings-save { margin-top: 20px; }
+.bt-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+
+/* Bill Template view detail */
+.bt-detail-card {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+  padding: 20px 24px; max-width: 480px;
+}
+.bt-detail-row { display: flex; gap: 8px; margin-bottom: 10px; font-size: 13px; }
+.bt-detail-label { font-weight: 600; color: #6b7280; min-width: 130px; }
+.bt-detail-value { color: #111827; }
+.bt-back-btn {
+  background: transparent; border: 1px solid #d1d5db; border-radius: 6px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer; color: #374151; margin-bottom: 16px;
+}
+.bt-back-btn:hover { background: #f3f4f6; }
+
+/* ── Bill Template full-page form ──────────────────────────────────────────── */
+.bt-form-page { padding-bottom: 48px; }
+.bt-form-page-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+}
+.bt-form-page-title { font-size: 15px; font-weight: 700; color: #111827; }
+
+.bt-form-2col {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 24px;
+}
+.bt-form-col { display: flex; flex-direction: column; gap: 10px; }
+
+/* Logo section */
+.bt-form-logo-section { margin-bottom: 8px; }
+.bt-form-logo-label { font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+.bt-logo-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: block;
+}
+.bt-logo-btn:hover { background: #ea6c08; }
+.bt-logo-preview {
+  max-width: 94px; max-height: 70px; margin-top: 8px;
+  border: 1px solid #e5e7eb; border-radius: 4px; object-fit: contain;
+}
+
+/* Form fields */
+.bt-fi-field { display: flex; flex-direction: column; gap: 3px; }
+.bt-fi-labeled {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151;
+}
+.bt-fi-labeled label { white-space: nowrap; font-weight: 500; min-width: 200px; }
+.bt-fi-input {
+  border: 1px solid #d1d5db; border-radius: 5px; padding: 7px 10px;
+  font-size: 13px; color: #111827; background: #fff; width: 100%; box-sizing: border-box;
+  font-family: inherit;
+}
+.bt-fi-input:focus { outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.1); }
+.bt-fi-business { font-size: 14px; font-weight: 500; }
+.bt-fi-address { resize: vertical; }
+.bt-fi-invoice-title { font-size: 15px; font-weight: 600; text-align: right; }
+.bt-fi-terms { resize: vertical; }
+.bt-fi-contact { width: 160px !important; }
+.bt-fi-thankyou { background: #fffbeb; font-style: italic; }
+.bt-fi-hint { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.bt-fi-select {
+  border: 1px solid #d1d5db; border-radius: 5px; padding: 7px 10px;
+  font-size: 13px; color: #111827; background: #fff; flex: 1;
+}
+
+/* Toggle row in form */
+.bt-fi-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151;
+}
+.bt-fi-toggle-yn { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.bt-yn-active { font-weight: 700; color: #f97316; }
+.bt-yn-inactive { color: #9ca3af; }
+
+/* Invoice preview block (read-only) */
+.bt-preview-block {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+  padding: 10px 14px;
+}
+.bt-preview-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; }
+.bt-preview-label { font-weight: 600; color: #374151; }
+.bt-preview-val { color: #6b7280; }
+
+/* Invoice preview table */
+.bt-invoice-table {
+  width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+}
+.bt-invoice-table th {
+  background: #f9fafb; padding: 10px 12px; text-align: left;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  border: 1px solid #e5e7eb; color: #374151; letter-spacing: 0.4px;
+}
+.bt-invoice-table td { padding: 10px 12px; border: 1px solid #e5e7eb; color: #6b7280; }
+
+/* Terms + summary two-col */
+.bt-tc-row { margin-bottom: 16px; align-items: flex-start; }
+.bt-tc-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: #374151; margin-bottom: 6px;
+}
+.bt-summary-block {
+  border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;
+  font-size: 13px;
+}
+.bt-summary-row {
+  display: flex; justify-content: space-between;
+  padding: 8px 14px; border-bottom: 1px solid #f3f4f6; color: #374151;
+}
+.bt-summary-row:last-child { border-bottom: none; }
+.bt-summary-total { font-weight: 700; background: #f9fafb; }
+
+/* Signature section */
+.bt-sig-section {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  border-top: 2px solid #374151; padding-top: 16px; margin: 20px 0 16px;
+}
+.bt-sig-left { display: flex; flex-direction: column; gap: 24px; }
+.bt-sig-label { font-size: 13px; color: #374151; }
+.bt-sig-line { width: 120px; border-bottom: 1px solid #374151; }
+.bt-sig-right { text-align: right; font-size: 13px; color: #374151; }
+.bt-sig-auth { font-style: italic; color: #6b7280; margin-top: 4px; }
+
+/* Sign pad */
+.bt-sign-pad-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 16px 0 24px; }
+.bt-sign-pad {
+  width: 320px; height: 120px;
+  border: 1px solid #d1d5db; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; cursor: crosshair;
+}
+.bt-sign-hint { font-size: 13px; color: #16a34a; }
+.bt-sign-btns { display: flex; gap: 12px; }
+.bt-sign-clear-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 8px 28px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.bt-sign-clear-btn:hover { background: #ea6c08; }
+.bt-sign-save-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 8px 28px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.bt-sign-save-btn:hover { background: #ea6c08; }
+
+/* Contact section */
+.bt-contact-section {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; font-size: 13px; color: #374151; margin-bottom: 16px;
+}
+.bt-contact-fields { display: flex; align-items: center; gap: 8px; }
+
+/* Save row */
+.bt-form-save-row {
+  display: flex; justify-content: center; margin-top: 24px;
+}
+.bt-form-save-row .setup-save-btn { padding: 10px 60px; font-size: 14px; }
+
+/* ── Block user access ──────────────────────────────────────────────────────── */
+.block-access-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 4px; flex-wrap: wrap;
+}
+.block-access-label {
+  font-size: 14px; color: #374151; font-weight: 500;
+}
+.block-access-days-input {
+  width: 80px; padding: 5px 8px; border: 1px solid #d1d5db;
+  border-radius: 6px; font-size: 14px; text-align: center;
+}
+.block-access-days-input:focus {
+  outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
+}
+.block-access-error {
+  font-size: 12px; color: #dc2626; margin: 2px 0 8px 0;
+}
+.block-access-date-type-row {
+  display: flex; align-items: center; gap: 24px;
+  margin: 12px 0 20px 0;
+}
+.block-access-radio-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; color: #374151; cursor: pointer; font-weight: 500;
+}
+.block-access-radio-label input[type="radio"] {
+  accent-color: #f97316; width: 16px; height: 16px; cursor: pointer;
+}
+
+/* ── Payment Follow-up ───────────────────────────────────────────────────────── */
+.followup-mandatory-row {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+}
+.followup-mandatory-label {
+  font-size: 14px; color: #374151; font-weight: 500; line-height: 1.5;
+}
+
+/* ── Bill Start Date ─────────────────────────────────────────────────────────── */
+.bill-start-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.bill-start-label {
+  font-size: 14px; color: #374151; font-weight: 500;
+}
+.bill-start-required {
+  color: #dc2626;
+}
+.bill-start-days-input {
+  width: 100px; padding: 5px 8px; border: 1px solid #d1d5db;
+  border-radius: 6px; font-size: 14px; text-align: center;
+}
+.bill-start-days-input:focus {
+  outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
+}
+.bill-start-suffix {
+  font-size: 14px; color: #374151; font-weight: 500;
+}
+
+/* ── Tax No. Prefix/Suffix ───────────────────────────────────────────────────── */
+.taxno-row {
+  display: flex; align-items: flex-start; gap: 24px; margin-bottom: 10px;
+}
+.taxno-label {
+  font-size: 14px; color: #374151; font-weight: 500; padding-top: 4px; white-space: nowrap;
+}
+.taxno-controls {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.taxno-radio-group {
+  display: flex; align-items: center; gap: 20px;
+}
+.taxno-radio-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; color: #374151; font-weight: 500; cursor: pointer;
+}
+.taxno-radio-label input[type="radio"] {
+  accent-color: #f97316; width: 16px; height: 16px; cursor: pointer;
+}
+.taxno-value-input {
+  width: 200px; padding: 6px 10px; border: 1px solid #d1d5db;
+  border-radius: 6px; font-size: 14px;
+}
+.taxno-value-input:focus {
+  outline: none; border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,0.15);
+}
+.taxno-note {
+  font-size: 13px; color: #16a34a; margin: 0 0 18px 0; font-weight: 500;
+}
+
+/* ── Invoice Terms and Conditions ───────────────────────────────────────────── */
+.it-panel { padding: 0; }
+.it-list-toolbar {
+  display: flex; justify-content: flex-end; margin-bottom: 12px;
+}
+.it-add-btn {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 7px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.it-add-btn:hover { background: #ea6c08; }
+.it-empty {
+  font-size: 14px; color: #6b7280; padding: 24px 0;
+}
+.it-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+.it-table th {
+  background: #f9fafb; padding: 10px 14px; text-align: left;
+  border: 1px solid #e5e7eb; font-weight: 600; color: #374151;
+}
+.it-table td { padding: 10px 14px; border: 1px solid #e5e7eb; vertical-align: top; }
+.it-td-category { font-weight: 600; color: #111827; white-space: nowrap; width: 180px; }
+.it-td-terms { color: #374151; white-space: pre-wrap; }
+.it-delete-btn {
+  background: none; border: none; color: #dc2626; font-size: 14px;
+  cursor: pointer; padding: 2px 6px; border-radius: 4px;
+}
+.it-delete-btn:hover { background: #fef2f2; }
+.it-form { max-width: 700px; display: flex; flex-direction: column; gap: 16px; }
+.it-form-field { display: flex; flex-direction: column; gap: 5px; }
+.it-form-label { font-size: 13px; font-weight: 600; color: #374151; }
+.it-required { color: #dc2626; }
+.it-form-select {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 10px;
+  font-size: 13px; background: #fff; width: 260px;
+}
+.it-form-select:focus { outline: none; border-color: #f97316; }
+.it-form-textarea {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 12px;
+  font-size: 13px; resize: vertical; width: 100%; box-sizing: border-box;
+}
+.it-form-textarea:focus { outline: none; border-color: #f97316; }
+.it-input-error { border-color: #dc2626 !important; }
+.it-error-msg { font-size: 12px; color: #dc2626; }
+.it-form-actions { display: flex; gap: 10px; align-items: center; margin-top: 4px; }

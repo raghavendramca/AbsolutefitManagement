@@ -10,6 +10,8 @@ import { formCustomizationApi, type FormFieldConfig, type AdditionalDetailField,
 import { fitnessProfileApi, type FitnessProfileItemDto, type FitnessCategory } from '../api/fitnessProfile';
 import { apparelItemsApi, type ApparelItemDto, type ApparelCategory } from '../api/apparelItems';
 import { membersApi, type CreateMemberDto } from '../api/members';
+import { billTemplatesApi, type BillTemplateDto } from '../api/billTemplates';
+import { billSettingsApi, type BillSettingKey } from '../api/billSettings';
 import { getFormSections } from '../formSchemas/formSchemaRegistry';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
 import AddEnquiryDialog from '../components/AddEnquiryDialog';
@@ -2027,6 +2029,811 @@ function FormCustomizationContent({ subscriptionId, gymId }: { subscriptionId: s
   );
 }
 
+// ─── Setup: Bill Template ─────────────────────────────────────────────────────
+
+type BillTab = 'Bill Template' | 'Customer-id Hide' | 'Block user access' | 'Payment Follow-up' | 'Bill Start Date' | 'Tax No. Prefix/Suffix' | 'Invoice Terms and Conditions';
+const BILL_TABS: BillTab[] = [
+  'Bill Template',
+  'Customer-id Hide',
+  'Block user access',
+  'Payment Follow-up',
+  'Bill Start Date',
+  'Tax No. Prefix/Suffix',
+  'Invoice Terms and Conditions',
+];
+
+const INDIA_STATES = [
+  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
+  'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
+  'Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab',
+  'Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh',
+  'Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir',
+  'Ladakh','Lakshadweep','Puducherry',
+];
+
+function BillTemplateContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [activeTab, setActiveTab] = React.useState<BillTab>('Bill Template');
+
+  // ── Bill Template tab state ───────────────────────────────────────────────
+  const [templates, setTemplates] = React.useState<BillTemplateDto[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = React.useState(true);
+  const [showForm, setShowForm] = React.useState(false);
+  const [editingTemplate, setEditingTemplate] = React.useState<BillTemplateDto | null>(null);
+  const [viewTemplate, setViewTemplate] = React.useState<BillTemplateDto | null>(null);
+  const [btState, setBtState] = React.useState('');
+  const [btGst, setBtGst] = React.useState('');
+  const [btBusiness, setBtBusiness] = React.useState('');
+  const [btSaving, setBtSaving] = React.useState(false);
+  const [btError, setBtError] = React.useState('');
+  // Extra template detail fields (stored in TemplateJson)
+  const [btAddress, setBtAddress] = React.useState('');
+  const [btPhone, setBtPhone] = React.useState('');
+  const [btServiceTaxNumber, setBtServiceTaxNumber] = React.useState('');
+  const [btServiceTaxExemptedRegNo, setBtServiceTaxExemptedRegNo] = React.useState('');
+  const [btCinNumber, setBtCinNumber] = React.useState('');
+  const [btVatNumber, setBtVatNumber] = React.useState('');
+  const [btTanNumber, setBtTanNumber] = React.useState('');
+  const [btInvoiceTitle, setBtInvoiceTitle] = React.useState('Tax Invoice');
+  const [btCustomerGstVat, setBtCustomerGstVat] = React.useState('');
+  const [btStateCode, setBtStateCode] = React.useState('');
+  const [btPurchaseOrder, setBtPurchaseOrder] = React.useState(false);
+  const [btCompositionBusiness, setBtCompositionBusiness] = React.useState(false);
+  const [btShowBillPart, setBtShowBillPart] = React.useState(false);
+  const [btTotalAmountInWords, setBtTotalAmountInWords] = React.useState(false);
+  const [btContactMail, setBtContactMail] = React.useState('');
+  const [btContactPhone, setBtContactPhone] = React.useState('');
+  const [btThankYouMessage, setBtThankYouMessage] = React.useState('Thank You For Your Business!');
+  const [btLogoBase64, setBtLogoBase64] = React.useState('');
+  const [btTermsAndConditions, setBtTermsAndConditions] = React.useState('');
+
+  // ── Settings tabs state ───────────────────────────────────────────────────
+  const [settingsSaving, setSettingsSaving] = React.useState(false);
+  const [settingsMsg, setSettingsMsg] = React.useState('');
+
+  // Customer-id Hide
+  const [custIdHide, setCustIdHide] = React.useState(false);
+
+  // Block user access
+  const [blockDays, setBlockDays] = React.useState('');
+  const [blockDateType, setBlockDateType] = React.useState<'followup' | 'invoice'>('followup');
+  const [blockDaysError, setBlockDaysError] = React.useState('');
+
+  // Payment Follow-up
+  const [followUpMandatory, setFollowUpMandatory] = React.useState(false);
+
+  // Bill Start Date
+  const [billStartDays, setBillStartDays] = React.useState('');
+
+  // Tax No. Prefix/Suffix
+  const [taxType, setTaxType] = React.useState<'prefix' | 'suffix'>('prefix');
+  const [taxValue, setTaxValue] = React.useState('');
+
+  // Invoice Terms
+  const [invoiceTermsList, setInvoiceTermsList] = React.useState<{ id: string; category: string; terms: string }[]>([]);
+  const [showInvoiceTermsForm, setShowInvoiceTermsForm] = React.useState(false);
+  const [itCategory, setItCategory] = React.useState('');
+  const [itTerms, setItTerms] = React.useState('');
+  const [itCategoryError, setItCategoryError] = React.useState(false);
+  const [itTermsError, setItTermsError] = React.useState(false);
+  const [itServiceNames, setItServiceNames] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    billTemplatesApi.list(subscriptionId, gymId)
+      .then(setTemplates)
+      .catch(() => {})
+      .finally(() => setLoadingTemplates(false));
+  }, [subscriptionId, gymId]);
+
+  React.useEffect(() => {
+    if (activeTab === 'Customer-id Hide') {
+      billSettingsApi.get(subscriptionId, gymId, 'CustomerIdHide').then(s => {
+        try { const d = JSON.parse(s.settingsJson); setCustIdHide(d.hide ?? false); } catch { /* use defaults */ }
+      }).catch(() => {});
+    }
+    if (activeTab === 'Block user access') {
+      billSettingsApi.get(subscriptionId, gymId, 'BlockUserAccess').then(s => {
+        try {
+          const d = JSON.parse(s.settingsJson);
+          setBlockDays(d.days ?? '');
+          setBlockDateType(d.dateType === 'invoice' ? 'invoice' : 'followup');
+        } catch { /* use defaults */ }
+      }).catch(() => {});
+    }
+    if (activeTab === 'Payment Follow-up') {
+      billSettingsApi.get(subscriptionId, gymId, 'PaymentFollowUp').then(s => {
+        try { const d = JSON.parse(s.settingsJson); setFollowUpMandatory(d.mandatory ?? false); } catch { /* use defaults */ }
+      }).catch(() => {});
+    }
+    if (activeTab === 'Bill Start Date') {
+      billSettingsApi.get(subscriptionId, gymId, 'BillStartDate').then(s => {
+        try { const d = JSON.parse(s.settingsJson); setBillStartDays(d.days ?? ''); } catch { /* use defaults */ }
+      }).catch(() => {});
+    }
+    if (activeTab === 'Tax No. Prefix/Suffix') {
+      billSettingsApi.get(subscriptionId, gymId, 'TaxNoPrefixSuffix').then(s => {
+        try { const d = JSON.parse(s.settingsJson); setTaxType(d.type === 'suffix' ? 'suffix' : 'prefix'); setTaxValue(d.value ?? ''); } catch { /* use defaults */ }
+      }).catch(() => {});
+    }
+    if (activeTab === 'Invoice Terms and Conditions') {
+      setShowInvoiceTermsForm(false);
+      billSettingsApi.get(subscriptionId, gymId, 'InvoiceTerms').then(s => {
+        try { const d = JSON.parse(s.settingsJson); setInvoiceTermsList(d.items ?? []); } catch { /* use defaults */ }
+      }).catch(() => {});
+      servicesApi.list(subscriptionId, gymId).then(svcs => {
+        setItServiceNames(svcs.filter(s => s.isActive).map(s => s.name));
+      }).catch(() => {});
+    }
+    setSettingsMsg('');
+  }, [activeTab, subscriptionId, gymId]);
+
+  function resetTemplateFields() {
+    setBtState(''); setBtGst(''); setBtBusiness(''); setBtError('');
+    setBtAddress(''); setBtPhone(''); setBtServiceTaxNumber(''); setBtServiceTaxExemptedRegNo('');
+    setBtCinNumber(''); setBtVatNumber(''); setBtTanNumber('');
+    setBtInvoiceTitle('Tax Invoice'); setBtCustomerGstVat(''); setBtStateCode('');
+    setBtPurchaseOrder(false); setBtCompositionBusiness(false);
+    setBtShowBillPart(false); setBtTotalAmountInWords(false);
+    setBtContactMail(''); setBtContactPhone('');
+    setBtThankYouMessage('Thank You For Your Business!');
+    setBtLogoBase64(''); setBtTermsAndConditions('');
+  }
+
+  function openAdd() {
+    setEditingTemplate(null);
+    resetTemplateFields();
+    setShowForm(true);
+  }
+
+  function openEdit(t: BillTemplateDto) {
+    setEditingTemplate(t);
+    resetTemplateFields();
+    setBtState(t.state); setBtGst(t.gstNumber); setBtBusiness(t.businessName);
+    try {
+      const tj = t.templateJson ? JSON.parse(t.templateJson) : {};
+      setBtAddress(tj.address ?? '');
+      setBtPhone(tj.phone ?? '');
+      setBtServiceTaxNumber(tj.serviceTaxNumber ?? '');
+      setBtServiceTaxExemptedRegNo(tj.serviceTaxExemptedRegNo ?? '');
+      setBtCinNumber(tj.cinNumber ?? '');
+      setBtVatNumber(tj.vatNumber ?? '');
+      setBtTanNumber(tj.tanNumber ?? '');
+      setBtInvoiceTitle(tj.invoiceTitle ?? 'Tax Invoice');
+      setBtCustomerGstVat(tj.customerGstVat ?? '');
+      setBtStateCode(tj.stateCode ?? '');
+      setBtPurchaseOrder(tj.purchaseOrderEnabled ?? false);
+      setBtCompositionBusiness(tj.compositionBusiness ?? false);
+      setBtShowBillPart(tj.showBillPart ?? false);
+      setBtTotalAmountInWords(tj.totalAmountInWords ?? false);
+      setBtContactMail(tj.contactMail ?? '');
+      setBtContactPhone(tj.contactPhone ?? '');
+      setBtThankYouMessage(tj.thankYouMessage ?? 'Thank You For Your Business!');
+      setBtLogoBase64(tj.logoBase64 ?? '');
+      setBtTermsAndConditions(tj.termsAndConditions ?? '');
+    } catch { /* use defaults */ }
+    setShowForm(true);
+  }
+
+  async function handleSaveTemplate() {
+    if (!btBusiness.trim()) { setBtError('Business Name is required.'); return; }
+    setBtSaving(true); setBtError('');
+    const templateJson = JSON.stringify({
+      logoBase64: btLogoBase64,
+      address: btAddress,
+      phone: btPhone,
+      serviceTaxNumber: btServiceTaxNumber,
+      serviceTaxExemptedRegNo: btServiceTaxExemptedRegNo,
+      cinNumber: btCinNumber,
+      vatNumber: btVatNumber,
+      tanNumber: btTanNumber,
+      invoiceTitle: btInvoiceTitle,
+      customerGstVat: btCustomerGstVat,
+      stateCode: btStateCode,
+      purchaseOrderEnabled: btPurchaseOrder,
+      compositionBusiness: btCompositionBusiness,
+      showBillPart: btShowBillPart,
+      totalAmountInWords: btTotalAmountInWords,
+      contactMail: btContactMail,
+      contactPhone: btContactPhone,
+      thankYouMessage: btThankYouMessage,
+      termsAndConditions: btTermsAndConditions,
+    });
+    try {
+      if (editingTemplate) {
+        const updated = await billTemplatesApi.update(subscriptionId, gymId, editingTemplate.id, btState, btGst, btBusiness, templateJson);
+        setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t));
+      } else {
+        const created = await billTemplatesApi.create(subscriptionId, gymId, btState, btGst, btBusiness, templateJson);
+        setTemplates(prev => [...prev, created]);
+      }
+      setShowForm(false);
+    } catch { setBtError('Failed to save.'); }
+    finally { setBtSaving(false); }
+  }
+
+  async function handleToggle(id: string) {
+    const updated = await billTemplatesApi.toggle(subscriptionId, gymId, id).catch(() => null);
+    if (updated) setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t));
+  }
+
+  async function saveSettings(key: BillSettingKey, data: object) {
+    setSettingsSaving(true); setSettingsMsg('');
+    try {
+      await billSettingsApi.upsert(subscriptionId, gymId, key, JSON.stringify(data));
+      setSettingsMsg('Saved successfully.');
+    } catch { setSettingsMsg('Failed to save.'); }
+    finally { setSettingsSaving(false); }
+  }
+
+  function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+    return (
+      <label className="bt-toggle">
+        <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+        <span className={`bt-toggle-track${checked ? ' on' : ''}`} />
+        <span className="bt-toggle-knob" />
+      </label>
+    );
+  }
+
+  return (
+    <div className="bt-wrap">
+      <div className="bt-note">
+        Note:- If the GST number is changed while modifying the bill template, a new invoice sequence will be initiated automatically.
+      </div>
+
+      <div className="bt-tabs">
+        {BILL_TABS.map(tab => (
+          <button
+            key={tab}
+            className={`bt-tab${activeTab === tab ? ' bt-tab-active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+            type="button"
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Bill Template tab ───────────────────────────────────────────── */}
+      {activeTab === 'Bill Template' && (
+        <>
+          {showForm ? (
+            /* ── Full-page Add/Edit form ───────────────────────────────── */
+            <div className="bt-form-page">
+              <div className="bt-form-page-header">
+                <button className="bt-back-btn" onClick={() => setShowForm(false)}>← Back</button>
+                <span className="bt-form-page-title">{editingTemplate ? 'Edit Bill Template' : 'Add Bill Template'}</span>
+              </div>
+
+              {/* Two-column: business info (left) + invoice settings (right) */}
+              <div className="bt-form-2col">
+                {/* Left column */}
+                <div className="bt-form-col">
+                  <div className="bt-form-logo-section">
+                    <div className="bt-form-logo-label">Logo for Invoice (94 X 70)</div>
+                    <input
+                      id="bt-logo-file"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => setBtLogoBase64((ev.target?.result as string) ?? '');
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    <button className="bt-logo-btn" type="button" onClick={() => document.getElementById('bt-logo-file')?.click()}>
+                      Choose Image
+                    </button>
+                    {btLogoBase64 && <img src={btLogoBase64} alt="Logo" className="bt-logo-preview" />}
+                  </div>
+
+                  <div className="bt-fi-field">
+                    <input type="text" className="bt-fi-input bt-fi-business" placeholder="Business Name" value={btBusiness} onChange={e => setBtBusiness(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-field">
+                    <textarea className="bt-fi-input bt-fi-address" rows={3} placeholder="Address" value={btAddress} onChange={e => setBtAddress(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>Phone :</label>
+                    <input type="text" className="bt-fi-input" value={btPhone} onChange={e => setBtPhone(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>Service tax number :</label>
+                    <input type="text" className="bt-fi-input" value={btServiceTaxNumber} onChange={e => setBtServiceTaxNumber(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>Service Tax Exempted Reg.No:</label>
+                    <input type="text" className="bt-fi-input" value={btServiceTaxExemptedRegNo} onChange={e => setBtServiceTaxExemptedRegNo(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>GSTIN No:</label>
+                    <input type="text" className="bt-fi-input" maxLength={15} value={btGst} onChange={e => setBtGst(e.target.value.toUpperCase())} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>CIN Number :</label>
+                    <input type="text" className="bt-fi-input" value={btCinNumber} onChange={e => setBtCinNumber(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>VAT Number :</label>
+                    <input type="text" className="bt-fi-input" value={btVatNumber} onChange={e => setBtVatNumber(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>TAN Number :</label>
+                    <input type="text" className="bt-fi-input" value={btTanNumber} onChange={e => setBtTanNumber(e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Right column */}
+                <div className="bt-form-col">
+                  <div className="bt-fi-field">
+                    <input type="text" className="bt-fi-input bt-fi-invoice-title" placeholder="Tax Invoice" value={btInvoiceTitle} onChange={e => setBtInvoiceTitle(e.target.value)} />
+                  </div>
+                  <div className="bt-preview-block">
+                    <div className="bt-preview-row"><span className="bt-preview-label">DATE :</span><span className="bt-preview-val">11-Nov-14</span></div>
+                    <div className="bt-preview-row"><span className="bt-preview-label">Bill :</span><span className="bt-preview-val">Nov[1]</span></div>
+                    <div className="bt-preview-row"><span className="bt-preview-label">Customer ID :</span><span className="bt-preview-val">1</span></div>
+                  </div>
+                  <div className="bt-fi-field">
+                    <input type="text" className="bt-fi-input" placeholder="Customer GST/VAT number" value={btCustomerGstVat} onChange={e => setBtCustomerGstVat(e.target.value)} />
+                    <div className="bt-fi-hint">(Customer GST/VAT):</div>
+                  </div>
+                  <div className="bt-preview-block">
+                    <div className="bt-preview-row"><span className="bt-preview-label">Due Date :</span><span className="bt-preview-val">11-Nov-14</span></div>
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>Place of Supply :</label>
+                    <select className="bt-fi-select" value={btState} onChange={e => setBtState(e.target.value)}>
+                      <option value="">Select State</option>
+                      {INDIA_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="bt-fi-labeled">
+                    <label>State Code :</label>
+                    <input type="text" className="bt-fi-input" value={btStateCode} onChange={e => setBtStateCode(e.target.value)} />
+                  </div>
+                  <div className="bt-fi-toggle-row">
+                    <span>Purchase Order #</span>
+                    <div className="bt-fi-toggle-yn">
+                      <span className={!btPurchaseOrder ? 'bt-yn-active' : 'bt-yn-inactive'}>No</span>
+                      <ToggleSwitch checked={btPurchaseOrder} onChange={setBtPurchaseOrder} />
+                      <span className={btPurchaseOrder ? 'bt-yn-active' : 'bt-yn-inactive'}>Yes</span>
+                    </div>
+                  </div>
+                  <div className="bt-fi-toggle-row">
+                    <span>Composition Business</span>
+                    <div className="bt-fi-toggle-yn">
+                      <span className={!btCompositionBusiness ? 'bt-yn-active' : 'bt-yn-inactive'}>No</span>
+                      <ToggleSwitch checked={btCompositionBusiness} onChange={setBtCompositionBusiness} />
+                      <span className={btCompositionBusiness ? 'bt-yn-active' : 'bt-yn-inactive'}>Yes</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invoice preview table */}
+              <table className="bt-invoice-table">
+                <thead>
+                  <tr>
+                    <th>DESCRIPTION</th>
+                    <th>DURATION</th>
+                    <th>QUANTITY</th>
+                    <th>SERVICE FEE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>[Service 1 Name], [Service variation Name]</td>
+                    <td>1month</td>
+                    <td>1</td>
+                    <td>250.00</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Terms & Conditions + summary */}
+              <div className="bt-form-2col bt-tc-row">
+                <div>
+                  <div className="bt-tc-label">TERMS AND CONDITIONS</div>
+                  <textarea
+                    className="bt-fi-input bt-fi-terms"
+                    rows={5}
+                    placeholder="Enter terms and conditions…"
+                    value={btTermsAndConditions}
+                    onChange={e => setBtTermsAndConditions(e.target.value)}
+                  />
+                </div>
+                <div className="bt-summary-block">
+                  <div className="bt-summary-row"><span>Subtotal</span><span>250</span></div>
+                  <div className="bt-summary-row"><span>Discount %</span><span>0</span></div>
+                  <div className="bt-summary-row"><span>Tax due</span><span>0</span></div>
+                  <div className="bt-summary-row bt-summary-total"><span>Total Due</span><span>250</span></div>
+                </div>
+              </div>
+
+              {/* Bill part toggles */}
+              <div className="bt-fi-toggle-row">
+                <span>Do you want to show this part in your bill</span>
+                <div className="bt-fi-toggle-yn">
+                  <span className={!btShowBillPart ? 'bt-yn-active' : 'bt-yn-inactive'}>No</span>
+                  <ToggleSwitch checked={btShowBillPart} onChange={setBtShowBillPart} />
+                  <span className={btShowBillPart ? 'bt-yn-active' : 'bt-yn-inactive'}>Yes</span>
+                </div>
+              </div>
+              <div className="bt-fi-toggle-row">
+                <span>Total Amount in words</span>
+                <div className="bt-fi-toggle-yn">
+                  <span className={!btTotalAmountInWords ? 'bt-yn-active' : 'bt-yn-inactive'}>No</span>
+                  <ToggleSwitch checked={btTotalAmountInWords} onChange={setBtTotalAmountInWords} />
+                  <span className={btTotalAmountInWords ? 'bt-yn-active' : 'bt-yn-inactive'}>Yes</span>
+                </div>
+              </div>
+
+              {/* Signature */}
+              <div className="bt-sig-section">
+                <div className="bt-sig-left">
+                  <div className="bt-sig-label">Signature of member</div>
+                  <div className="bt-sig-line" />
+                </div>
+                <div className="bt-sig-right">
+                  <div>For {btBusiness || 'Your Business'}</div>
+                  <div className="bt-sig-auth">Authorised Signatory</div>
+                </div>
+              </div>
+
+              {/* Sign pad */}
+              <div className="bt-sign-pad-wrap">
+                <div className="bt-sign-pad">
+                  <span className="bt-sign-hint">Sign here</span>
+                </div>
+                <div className="bt-sign-btns">
+                  <button className="bt-sign-clear-btn" type="button">Clear</button>
+                  <button className="bt-sign-save-btn" type="button">Save Sign</button>
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div className="bt-contact-section">
+                <span>If you have any questions about this bill, please contact</span>
+                <div className="bt-contact-fields">
+                  <span>Mail:</span>
+                  <input type="email" className="bt-fi-input bt-fi-contact" value={btContactMail} onChange={e => setBtContactMail(e.target.value)} />
+                  <span>, Phone :</span>
+                  <input type="tel" className="bt-fi-input bt-fi-contact" value={btContactPhone} onChange={e => setBtContactPhone(e.target.value)} />
+                </div>
+              </div>
+
+              {/* Thank you */}
+              <div className="bt-fi-field">
+                <input type="text" className="bt-fi-input bt-fi-thankyou" placeholder="Thank You For Your Business!" value={btThankYouMessage} onChange={e => setBtThankYouMessage(e.target.value)} />
+              </div>
+
+              {/* Error + Save */}
+              {btError && <p className="bt-modal-error">{btError}</p>}
+              <div className="bt-form-save-row">
+                <button className="setup-save-btn" disabled={btSaving} onClick={handleSaveTemplate}>
+                  {btSaving ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </div>
+          ) : viewTemplate ? (
+            <div>
+              <button className="bt-back-btn" onClick={() => setViewTemplate(null)}>← Back</button>
+              <div className="bt-detail-card">
+                <div className="bt-detail-row"><span className="bt-detail-label">State</span><span className="bt-detail-value">{viewTemplate.state || '—'}</span></div>
+                <div className="bt-detail-row"><span className="bt-detail-label">GST Number</span><span className="bt-detail-value">{viewTemplate.gstNumber || '—'}</span></div>
+                <div className="bt-detail-row"><span className="bt-detail-label">Business Name</span><span className="bt-detail-value">{viewTemplate.businessName}</span></div>
+                <div className="bt-detail-row"><span className="bt-detail-label">Status</span><span className="bt-detail-value">{viewTemplate.isActive ? 'Active' : 'Inactive'}</span></div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="bt-tab-header">
+                <button className="bt-add-btn" onClick={openAdd}>Add Bill Template</button>
+              </div>
+              {loadingTemplates ? (
+                <p style={{ fontSize: 13, color: '#6b7280' }}>Loading…</p>
+              ) : (
+                <table className="bt-table">
+                  <thead>
+                    <tr>
+                      <th>State</th>
+                      <th>GST</th>
+                      <th>Business Name</th>
+                      <th>View</th>
+                      <th>Activation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {templates.length === 0 && (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', color: '#9ca3af', padding: '24px' }}>No bill templates configured yet.</td></tr>
+                    )}
+                    {templates.map(t => (
+                      <tr key={t.id}>
+                        <td>{t.state || '—'}</td>
+                        <td>{t.gstNumber || '—'}</td>
+                        <td>
+                          {t.businessName}
+                          <button className="bt-edit-link" onClick={() => openEdit(t)}>Edit</button>
+                        </td>
+                        <td><button className="bt-view-link" onClick={() => setViewTemplate(t)}>View</button></td>
+                        <td>
+                          <ToggleSwitch checked={t.isActive} onChange={() => handleToggle(t.id)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ── Customer-id Hide ─────────────────────────────────────────────── */}
+      {activeTab === 'Customer-id Hide' && (
+        <div className="bt-settings-panel">
+          <p className="bt-settings-section-title">Customer ID Display</p>
+          <div className="bt-settings-row">
+            <span className="bt-settings-label">Hide Customer ID on invoices and receipts</span>
+            <ToggleSwitch checked={custIdHide} onChange={setCustIdHide} />
+          </div>
+          <div className="bt-settings-save">
+            <button className="setup-save-btn" disabled={settingsSaving} onClick={() => saveSettings('CustomerIdHide', { hide: custIdHide })}>
+              {settingsSaving ? 'Saving…' : 'Save'}
+            </button>
+            {settingsMsg && <span style={{ marginLeft: 12, fontSize: 13, color: settingsMsg.includes('Failed') ? '#dc2626' : '#16a34a' }}>{settingsMsg}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Block user access ────────────────────────────────────────────── */}
+      {activeTab === 'Block user access' && (
+        <div className="bt-settings-panel">
+          <div className="block-access-row">
+            <span className="block-access-label">Block user access after</span>
+            <input
+              type="text"
+              className="block-access-days-input"
+              value={blockDays}
+              onChange={e => {
+                const v = e.target.value;
+                setBlockDays(v);
+                if (v === '' || /^\d+$/.test(v)) {
+                  setBlockDaysError('');
+                } else {
+                  setBlockDaysError('Please enter a number. Special character not allowed.');
+                }
+              }}
+            />
+            <span className="block-access-label">days from pending payment</span>
+          </div>
+          {blockDaysError && (
+            <p className="block-access-error">{blockDaysError}</p>
+          )}
+          <div className="block-access-date-type-row">
+            <label className="block-access-radio-label">
+              <input
+                type="radio"
+                name="blockDateType"
+                value="followup"
+                checked={blockDateType === 'followup'}
+                onChange={() => setBlockDateType('followup')}
+              />
+              Follow-up Date
+            </label>
+            <label className="block-access-radio-label">
+              <input
+                type="radio"
+                name="blockDateType"
+                value="invoice"
+                checked={blockDateType === 'invoice'}
+                onChange={() => setBlockDateType('invoice')}
+              />
+              Invoice Date
+            </label>
+          </div>
+          <div className="bt-settings-save">
+            <button
+              className="setup-save-btn"
+              disabled={settingsSaving || !!blockDaysError}
+              onClick={() => {
+                if (blockDays !== '' && !/^\d+$/.test(blockDays)) {
+                  setBlockDaysError('Please enter a number. Special character not allowed.');
+                  return;
+                }
+                saveSettings('BlockUserAccess', { days: blockDays, dateType: blockDateType });
+              }}
+            >
+              {settingsSaving ? 'Saving…' : 'Save'}
+            </button>
+            {settingsMsg && <span style={{ marginLeft: 12, fontSize: 13, color: settingsMsg.includes('Failed') ? '#dc2626' : '#16a34a' }}>{settingsMsg}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Payment Follow-up ────────────────────────────────────────────── */}
+      {activeTab === 'Payment Follow-up' && (
+        <div className="bt-settings-panel">
+          <div className="followup-mandatory-row">
+            <span className="followup-mandatory-label">Balance payment follow-up<br />Mandatory</span>
+            <ToggleSwitch checked={followUpMandatory} onChange={setFollowUpMandatory} />
+          </div>
+          <div className="bt-settings-save">
+            <button className="setup-save-btn" disabled={settingsSaving} onClick={() => saveSettings('PaymentFollowUp', { mandatory: followUpMandatory })}>
+              {settingsSaving ? 'Saving…' : 'Save'}
+            </button>
+            {settingsMsg && <span style={{ marginLeft: 12, fontSize: 13, color: settingsMsg.includes('Failed') ? '#dc2626' : '#16a34a' }}>{settingsMsg}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Bill Start Date ──────────────────────────────────────────────── */}
+      {activeTab === 'Bill Start Date' && (
+        <div className="bt-settings-panel">
+          <div className="bill-start-row">
+            <span className="bill-start-label">Bill Start date <span className="bill-start-required">*</span></span>
+            <input
+              type="number"
+              min="0"
+              className="bill-start-days-input"
+              value={billStartDays}
+              onChange={e => setBillStartDays(e.target.value)}
+              placeholder="0"
+            />
+            <span className="bill-start-suffix">days from purchase date</span>
+          </div>
+          <div className="bt-settings-save">
+            <button className="setup-save-btn" disabled={settingsSaving || billStartDays === ''} onClick={() => saveSettings('BillStartDate', { days: billStartDays })}>
+              {settingsSaving ? 'Saving…' : 'Save'}
+            </button>
+            {settingsMsg && <span style={{ marginLeft: 12, fontSize: 13, color: settingsMsg.includes('Failed') ? '#dc2626' : '#16a34a' }}>{settingsMsg}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Tax No. Prefix/Suffix ────────────────────────────────────────── */}
+      {activeTab === 'Tax No. Prefix/Suffix' && (
+        <div className="bt-settings-panel">
+          <div className="taxno-row">
+            <span className="taxno-label">Tax No.</span>
+            <div className="taxno-controls">
+              <div className="taxno-radio-group">
+                <label className="taxno-radio-label">
+                  <input
+                    type="radio"
+                    name="taxType"
+                    value="prefix"
+                    checked={taxType === 'prefix'}
+                    onChange={() => setTaxType('prefix')}
+                  />
+                  Prefix
+                </label>
+                <label className="taxno-radio-label">
+                  <input
+                    type="radio"
+                    name="taxType"
+                    value="suffix"
+                    checked={taxType === 'suffix'}
+                    onChange={() => setTaxType('suffix')}
+                  />
+                  Suffix
+                </label>
+              </div>
+              <input
+                type="text"
+                className="taxno-value-input"
+                maxLength={30}
+                value={taxValue}
+                onChange={e => setTaxValue(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="taxno-note">Please note :- Any changes in above details will only reflect in future bills.</p>
+          <div className="bt-settings-save">
+            <button className="setup-save-btn" disabled={settingsSaving} onClick={() => saveSettings('TaxNoPrefixSuffix', { type: taxType, value: taxValue })}>
+              {settingsSaving ? 'Saving…' : 'Save'}
+            </button>
+            {settingsMsg && <span style={{ marginLeft: 12, fontSize: 13, color: settingsMsg.includes('Failed') ? '#dc2626' : '#16a34a' }}>{settingsMsg}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Invoice Terms and Conditions ─────────────────────────────────── */}
+      {activeTab === 'Invoice Terms and Conditions' && (
+        <div className="it-panel">
+          {!showInvoiceTermsForm ? (
+            <>
+              <div className="it-list-toolbar">
+                <button className="it-add-btn" onClick={() => {
+                  setItCategory(''); setItTerms('');
+                  setItCategoryError(false); setItTermsError(false);
+                  setShowInvoiceTermsForm(true);
+                }}>Add Terms</button>
+              </div>
+              {invoiceTermsList.length === 0 ? (
+                <p className="it-empty">No Results Found.</p>
+              ) : (
+                <table className="it-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Terms and Conditions</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoiceTermsList.map(item => (
+                      <tr key={item.id}>
+                        <td className="it-td-category">{item.category}</td>
+                        <td className="it-td-terms">{item.terms}</td>
+                        <td>
+                          <button className="it-delete-btn" onClick={async () => {
+                            const updated = invoiceTermsList.filter(x => x.id !== item.id);
+                            setInvoiceTermsList(updated);
+                            await saveSettings('InvoiceTerms', { items: updated });
+                          }}>✕</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          ) : (
+            <div className="it-form">
+              <div className="it-form-field">
+                <label className="it-form-label">Category <span className="it-required">*</span></label>
+                <select
+                  className={`it-form-select${itCategoryError ? ' it-input-error' : ''}`}
+                  value={itCategory}
+                  onChange={e => { setItCategory(e.target.value); setItCategoryError(false); }}
+                >
+                  <option value="">Select</option>
+                  {itServiceNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+                {itCategoryError && <span className="it-error-msg">Please select a category.</span>}
+              </div>
+              <div className="it-form-field">
+                <label className="it-form-label">Terms And Conditions <span className="it-required">*</span></label>
+                <textarea
+                  className={`it-form-textarea${itTermsError ? ' it-input-error' : ''}`}
+                  rows={10}
+                  value={itTerms}
+                  onChange={e => { setItTerms(e.target.value); setItTermsError(false); }}
+                />
+                {itTermsError && <span className="it-error-msg">Please enter terms and conditions.</span>}
+              </div>
+              <div className="it-form-actions">
+                <button className="setup-cancel-btn" onClick={() => setShowInvoiceTermsForm(false)}>Cancel</button>
+                <button className="setup-save-btn" disabled={settingsSaving} onClick={async () => {
+                  let hasError = false;
+                  if (!itCategory) { setItCategoryError(true); hasError = true; }
+                  if (!itTerms.trim()) { setItTermsError(true); hasError = true; }
+                  if (hasError) return;
+                  const newItem = { id: crypto.randomUUID(), category: itCategory, terms: itTerms.trim() };
+                  const updated = [...invoiceTermsList, newItem];
+                  setInvoiceTermsList(updated);
+                  await saveSettings('InvoiceTerms', { items: updated });
+                  setShowInvoiceTermsForm(false);
+                }}>
+                  {settingsSaving ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+              {settingsMsg && <span style={{ fontSize: 13, color: settingsMsg.includes('Failed') ? '#dc2626' : '#16a34a' }}>{settingsMsg}</span>}
+            </div>
+          )}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
 // ─── Setup: Generic "Coming Soon" ─────────────────────────────────────────────
 
 function ComingSoon({ item, section }: { item: string; section: string }) {
@@ -2110,6 +2917,9 @@ function SetupContent({
   }
   if (item === 'Form Customization') {
     return <>{breadcrumb}<FormCustomizationContent subscriptionId={subscriptionId} gymId={gymId} /></>;
+  }
+  if (item === 'Bill Template') {
+    return <>{breadcrumb}<BillTemplateContent subscriptionId={subscriptionId} gymId={gymId} /></>;
   }
 
   return <ComingSoon item={item} section={section} />;

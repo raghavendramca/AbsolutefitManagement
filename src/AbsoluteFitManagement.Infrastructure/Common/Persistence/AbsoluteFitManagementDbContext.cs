@@ -58,6 +58,8 @@ public class AbsoluteFitManagementDbContext : DbContext, IUnitOfWork
     public DbSet<FormCustomization> FormCustomizations { get; set; } = null!;
     public DbSet<FitnessProfileItem> FitnessProfileItems { get; set; } = null!;
     public DbSet<ApparelItem> ApparelItems { get; set; } = null!;
+    public DbSet<BillTemplate> BillTemplates { get; set; } = null!;
+    public DbSet<BillSettings> BillSettings { get; set; } = null!;
 
     // Finance
     public DbSet<Invoice> Invoices { get; set; } = null!;

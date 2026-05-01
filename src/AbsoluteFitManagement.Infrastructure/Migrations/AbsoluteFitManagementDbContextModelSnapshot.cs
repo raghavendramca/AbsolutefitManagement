@@ -2111,6 +2111,62 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.ToTable("ServiceVariations", (string)null);
                 });
 
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.BillSettings", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SettingKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SettingsJson")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId", "SettingKey")
+                        .IsUnique();
+
+                    b.ToTable("BillSettings", (string)null);
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.BillTemplate", b =>
+                {
+                    b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
+
+                    b.Property<string>("BusinessName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GstNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("GymId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TemplateJson")
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("GymId");
+
+                    b.ToTable("BillTemplates", (string)null);
+                });
+
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.ApparelItem", b =>
                 {
                     b.HasBaseType("AbsoluteFitManagement.Domain.Common.Entity");
