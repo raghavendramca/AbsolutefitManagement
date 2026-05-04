@@ -4,6 +4,7 @@ namespace AbsoluteFitManagement.Domain.Enquiries;
 
 public class Enquiry : PersonEntity
 {
+    public int EnquiryCode { get; init; }
     public string TrialType { get; init; } = "NoTrial";
     public DateTime EnquiryDate { get; init; }
     public string ServiceName { get; init; } = null!;
@@ -13,28 +14,18 @@ public class Enquiry : PersonEntity
     public string? CallTag { get; init; }
     public string? Message { get; init; }
 
-    // ── Trial scheduling ──────────────────────────────────────────────────────
-    // Shared: the date (+ time for Appointment) when the trial is booked
     public DateTime? TrialScheduledAt { get; init; }
-
-    // TrialAppointment-specific
     public string? TrialService { get; init; }
     public string? TrialStaffName { get; init; }
-
-    // TrialClass-specific
     public string? TrialClass { get; init; }
-
-    // TrialSession-specific
     public string? TrialSession { get; init; }
 
-    // Enquiry | TrialScheduled | Converted | Lost
     public string Status { get; set; } = "Enquiry";
-
-    // JSON blob storing additional configurable fields (dateOfBirth, locality, goal, etc.)
     public string? ExtendedFieldsJson { get; init; }
 
     public Enquiry(
         Guid gymId,
+        int enquiryCode,
         string fullName,
         string countryCode,
         string contactNumber,
@@ -57,6 +48,7 @@ public class Enquiry : PersonEntity
         Guid? id = null)
         : base(id ?? Guid.NewGuid(), gymId, fullName, countryCode, contactNumber, email, gender)
     {
+        EnquiryCode = enquiryCode;
         TrialType = trialType;
         EnquiryDate = enquiryDate;
         ServiceName = serviceName;

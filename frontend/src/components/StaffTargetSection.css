@@ -1,0 +1,109 @@
+/* ── Staff Target Section ──────────────────────────────────────────────────── */
+.st-section { display: flex; flex-direction: column; gap: 0; }
+
+/* Filter bar */
+.st-filter-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 12px 0 14px;
+}
+.st-filter-label { font-size: 13px; color: #374151; white-space: nowrap; }
+.st-select {
+  border: 1px solid #d1d5db; border-radius: 5px; padding: 5px 8px;
+  font-size: 13px; color: #111827; background: #fff; min-width: 120px;
+}
+.st-select:focus { outline: none; border-color: #f97316; }
+.st-btn-go {
+  background: #f97316; color: #fff; border: none; border-radius: 5px;
+  padding: 6px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.st-btn-go:hover { background: #ea6c08; }
+.st-btn-add {
+  background: #fff; color: #374151; border: 1px solid #d1d5db; border-radius: 5px;
+  padding: 6px 18px; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto;
+}
+.st-btn-add:hover { background: #f3f4f6; }
+
+/* No results / error */
+.st-no-results { font-size: 13px; color: #374151; padding: 20px 0; }
+.st-error      { font-size: 13px; color: #dc2626; padding: 8px 0; }
+
+/* Table */
+.st-table th, .st-table td { text-align: center; white-space: nowrap; }
+.st-table th:nth-child(2),
+.st-table td:nth-child(2) { text-align: left; }
+
+.st-delete-btn {
+  background: none; border: none; cursor: pointer;
+  color: #dc2626; padding: 2px 4px; line-height: 1;
+}
+.st-delete-btn svg { width: 14px; height: 14px; display: block; }
+.st-delete-btn:hover { color: #b91c1c; }
+
+/* ── Add form ───────────────────────────────────────────────── */
+.st-form { display: flex; flex-direction: column; gap: 14px; padding: 16px 0; max-width: 900px; }
+
+.st-form-row {
+  display: grid;
+  grid-template-columns: 120px 260px;
+  align-items: center;
+  column-gap: 12px;
+}
+.st-form-label { font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap; }
+.st-req { color: #dc2626; }
+.st-form-select {
+  border: 1px solid #d1d5db; border-radius: 5px; padding: 6px 10px;
+  font-size: 13px; color: #111827; background: #fff; width: 100%; box-sizing: border-box;
+}
+.st-form-select:focus { outline: none; border-color: #f97316; }
+.st-input-err { border-color: #dc2626 !important; }
+
+/* Monthly grid */
+.st-monthly-section {
+  display: flex; flex-direction: column; gap: 0;
+  border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden;
+  width: fit-content;
+}
+.st-monthly-header {
+  display: flex; background: #16a34a;
+}
+.st-month-col {
+  width: 60px; text-align: center; font-size: 11px; font-weight: 700;
+  color: #fff; padding: 6px 4px; border-right: 1px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+.st-month-col:last-of-type { border-right: none; }
+.st-month-copy-head {
+  width: 56px; text-align: center; font-size: 11px; font-weight: 700;
+  color: #fff; padding: 6px 4px; flex-shrink: 0;
+}
+
+.st-monthly-label {
+  font-size: 12px; font-weight: 600; color: #374151;
+  padding: 5px 8px; background: #f9fafb; border-top: 1px solid #e5e7eb;
+}
+.st-monthly-row {
+  display: flex; align-items: center;
+  background: #fff; border-top: 1px solid #e5e7eb;
+}
+.st-month-input {
+  width: 60px; text-align: center; border: none; border-right: 1px solid #e5e7eb;
+  padding: 6px 4px; font-size: 12px; color: #111827; background: transparent;
+  flex-shrink: 0; box-sizing: border-box;
+}
+.st-month-input:focus { outline: none; background: #fef3ec; }
+.st-month-input:last-of-type { border-right: none; }
+.st-copy-btn {
+  width: 56px; background: none; border: none; border-left: 1px solid #e5e7eb;
+  font-size: 12px; color: #f97316; font-weight: 600; cursor: pointer;
+  padding: 6px 4px; flex-shrink: 0; text-align: center;
+}
+.st-copy-btn:hover { background: #fff7ed; }
+
+/* Form actions */
+.st-form-actions { display: flex; padding-top: 4px; }
+.st-btn-submit {
+  background: #f97316; color: #fff; border: none; border-radius: 6px;
+  padding: 9px 40px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.st-btn-submit:hover:not(:disabled) { background: #ea6c08; }
+.st-btn-submit:disabled { opacity: 0.6; cursor: default; }

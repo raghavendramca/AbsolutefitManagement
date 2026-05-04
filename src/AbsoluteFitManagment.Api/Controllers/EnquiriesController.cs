@@ -66,7 +66,7 @@ public class EnquiriesController : ApiController
     }
 
     private static EnquiryResponse ToResponse(Domain.Enquiries.Enquiry e) => new(
-        e.Id, e.GymId, e.FullName, e.CountryCode, e.ContactNumber, e.Email,
+        e.Id, e.GymId, e.EnquiryCode, e.FullName, e.CountryCode, e.ContactNumber, e.Email,
         e.Gender, e.TrialType, e.EnquiryDate, e.ServiceName, e.LeadSource,
         e.FollowUpStaffName, e.FollowUpDateTime, e.CallTag, e.Message,
         e.TrialScheduledAt, e.TrialService, e.TrialStaffName, e.TrialClass, e.TrialSession,

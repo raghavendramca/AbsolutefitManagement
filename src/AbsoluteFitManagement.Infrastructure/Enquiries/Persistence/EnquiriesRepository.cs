@@ -32,4 +32,11 @@ public class EnquiriesRepository : IEnquiriesRepository
     {
         return await _dbContext.Enquiries.FirstOrDefaultAsync(e => e.Id == id);
     }
+
+    public async Task<int> GetMaxCodeAsync(Guid gymId)
+    {
+        return await _dbContext.Enquiries
+            .Where(e => e.GymId == gymId)
+            .MaxAsync(e => (int?)e.EnquiryCode) ?? 10000;
+    }
 }

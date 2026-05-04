@@ -24,7 +24,7 @@ public class GymPackagesController : ApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePackage(CreateGymPackageRequest request, Guid gymId)
+    public async Task<IActionResult> CreatePackage(CreateGymPackageRequest request, Guid subscriptionId, Guid gymId)
     {
         var command = new CreateGymPackageCommand(
             gymId,
@@ -35,7 +35,7 @@ public class GymPackagesController : ApiController
 
         var result = await _mediator.Send(command);
         return result.Match(
-            pkg => CreatedAtAction(nameof(ListPackages), new { gymId }, ToResponse(pkg)),
+            pkg => CreatedAtAction(nameof(ListPackages), new { subscriptionId, gymId }, ToResponse(pkg)),
             Problem);
     }
 

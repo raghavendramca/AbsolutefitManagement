@@ -33,12 +33,12 @@ public class GymServicesController : ApiController
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateService(CreateGymServiceRequest request, Guid gymId)
+    public async Task<IActionResult> CreateService(CreateGymServiceRequest request, Guid subscriptionId, Guid gymId)
     {
         var command = new CreateGymServiceCommand(gymId, request.Name, request.Description, request.CategoryType, request.SacCode, request.Tax);
         var result = await _mediator.Send(command);
         return result.Match(
-            service => CreatedAtAction(nameof(ListServices), new { gymId }, ToResponse(service, 0)),
+            service => CreatedAtAction(nameof(ListServices), new { subscriptionId, gymId }, ToResponse(service, 0)),
             Problem);
     }
 
@@ -71,6 +71,7 @@ public class GymServicesController : ApiController
     [HttpPost("{serviceId:guid}/variations")]
     public async Task<IActionResult> CreateVariation(
         CreateServiceVariationRequest request,
+        Guid subscriptionId,
         Guid gymId,
         Guid serviceId)
     {
@@ -87,7 +88,7 @@ public class GymServicesController : ApiController
 
         var result = await _mediator.Send(command);
         return result.Match(
-            v => CreatedAtAction(nameof(ListVariations), new { serviceId }, ToVariationResponse(v)),
+            v => CreatedAtAction(nameof(ListVariations), new { subscriptionId, gymId, serviceId }, ToVariationResponse(v)),
             Problem);
     }
 

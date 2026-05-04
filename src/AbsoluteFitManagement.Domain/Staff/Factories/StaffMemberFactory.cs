@@ -20,12 +20,13 @@ public class StaffMemberFactory : EntityFactory<StaffMember>
         string? gender = null,
         string? address = null,
         bool isActive = true,
+        string? extendedFieldsJson = null,
         Guid? id = null)
     {
         var staff = new StaffMember(
             gymId, staffCode, fullName, contactNumber, role, joinDate,
             countryCode, email, designation, adminRights,
-            attendanceId, salary, gender, address, isActive, id);
+            attendanceId, salary, gender, address, isActive, extendedFieldsJson, id);
         OnCreated(staff);
         return staff;
     }

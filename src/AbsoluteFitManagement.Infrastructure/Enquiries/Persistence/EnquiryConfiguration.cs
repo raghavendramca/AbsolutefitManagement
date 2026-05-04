@@ -12,6 +12,7 @@ public class EnquiryConfiguration : IEntityTypeConfiguration<Enquiry>
 
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.GymId);
+        builder.Property(x => x.EnquiryCode).HasDefaultValue(0);
         builder.Property(x => x.FullName).HasMaxLength(200);
         builder.Property(x => x.CountryCode).HasMaxLength(10);
         builder.Property(x => x.ContactNumber).HasMaxLength(20);

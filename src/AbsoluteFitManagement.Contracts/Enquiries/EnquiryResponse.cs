@@ -3,6 +3,7 @@ namespace AbsoluteFitManagement.Contracts.Enquiries;
 public record EnquiryResponse(
     Guid Id,
     Guid GymId,
+    int EnquiryCode,
     string FullName,
     string CountryCode,
     string ContactNumber,

@@ -643,6 +643,75 @@
 .enq-badge-enquiry { background: #e0f2fe; color: #0369a1; }
 .enq-badge-member  { background: #dcfce7; color: #166534; }
 
+/* ── Enquiry table specific ────────────────────────────────────────────────────── */
+.db-enq-table th, .db-enq-table td { padding: 8px 8px; vertical-align: middle; white-space: nowrap; }
+.db-enq-table th { font-size: 11px; }
+.db-enq-table td { font-size: 12px; color: #374151; }
+
+/* Enquiry stage progress bar */
+.enq-stage-bar {
+  display: inline-block; width: 100%; min-width: 90px; max-width: 130px;
+  padding: 4px 6px; border-radius: 4px;
+  font-size: 11px; font-weight: 600; text-align: center; color: #fff;
+}
+.enq-stage-enquiry    { background: #22c55e; }
+.enq-stage-trial      { background: #f59e0b; }
+.enq-stage-post-trial { background: #ef4444; }
+.enq-stage-sales      { background: #ef4444; }
+.enq-stage-trial-done { background: #3b82f6; }
+.enq-stage-converted  { background: #6366f1; }
+.enq-stage-archived   { background: #9ca3af; }
+
+/* Action buttons */
+.enq-plus-btn {
+  background: none; border: 1px solid #d1d5db; border-radius: 4px;
+  width: 22px; height: 22px; font-size: 14px; font-weight: 700;
+  color: #374151; cursor: pointer; line-height: 1; display: inline-flex;
+  align-items: center; justify-content: center;
+}
+.enq-plus-btn:hover { background: #f3f4f6; }
+
+.enq-invoice-btn {
+  background: none; border: 1px solid #f97316; border-radius: 4px;
+  padding: 3px 8px; font-size: 11px; font-weight: 600; color: #f97316;
+  cursor: pointer; white-space: nowrap;
+}
+.enq-invoice-btn:hover { background: #fff7ed; }
+
+.enq-name-link, .enq-staff-link {
+  background: none; border: none; padding: 0;
+  color: #f97316; font-size: 12px; cursor: pointer; font-weight: 500;
+  text-align: left;
+}
+.enq-name-link:hover, .enq-staff-link:hover { text-decoration: underline; }
+
+.enq-icon-btn {
+  background: none; border: none; cursor: pointer; padding: 2px;
+  color: #6b7280; display: inline-flex; align-items: center;
+}
+.enq-icon-btn svg { width: 14px; height: 14px; }
+.enq-icon-btn:hover { color: #374151; }
+.enq-delete-btn { color: #dc2626; }
+.enq-delete-btn:hover { color: #b91c1c; }
+
+.enq-id-cell, .enq-date-cell { color: #374151; }
+.enq-callstatus-cell { font-size: 11px; color: #6b7280; }
+.enq-fitness-cell { display: flex; align-items: center; gap: 4px; }
+.enq-action-cell  { display: flex; align-items: center; gap: 4px; }
+
+/* Enquiry pagination */
+.db-enq-pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0 10px;
+}
+.db-enq-page-left  { display: flex; align-items: center; gap: 8px; }
+.db-enq-page-right { display: flex; align-items: center; gap: 6px; }
+.db-page-jump-input {
+  width: 48px; border: 1px solid #d1d5db; border-radius: 4px;
+  padding: 4px 6px; font-size: 13px; text-align: center;
+}
+.db-page-jump-input:focus { outline: none; border-color: #f97316; }
+
 /* ── Staff Management ────────────────────────────────────────────────────────── */
 .db-staff-filters {
   display: flex;

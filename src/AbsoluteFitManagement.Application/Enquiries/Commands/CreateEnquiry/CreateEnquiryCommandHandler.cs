@@ -31,8 +31,12 @@ public class CreateEnquiryCommandHandler : IRequestHandler<CreateEnquiryCommand,
         if (!gymExists)
             return Error.NotFound(description: "Gym not found");
 
+        var maxCode = await _enquiriesRepository.GetMaxCodeAsync(request.GymId);
+        var enquiryCode = maxCode + Random.Shared.Next(1, 999);
+
         var enquiry = _enquiryFactory.Create(
             gymId: request.GymId,
+            enquiryCode: enquiryCode,
             fullName: request.FullName,
             countryCode: request.CountryCode,
             contactNumber: request.ContactNumber,

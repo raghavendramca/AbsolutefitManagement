@@ -7,9 +7,8 @@ var connectionString = $"Data Source={dbPath}";
 using var connection = new SqliteConnection(connectionString);
 connection.Open();
 
-var migrationId = "20260502000000_AddTemplateJsonToBillTemplates";
+var migrationId = "20260430000001_AddExtendedFieldsJsonToStaff";
 
-// Check if migration already applied
 using (var check = connection.CreateCommand())
 {
     check.CommandText = "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId = @id";
@@ -22,15 +21,13 @@ using (var check = connection.CreateCommand())
     }
 }
 
-// Add TemplateJson column to BillTemplates
 using (var cmd = connection.CreateCommand())
 {
-    cmd.CommandText = "ALTER TABLE BillTemplates ADD COLUMN TemplateJson TEXT NULL;";
+    cmd.CommandText = "ALTER TABLE Staff ADD COLUMN ExtendedFieldsJson TEXT NULL;";
     cmd.ExecuteNonQuery();
-    Console.WriteLine("Added TemplateJson column to BillTemplates.");
+    Console.WriteLine("Added ExtendedFieldsJson column to Staff.");
 }
 
-// Record migration
 using (var insert = connection.CreateCommand())
 {
     insert.CommandText = "INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES (@id, @ver)";

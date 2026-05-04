@@ -24,6 +24,7 @@ public class StaffConfiguration : IEntityTypeConfiguration<StaffMember>
         builder.Property(x => x.Gender).HasMaxLength(10);
         builder.Property(x => x.Address).HasMaxLength(500);
         builder.Property(x => x.IsActive).HasDefaultValue(true);
+        builder.Property(x => x.ExtendedFieldsJson).HasColumnType("TEXT");
         builder.HasIndex(x => x.GymId);
         builder.HasIndex(x => new { x.GymId, x.StaffCode }).IsUnique();
     }

@@ -16,10 +16,15 @@ import { getFormSections } from '../formSchemas/formSchemaRegistry';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
 import AddEnquiryDialog from '../components/AddEnquiryDialog';
 import AddMemberDialog from '../components/AddMemberDialog';
+import AddStaffDialog from '../components/AddStaffDialog';
+import EditStaffDialog from '../components/EditStaffDialog';
+import AdminRightsDialog from '../components/AdminRightsDialog';
+import StaffTargetSection from '../components/StaffTargetSection';
+import { STAFF_DESIGNATIONS, STAFF_ADMIN_RIGHTS } from '../constants/staffConstants';
 import './DashboardPage.css';
 import './setup-additions.css';
 
-const DATE_OPTIONS = ['Today', 'Yesterday', 'This Week', 'This Month', 'Last Month'];
+const DATE_OPTIONS = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This Month', 'Last Month', 'This Year', 'All Time'];
 const SEARCH_FIELDS = ['Member Name', 'Phone', 'Email'];
 
 
@@ -148,9 +153,28 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function formatEnqDate(iso: string) {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+}
+
 function CallTagBadge({ tag }: { tag?: string }) {
   if (!tag) return null;
   return <span className={`enq-badge enq-badge-${tag.toLowerCase()}`}>{tag}</span>;
+}
+
+function EnquiryStageBar({ status }: { status: string }) {
+  const map: Record<string, [string, string]> = {
+    Enquiry:       ['Enquiry',         'enq-stage-enquiry'],
+    TrialScheduled:['Trial Scheduled', 'enq-stage-trial'],
+    PostTrial:     ['Post Trial',      'enq-stage-post-trial'],
+    SalesStage:    ['Sales Stage',     'enq-stage-sales'],
+    TrialCompleted:['Trial Completed', 'enq-stage-trial-done'],
+    Member:        ['Converted',       'enq-stage-converted'],
+    Archived:      ['Archived',        'enq-stage-archived'],
+  };
+  const [label, cls] = map[status] ?? [status, 'enq-stage-enquiry'];
+  return <span className={`enq-stage-bar ${cls}`}>{label}</span>;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -2948,7 +2972,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
-  const [dateFilter, setDateFilter] = useState('Today');
+  const [showStaffDialog, setShowStaffDialog] = useState(false);
+  const [editStaffId, setEditStaffId] = useState<string | null>(null);
+  const [adminRightsStaff, setAdminRightsStaff] = useState<{ id: string; name: string } | null>(null);
+  const [dateFilter, setDateFilter] = useState('Last 7 days');
+  const [enqPage, setEnqPage] = useState(1);
+  const [enqPageInput, setEnqPageInput] = useState('1');
   const [searchField, setSearchField] = useState('Member Name');
   const [searchText, setSearchText] = useState('');
   const [action, setAction] = useState('');
@@ -2961,6 +2990,8 @@ export default function DashboardPage() {
   const [staffCommunicate, setStaffCommunicate] = useState('');
   const [staffDesignation, setStaffDesignation] = useState('');
   const [staffAdminRightsFilter, setStaffAdminRightsFilter] = useState('');
+  const [staffTargetStaffId, setStaffTargetStaffId] = useState<string | undefined>(undefined);
+  const [showStaffTargets, setShowStaffTargets] = useState(false);
 
   // ── Quick-add dropdown state ──────────────────────────────────────────────
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -3015,11 +3046,19 @@ export default function DashboardPage() {
     setQuickAddOpen(false);
     if (key === 'enquiry') setShowDialog(true);
     if (key === 'member')  setShowMemberDialog(true);
+    if (key === 'staff')   setShowStaffDialog(true);
   }
 
   async function handleSaveMember(data: CreateMemberDto) {
     if (!tenantId || !gymId) return;
     await membersApi.create(tenantId, gymId, data);
+  }
+
+  async function handleSaveStaff(data: import('../api/staff').CreateStaffDto) {
+    if (!gymId) throw new Error('No gym');
+    const created = await staffApi.create(gymId, data);
+    setStaffList(prev => [...prev, created]);
+    return created;
   }
 
   async function handleToggleStaff(id: string) {
@@ -3037,8 +3076,8 @@ export default function DashboardPage() {
   const filteredStaff = staffList.filter(s => {
     const q = staffSearch.toLowerCase();
     const matchSearch = !q || s.fullName.toLowerCase().includes(q) || (s.email ?? '').toLowerCase().includes(q);
-    const matchDesig = !staffDesignation || (s.designation ?? '').toLowerCase().includes(staffDesignation.toLowerCase());
-    const matchRights = !staffAdminRightsFilter || (s.adminRights ?? '').toLowerCase().includes(staffAdminRightsFilter.toLowerCase());
+    const matchDesig = !staffDesignation || s.designation === staffDesignation;
+    const matchRights = !staffAdminRightsFilter || s.adminRights === staffAdminRightsFilter;
     return matchSearch && matchDesig && matchRights;
   });
 
@@ -3058,6 +3097,7 @@ export default function DashboardPage() {
     } else {
       setActiveNav(item.key);
       setOpenFlyoutKey(null);
+      if (item.key !== 'staff') { setShowStaffTargets(false); setStaffTargetStaffId(undefined); }
     }
   }
 
@@ -3080,19 +3120,46 @@ export default function DashboardPage() {
       : s.items,
   })).filter(s => s.items.length > 0) ?? [];
 
-  // ── Stats ─────────────────────────────────────────────────────────────────
-  const openCount      = enquiries.filter(e => e.status === 'Enquiry').length;
-  const convertedCount = enquiries.filter(e => e.status === 'Member').length;
-  const openEnquiry    = enquiries.filter(e => e.status === 'Enquiry' && e.trialType === 'NoTrial').length;
-  const trialSched     = enquiries.filter(e => e.status === 'Enquiry' && e.trialType !== 'NoTrial').length;
+  // ── Date filter helper ────────────────────────────────────────────────────
+  function getDateRangeStart(option: string): Date {
+    const d = new Date();
+    switch (option) {
+      case 'Today':       { d.setHours(0,0,0,0); return d; }
+      case 'Yesterday':   { d.setDate(d.getDate()-1); d.setHours(0,0,0,0); return d; }
+      case 'Last 7 days': { d.setDate(d.getDate()-7); d.setHours(0,0,0,0); return d; }
+      case 'Last 30 days':{ d.setDate(d.getDate()-30); d.setHours(0,0,0,0); return d; }
+      case 'This Month':  { d.setDate(1); d.setHours(0,0,0,0); return d; }
+      case 'Last Month':  { d.setMonth(d.getMonth()-1,1); d.setHours(0,0,0,0); return d; }
+      case 'This Year':   { d.setMonth(0,1); d.setHours(0,0,0,0); return d; }
+      default: return new Date(0);
+    }
+  }
 
-  const filtered = searchText.trim()
-    ? enquiries.filter(e =>
-        e.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
-        e.contactNumber.includes(searchText) ||
-        (e.email ?? '').toLowerCase().includes(searchText.toLowerCase())
-      )
-    : enquiries;
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  const openCount      = enquiries.filter(e => !['Member','Archived'].includes(e.status)).length;
+  const convertedCount = enquiries.filter(e => e.status === 'Member').length;
+  const archivedCount  = enquiries.filter(e => e.status === 'Archived').length;
+  const openEnquiry    = enquiries.filter(e => e.status === 'Enquiry').length;
+  const trialSched     = enquiries.filter(e => e.status === 'TrialScheduled').length;
+  const postTrial      = enquiries.filter(e => e.status === 'PostTrial').length;
+  const salesStage     = enquiries.filter(e => e.status === 'SalesStage').length;
+  const trialCompleted = enquiries.filter(e => e.status === 'TrialCompleted').length;
+
+  const dateStart = getDateRangeStart(dateFilter);
+  const filtered = enquiries.filter(e => {
+    const q = searchText.toLowerCase();
+    const matchSearch = !q ||
+      e.fullName.toLowerCase().includes(q) ||
+      e.contactNumber.includes(q) ||
+      (e.email ?? '').toLowerCase().includes(q);
+    const matchDate = new Date(e.createdAt) >= dateStart;
+    return matchSearch && matchDate;
+  });
+
+  const ENQ_PER_PAGE = 20;
+  const enqTotalPages = Math.max(1, Math.ceil(filtered.length / ENQ_PER_PAGE));
+  const enqSafePage   = Math.min(enqPage, enqTotalPages);
+  const pagedEnquiries = filtered.slice((enqSafePage - 1) * ENQ_PER_PAGE, enqSafePage * ENQ_PER_PAGE);
 
   return (
     <div
@@ -3236,6 +3303,14 @@ export default function DashboardPage() {
             />
           ) : activeNav === 'staff' ? (
             /* ── Staff Management ─────────────────────────────────────── */
+            showStaffTargets ? (
+              <StaffTargetSection
+                gymId={gymId ?? ''}
+                staffList={staffList}
+                initialStaffId={staffTargetStaffId}
+                onBack={() => { setShowStaffTargets(false); setStaffTargetStaffId(undefined); }}
+              />
+            ) : (
             <>
               <div className="db-breadcrumb">
                 <span className="db-bc-link">Home</span>
@@ -3262,18 +3337,12 @@ export default function DashboardPage() {
                 <span className="db-staff-filter-label">Designation</span>
                 <select className="db-staff-select" value={staffDesignation} onChange={e => setStaffDesignation(e.target.value)}>
                   <option value="">Select</option>
-                  <option>Trainer</option>
-                  <option>Manager</option>
-                  <option>Receptionist</option>
-                  <option>Admin</option>
+                  {STAFF_DESIGNATIONS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
                 <span className="db-staff-filter-label">Admin Rights</span>
                 <select className="db-staff-select" value={staffAdminRightsFilter} onChange={e => setStaffAdminRightsFilter(e.target.value)}>
                   <option value="">Select</option>
-                  <option>Training</option>
-                  <option>Housekeeping</option>
-                  <option>Sales</option>
-                  <option>Master Admin</option>
+                  {STAFF_ADMIN_RIGHTS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
                 <button className="db-btn-go">Go</button>
               </div>
@@ -3318,7 +3387,7 @@ export default function DashboardPage() {
                           </td>
                           <td>{idx + 1}</td>
                           <td>{s.staffCode}</td>
-                          <td><button className="db-staff-name-link">{s.fullName}</button></td>
+                          <td><button className="db-staff-name-link" onClick={() => setEditStaffId(s.id)}>{s.fullName}</button></td>
                           <td>{s.email ?? '—'}</td>
                           <td>{s.attendanceId ?? ''}</td>
                           <td>
@@ -3330,8 +3399,8 @@ export default function DashboardPage() {
                               <span className="db-toggle-knob" />
                             </button>
                           </td>
-                          <td><button className="db-staff-rights-link">{s.adminRights ?? '—'}</button></td>
-                          <td><button className="db-staff-action-link">View</button></td>
+                          <td><button className="db-staff-rights-link" onClick={() => setAdminRightsStaff({ id: s.id, name: s.fullName })}>{s.adminRights ?? '—'}</button></td>
+                          <td><button className="db-staff-action-link" onClick={() => { setStaffTargetStaffId(s.id); setShowStaffTargets(true); }}>View</button></td>
                           <td><button className="db-staff-action-link">Change</button></td>
                           <td>
                             <button className="db-staff-delete-btn" onClick={() => handleDeleteStaff(s.id)} title="Delete">
@@ -3350,6 +3419,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </>
+            )
           ) : (
             /* ── Enquiries (default) ──────────────────────────────────── */
             <>
@@ -3361,9 +3431,10 @@ export default function DashboardPage() {
 
               <h1 className="db-heading">All Enquiries</h1>
 
+              {/* Top filter bar */}
               <div className="db-filter-bar">
                 <div className="db-filter-left">
-                  <select className="db-date-select" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
+                  <select className="db-date-select" value={dateFilter} onChange={e => { setDateFilter(e.target.value); setEnqPage(1); }}>
                     {DATE_OPTIONS.map(o => <option key={o}>{o}</option>)}
                   </select>
                   <button className="db-btn-go">Go</button>
@@ -3377,11 +3448,11 @@ export default function DashboardPage() {
               {/* Stat cards */}
               <div className="db-stats-row">
                 <div className="db-stat-card">
-                  <div className="db-stat-title">Enquiries - {openCount + convertedCount}</div>
+                  <div className="db-stat-title">Enquiries - {enquiries.length}</div>
                   <div className="db-stat-cols">
                     <div className="db-stat-col"><span className="db-stat-label">Open</span><span className="db-stat-val">{openCount}</span></div>
                     <div className="db-stat-col"><span className="db-stat-label">Converted</span><span className="db-stat-val">{convertedCount}</span></div>
-                    <div className="db-stat-col"><span className="db-stat-label">Archived/Lost</span><span className="db-stat-val">0</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Archived/Lost</span><span className="db-stat-val">{archivedCount}</span></div>
                   </div>
                 </div>
                 <div className="db-stat-card">
@@ -3389,16 +3460,16 @@ export default function DashboardPage() {
                   <div className="db-stat-cols">
                     <div className="db-stat-col"><span className="db-stat-label">Enquiry</span><span className="db-stat-val db-green">{openEnquiry}</span></div>
                     <div className="db-stat-col"><span className="db-stat-label">Trial Scheduled</span><span className="db-stat-val db-orange">{trialSched}</span></div>
-                    <div className="db-stat-col"><span className="db-stat-label">Post Trial</span><span className="db-stat-val db-red">0</span></div>
-                    <div className="db-stat-col"><span className="db-stat-label">Sales Stage</span><span className="db-stat-val db-red">0</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Post Trial</span><span className="db-stat-val db-red">{postTrial}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Sales Stage</span><span className="db-stat-val db-red">{salesStage}</span></div>
                   </div>
                 </div>
                 <div className="db-stat-card">
                   <div className="db-stat-title">Trial Status</div>
                   <div className="db-stat-cols">
-                    <div className="db-stat-col"><span className="db-stat-label">Trial Scheduled</span><span className="db-stat-val">0</span></div>
-                    <div className="db-stat-col"><span className="db-stat-label">Trial Completed</span><span className="db-stat-val">0</span></div>
-                    <div className="db-stat-col"><span className="db-stat-label">Converted</span><span className="db-stat-val">0</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Trial Scheduled</span><span className="db-stat-val">{trialSched}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Trial Completed</span><span className="db-stat-val">{trialCompleted}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Converted</span><span className="db-stat-val">{convertedCount}</span></div>
                   </div>
                 </div>
               </div>
@@ -3422,49 +3493,106 @@ export default function DashboardPage() {
                     <option value="">Select</option>
                     <option>Email</option>
                     <option>SMS</option>
+                    <option>WhatsApp</option>
                   </select>
                 </div>
                 <div className="db-action-right">
-                  <button className="db-btn-outline" onClick={() => setShowDialog(true)}>+ Add Enquiry</button>
                   <button className="db-btn-outline">Export Enquiries</button>
                 </div>
               </div>
 
-              {/* Results */}
+              {/* Pagination (top) */}
+              <div className="db-enq-pagination">
+                <div className="db-enq-page-left">
+                  <button className="db-page-btn" title="First" onClick={() => setEnqPage(1)}>&#x21E4;</button>
+                  <button className="db-page-btn" title="Prev" onClick={() => setEnqPage(p => Math.max(1, p-1))}>&#x2039;</button>
+                  <span className="db-page-info">Page {enqSafePage} of {enqTotalPages}</span>
+                  <button className="db-page-btn" title="Next" onClick={() => setEnqPage(p => Math.min(enqTotalPages, p+1))}>&#x203A;</button>
+                  <button className="db-page-btn" title="Last" onClick={() => setEnqPage(enqTotalPages)}>&#x21E5;</button>
+                </div>
+                <div className="db-enq-page-right">
+                  <input
+                    className="db-page-jump-input"
+                    type="number"
+                    min={1}
+                    max={enqTotalPages}
+                    value={enqPageInput}
+                    onChange={e => setEnqPageInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { const n = parseInt(enqPageInput); if (!isNaN(n)) setEnqPage(Math.max(1, Math.min(enqTotalPages, n))); } }}
+                  />
+                  <button className="db-btn-go" onClick={() => { const n = parseInt(enqPageInput); if (!isNaN(n)) setEnqPage(Math.max(1, Math.min(enqTotalPages, n))); }}>Go</button>
+                </div>
+              </div>
+
+              {/* Table */}
               {loading ? (
                 <p className="db-state-msg">Loading enquiries…</p>
-              ) : filtered.length === 0 ? (
-                <p className="db-no-results">No Results Found.</p>
               ) : (
                 <div className="db-table-wrap">
-                  <table className="db-table">
-                    <thead>
-                      <tr>
-                        <th>#</th><th>Name</th><th>Contact</th><th>Service</th>
-                        <th>Lead Source</th><th>Enquiry Date</th><th>Trial</th>
-                        <th>Call Tag</th><th>Follow-up Staff</th><th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((e, idx) => (
-                        <tr key={e.id}>
-                          <td>{idx + 1}</td>
-                          <td>
-                            <div className="db-name">{e.fullName}</div>
-                            {e.email && <div className="db-email">{e.email}</div>}
-                          </td>
-                          <td>{e.countryCode} {e.contactNumber}</td>
-                          <td>{e.serviceName}</td>
-                          <td>{e.leadSource ?? '—'}</td>
-                          <td>{formatDate(e.enquiryDate)}</td>
-                          <td>{e.trialType === 'NoTrial' ? '—' : e.trialType.replace('Trial', 'Trial ')}</td>
-                          <td><CallTagBadge tag={e.callTag} /></td>
-                          <td>{e.followUpStaffName ?? '—'}</td>
-                          <td><StatusBadge status={e.status} /></td>
+                  {filtered.length === 0 ? (
+                    <p className="db-no-results" style={{ padding: '16px' }}>No Results Found.</p>
+                  ) : (
+                    <table className="db-table db-enq-table">
+                      <thead>
+                        <tr>
+                          <th><input type="checkbox" /></th>
+                          <th>S.No</th>
+                          <th>Enquiry ID</th>
+                          <th>Date</th>
+                          <th>Name</th>
+                          <th>Service</th>
+                          <th>Lead Source</th>
+                          <th>Enquiry Stage</th>
+                          <th>Last Call Status</th>
+                          <th>Call Tag</th>
+                          <th>Call log</th>
+                          <th>Convert to member</th>
+                          <th>Trial Appointment</th>
+                          <th>Trials</th>
+                          <th>Other Appointment</th>
+                          <th>Staff</th>
+                          <th>Fitness Log</th>
+                          <th>Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {pagedEnquiries.map((e, idx) => (
+                          <tr key={e.id}>
+                            <td><input type="checkbox" /></td>
+                            <td>{(enqSafePage - 1) * ENQ_PER_PAGE + idx + 1}</td>
+                            <td className="enq-id-cell">{e.enquiryCode}</td>
+                            <td className="enq-date-cell">{formatEnqDate(e.enquiryDate)}</td>
+                            <td><button className="enq-name-link">{e.fullName}</button></td>
+                            <td>{e.serviceName}</td>
+                            <td>{e.leadSource ?? '—'}</td>
+                            <td><EnquiryStageBar status={e.status} /></td>
+                            <td className="enq-callstatus-cell">{e.status}</td>
+                            <td><CallTagBadge tag={e.callTag} /></td>
+                            <td><button className="enq-plus-btn" title="Add call log">+</button></td>
+                            <td><button className="enq-invoice-btn">Invoice</button></td>
+                            <td><button className="enq-plus-btn" title="Add trial appointment">+</button></td>
+                            <td></td>
+                            <td><button className="enq-plus-btn" title="Add other appointment">+</button></td>
+                            <td>{e.followUpStaffName ? <button className="enq-staff-link">{e.followUpStaffName}</button> : '—'}</td>
+                            <td className="enq-fitness-cell">
+                              <button className="enq-plus-btn" title="Add fitness log">+</button>
+                              <button className="enq-icon-btn" title="View fitness log">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/></svg>
+                              </button>
+                            </td>
+                            <td className="enq-action-cell">
+                              <button className="enq-icon-btn" title="Edit" onClick={() => {}}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                              </button>
+                              <button className="enq-icon-btn enq-delete-btn" title="Delete">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               )}
             </>
@@ -3488,6 +3616,35 @@ export default function DashboardPage() {
           gymId={gymId}
           onClose={() => setShowMemberDialog(false)}
           onSave={handleSaveMember}
+        />
+      )}
+
+      {showStaffDialog && gymId && (
+        <AddStaffDialog
+          gymId={gymId}
+          onClose={() => setShowStaffDialog(false)}
+          onSave={handleSaveStaff}
+        />
+      )}
+
+      {editStaffId && gymId && (
+        <EditStaffDialog
+          gymId={gymId}
+          staffId={editStaffId}
+          staffList={staffList}
+          onClose={() => setEditStaffId(null)}
+          onUpdate={updated => {
+            setStaffList(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+          }}
+        />
+      )}
+
+      {adminRightsStaff && gymId && (
+        <AdminRightsDialog
+          gymId={gymId}
+          staffId={adminRightsStaff.id}
+          staffName={adminRightsStaff.name}
+          onClose={() => setAdminRightsStaff(null)}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ public class StaffMember : PersonEntity
     public DateOnly JoinDate { get; set; }
     public string? Address { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? ExtendedFieldsJson { get; set; }
 
     public StaffMember(
         Guid gymId,
@@ -30,6 +31,7 @@ public class StaffMember : PersonEntity
         string? gender = null,
         string? address = null,
         bool isActive = true,
+        string? extendedFieldsJson = null,
         Guid? id = null)
         : base(id ?? Guid.NewGuid(), gymId, fullName, countryCode, contactNumber, email, gender)
     {
@@ -42,6 +44,7 @@ public class StaffMember : PersonEntity
         JoinDate = joinDate;
         Address = address;
         IsActive = isActive;
+        ExtendedFieldsJson = extendedFieldsJson;
     }
 
     protected StaffMember() { }

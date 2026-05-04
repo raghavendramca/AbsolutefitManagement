@@ -48,6 +48,7 @@ public class AbsoluteFitManagementDbContext : DbContext, IUnitOfWork
 
     // Staff
     public DbSet<StaffMember> Staff { get; set; } = null!;
+    public DbSet<StaffTarget> StaffTargets { get; set; } = null!;
 
     // Setup
     public DbSet<GymService> GymServices { get; set; } = null!;

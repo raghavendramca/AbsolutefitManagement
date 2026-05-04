@@ -2,11 +2,12 @@ export type SubscriptionType = 'Free' | 'Starter' | 'Pro';
 
 export type TrialType = 'NoTrial' | 'TrialAppointment' | 'TrialClass' | 'TrialSession';
 export type CallTag = 'Cold' | 'Warm' | 'Hot';
-export type EnquiryStatus = 'Enquiry' | 'Member';
+export type EnquiryStatus = 'Enquiry' | 'TrialScheduled' | 'PostTrial' | 'SalesStage' | 'TrialCompleted' | 'Member' | 'Archived';
 
 export interface Enquiry {
   id: string;
   gymId: string;
+  enquiryCode: number;
   fullName: string;
   countryCode: string;
   contactNumber: string;

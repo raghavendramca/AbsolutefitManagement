@@ -6,6 +6,7 @@ public class EnquiryFactory : EntityFactory<Enquiry>
 {
     public Enquiry Create(
         Guid gymId,
+        int enquiryCode,
         string fullName,
         string countryCode,
         string contactNumber,
@@ -28,7 +29,7 @@ public class EnquiryFactory : EntityFactory<Enquiry>
         Guid? id = null)
     {
         var enquiry = new Enquiry(
-            gymId, fullName, countryCode, contactNumber, email, gender,
+            gymId, enquiryCode, fullName, countryCode, contactNumber, email, gender,
             trialType, enquiryDate, serviceName, leadSource,
             followUpStaffName, followUpDateTime, callTag, message,
             trialScheduledAt, trialService, trialStaffName, trialClass, trialSession,

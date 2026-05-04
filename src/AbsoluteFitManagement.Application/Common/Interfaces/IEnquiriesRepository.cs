@@ -7,4 +7,5 @@ public interface IEnquiriesRepository
     Task AddAsync(Enquiry enquiry);
     Task<List<Enquiry>> ListByGymIdAsync(Guid gymId);
     Task<Enquiry?> GetByIdAsync(Guid id);
+    Task<int> GetMaxCodeAsync(Guid gymId);
 }
