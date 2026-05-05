@@ -14,6 +14,7 @@ export interface GymPackageDto {
   id: string;
   gymId: string;
   name: string;
+  isDisabledFromSelling: boolean;
   items: GymPackageItemDto[];
 }
 
@@ -32,4 +33,10 @@ export const packagesApi = {
 
   create: (subscriptionId: string, gymId: string, data: { name: string; items: CreatePackageItemRequest[] }) =>
     api.post<GymPackageDto>(`/subscriptions/${subscriptionId}/gyms/${gymId}/packages`, data),
+
+  toggleSelling: (subscriptionId: string, gymId: string, packageId: string, isDisabledFromSelling: boolean) =>
+    api.patch<GymPackageDto>(`/subscriptions/${subscriptionId}/gyms/${gymId}/packages/${packageId}/toggle-selling`, { isDisabledFromSelling }),
+
+  delete: (subscriptionId: string, gymId: string, packageId: string) =>
+    api.delete<void>(`/subscriptions/${subscriptionId}/gyms/${gymId}/packages/${packageId}`),
 };

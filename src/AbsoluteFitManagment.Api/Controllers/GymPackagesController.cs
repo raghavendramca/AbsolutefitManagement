@@ -1,4 +1,6 @@
 using AbsoluteFitManagement.Application.Packages.Commands.CreateGymPackage;
+using AbsoluteFitManagement.Application.Packages.Commands.DeleteGymPackage;
+using AbsoluteFitManagement.Application.Packages.Commands.TogglePackageSelling;
 using AbsoluteFitManagement.Application.Packages.Queries.ListGymPackages;
 using AbsoluteFitManagement.Contracts.Packages;
 using AbsoluteFitManagement.Domain.Packages;
@@ -39,8 +41,22 @@ public class GymPackagesController : ApiController
             Problem);
     }
 
+    [HttpPatch("{packageId:guid}/toggle-selling")]
+    public async Task<IActionResult> ToggleSelling(Guid packageId, TogglePackageSellingRequest request)
+    {
+        var result = await _mediator.Send(new TogglePackageSellingCommand(packageId, request.IsDisabledFromSelling));
+        return result.Match(pkg => Ok(ToResponse(pkg)), Problem);
+    }
+
+    [HttpDelete("{packageId:guid}")]
+    public async Task<IActionResult> DeletePackage(Guid packageId)
+    {
+        var result = await _mediator.Send(new DeleteGymPackageCommand(packageId));
+        return result.Match(_ => NoContent(), Problem);
+    }
+
     private static GymPackageResponse ToResponse(GymPackage p) =>
-        new(p.Id, p.GymId, p.Name,
+        new(p.Id, p.GymId, p.Name, p.IsDisabledFromSelling,
             p.Items.Select(i => new GymPackageItemResponse(
                 i.Id, i.ServiceId, i.ServiceName,
                 i.ServiceFee, i.Quantity, i.Discount, i.DiscountType)).ToList());

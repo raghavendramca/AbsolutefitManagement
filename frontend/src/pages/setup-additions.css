@@ -306,8 +306,55 @@
 .pkg-list-wrap { padding: 0 24px 32px; }
 .pkg-list-toolbar {
   display: flex; justify-content: flex-end;
-  padding: 10px 0 16px;
+  padding: 10px 0 8px;
 }
+
+/* Notice banner */
+.pkg-notice {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fef9c3; border: 1px solid #fde047; border-radius: 4px;
+  padding: 8px 14px; font-size: 13px; color: #713f12;
+  margin-bottom: 8px;
+}
+.pkg-notice-close {
+  background: none; border: none; cursor: pointer; font-size: 16px;
+  color: #713f12; line-height: 1; padding: 0 2px; margin-left: 12px;
+}
+
+/* Pagination */
+.pkg-list-pagination {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 0 10px; font-size: 13px; color: #374151;
+}
+.pkg-page-btn {
+  background: none; border: 1px solid #d1d5db; border-radius: 4px;
+  padding: 3px 8px; font-size: 12px; cursor: pointer; color: #374151;
+}
+.pkg-page-btn:hover:not(:disabled) { background: #f3f4f6; }
+.pkg-page-btn:disabled { opacity: 0.35; cursor: default; }
+.pkg-page-label { font-size: 13px; color: #374151; }
+
+/* List table columns */
+.pkg-list-tbl .pkg-col-sno  { width: 60px; }
+.pkg-list-tbl .pkg-col-name { }
+.pkg-list-tbl .pkg-col-disable { width: 180px; text-align: center; }
+.pkg-list-tbl .pkg-col-edit { width: 80px; text-align: center; }
+.pkg-list-tbl .pkg-col-view { width: 80px; text-align: center; }
+.pkg-list-tbl .pkg-col-del  { width: 60px; text-align: center; }
+
+/* Toggle button */
+.pkg-toggle-btn {
+  border: 1px solid #d1d5db; border-radius: 12px;
+  padding: 3px 14px; font-size: 12px; cursor: pointer; font-weight: 600;
+}
+.pkg-toggle-off { background: #f3f4f6; color: #374151; }
+.pkg-toggle-on  { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+
+/* Action links */
+.pkg-action-edit { background: none; border: none; cursor: pointer; color: #e05a2b; font-size: 13px; font-weight: 500; }
+.pkg-action-edit:hover { text-decoration: underline; }
+.pkg-action-view { background: none; border: none; cursor: pointer; color: #2563eb; font-size: 13px; font-weight: 500; }
+.pkg-action-view:hover { text-decoration: underline; }
 
 /* Add form view */
 .pkg-wrap { padding: 16px 24px 32px; }

@@ -24,6 +24,7 @@ interface Props {
   gymId: string;
   enquiryId?: string;
   prefill?: Partial<CreateMemberDto>;
+  pageMode?: boolean;
   onClose: () => void;
   onSave: (data: CreateMemberDto) => Promise<void>;
 }
@@ -42,7 +43,7 @@ function fieldMandatory(map: Map<string, FormFieldConfig>, key: string): boolean
 
 type Tab = 'Personal Information' | 'Fitness Profile';
 
-export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, prefill, onClose, onSave }: Props) {
+export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, prefill, pageMode, onClose, onSave }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving]   = useState(false);
   const [error, setError]     = useState('');
@@ -311,13 +312,14 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
     fieldEnabled(cfgMap, 'mem_division') ||
     fieldEnabled(cfgMap, 'mem_certification');
 
-  return (
-    <div className="amd-overlay" ref={overlayRef} onClick={handleOverlayClick}>
-      <div className="amd-dialog" role="dialog" aria-modal="true" aria-label="Add Member">
+  const formContent = (
+    <div className={pageMode ? 'amd-page-inner' : 'amd-dialog'} role={pageMode ? undefined : 'dialog'} aria-modal={pageMode ? undefined : true} aria-label="Add Member">
+      {!pageMode && (
         <div className="amd-header">
           <h2 className="amd-title">Add Member</h2>
           <button className="amd-close" onClick={onClose} aria-label="Close">&#x2715;</button>
         </div>
+      )}
 
         <div className="amd-tabs">
           {(['Personal Information', 'Fitness Profile'] as Tab[]).map(tab => (
@@ -800,14 +802,41 @@ export default function AddMemberDialog({ subscriptionId, gymId, enquiryId, pref
 
           {error && <p className="amd-error">{error}</p>}
 
-          <div className="amd-footer">
-            <button type="button" className="amd-cancel-btn" onClick={onClose}>Cancel</button>
-            <button type="submit" className="amd-save-btn" disabled={saving}>
-              {saving ? 'Saving…' : 'Save Member'}
-            </button>
-          </div>
+          {pageMode ? (
+            <div className="amd-footer amd-footer-page">
+              <button type="submit" className="amd-save-btn" disabled={saving}>
+                {saving ? 'Saving…' : 'Add Member & Bill'}
+              </button>
+              <button type="button" className="amd-save-btn" disabled={saving}>Add to Transfer</button>
+              <button type="button" className="amd-save-btn" disabled={saving}>Sell Product</button>
+              <button type="button" className="amd-cancel-btn" onClick={onClose}>Cancel</button>
+            </div>
+          ) : (
+            <div className="amd-footer">
+              <button type="button" className="amd-cancel-btn" onClick={onClose}>Cancel</button>
+              <button type="submit" className="amd-save-btn" disabled={saving}>
+                {saving ? 'Saving…' : 'Save Member'}
+              </button>
+            </div>
+          )}
         </form>
       </div>
+  );
+
+  return pageMode ? (
+    <div className="amd-page">
+      <div className="amd-page-breadcrumb">
+        <span className="amd-page-bc-link">Home</span>
+        <span className="amd-page-bc-sep"> / </span>
+        <span className="amd-page-bc-link">Clients</span>
+        <span className="amd-page-bc-sep"> / </span>
+        <span className="amd-page-bc-active">Add Member</span>
+      </div>
+      {formContent}
+    </div>
+  ) : (
+    <div className="amd-overlay" ref={overlayRef} onClick={handleOverlayClick}>
+      {formContent}
     </div>
   );
 }

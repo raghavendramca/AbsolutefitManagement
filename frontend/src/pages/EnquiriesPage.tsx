@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { enquiriesApi } from '../api/enquiries';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
@@ -9,6 +9,14 @@ const STAFF_NAMES = ['Swetha Raghavendra', 'Rahul Kumar', 'Priya Nair'];
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatDateTime(iso?: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-IN', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true,
+  });
 }
 
 function CallTagBadge({ tag }: { tag?: string }) {
@@ -31,6 +39,7 @@ export default function EnquiriesPage() {
   const [error, setError] = useState('');
   const [showDialog, setShowDialog] = useState(false);
   const [search, setSearch] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!subscriptionId || !gymId) return;
@@ -111,21 +120,70 @@ export default function EnquiriesPage() {
             </thead>
             <tbody>
               {filtered.map((e, idx) => (
-                <tr key={e.id}>
-                  <td>{idx + 1}</td>
-                  <td>
-                    <div className="enq-name">{e.fullName}</div>
-                    {e.email && <div className="enq-email">{e.email}</div>}
-                  </td>
-                  <td>{e.countryCode} {e.contactNumber}</td>
-                  <td>{e.serviceName}</td>
-                  <td>{e.leadSource ?? '—'}</td>
-                  <td>{formatDate(e.enquiryDate)}</td>
-                  <td>{e.trialType === 'NoTrial' ? '—' : e.trialType.replace('Trial', 'Trial ')}</td>
-                  <td><CallTagBadge tag={e.callTag} /></td>
-                  <td>{e.followUpStaffName ?? '—'}</td>
-                  <td><StatusBadge status={e.status} /></td>
-                </tr>
+                <Fragment key={e.id}>
+                  <tr>
+                    <td>{idx + 1}</td>
+                    <td>
+                      <button
+                        className="enq-name-btn"
+                        onClick={() => setExpandedId(expandedId === e.id ? null : e.id)}
+                      >
+                        {e.fullName}
+                      </button>
+                      {e.email && <div className="enq-email">{e.email}</div>}
+                    </td>
+                    <td>{e.countryCode} {e.contactNumber}</td>
+                    <td>{e.serviceName}</td>
+                    <td>{e.leadSource ?? '—'}</td>
+                    <td>{formatDate(e.enquiryDate)}</td>
+                    <td>{e.trialType === 'NoTrial' ? '—' : e.trialType.replace('Trial', 'Trial ')}</td>
+                    <td><CallTagBadge tag={e.callTag} /></td>
+                    <td>{e.followUpStaffName ?? '—'}</td>
+                    <td><StatusBadge status={e.status} /></td>
+                  </tr>
+                  {expandedId === e.id && (
+                    <tr className="enq-expand-row">
+                      <td colSpan={10}>
+                        <div className="enq-expand-content">
+                          <div className="enq-expand-grid">
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Member/Lead</span>
+                              <span className="enq-expand-value">{e.status === 'Member' ? 'Member' : 'Lead'}</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">E-mail</span>
+                              <span className="enq-expand-value">{e.email || '—'}</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Customer type</span>
+                              <span className="enq-expand-value">—</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Enquiry type</span>
+                              <span className="enq-expand-value">—</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Contact Number</span>
+                              <span className="enq-expand-value">{e.countryCode} {e.contactNumber}</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Follow-up date</span>
+                              <span className="enq-expand-value">{formatDateTime(e.followUpDateTime)}</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Created by</span>
+                              <span className="enq-expand-value">{e.followUpStaffName || '—'}</span>
+                            </div>
+                            <div className="enq-expand-field">
+                              <span className="enq-expand-label">Last Call Update</span>
+                              <span className="enq-expand-value">{e.message || '—'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

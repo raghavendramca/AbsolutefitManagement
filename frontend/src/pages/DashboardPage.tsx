@@ -160,6 +160,15 @@ function formatEnqDate(iso: string) {
   return `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
 }
 
+function formatEnqDateTime(iso?: string) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const date = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+  let h = d.getHours(); const m = String(d.getMinutes()).padStart(2,'0');
+  const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  return `${date} ${String(h).padStart(2,'0')}:${m} ${ampm}`;
+}
+
 function CallTagBadge({ tag }: { tag?: string }) {
   if (!tag) return null;
   return <span className={`enq-badge enq-badge-${tag.toLowerCase()}`}>{tag}</span>;
@@ -1566,6 +1575,9 @@ function ManagePackagesContent({ subscriptionId, gymId }: { subscriptionId: stri
   const [rowSvcIds, setRowSvcIds] = useState<string[]>(['']);
   const [searchPopupRow, setSearchPopupRow] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [listPage, setListPage] = useState(1);
+  const PKG_PAGE_SIZE = 10;
 
   useEffect(() => {
     packagesApi.list(subscriptionId, gymId).then(setPackages).catch(() => {});
@@ -1640,6 +1652,29 @@ function ManagePackagesContent({ subscriptionId, gymId }: { subscriptionId: stri
     }
   }
 
+  function showNotice(msg: string) {
+    setNotice(msg);
+    setTimeout(() => setNotice(null), 3000);
+  }
+
+  async function handleToggleSelling(pkg: GymPackageDto) {
+    const newVal = !pkg.isDisabledFromSelling;
+    try {
+      const updated = await packagesApi.toggleSelling(subscriptionId, gymId, pkg.id, newVal);
+      setPackages(prev => prev.map(p => p.id === pkg.id ? updated : p));
+      showNotice(newVal ? 'Package Disabled successfully' : 'Package Enabled successfully');
+    } catch { /* ignore */ }
+  }
+
+  async function handleDeletePackage(pkg: GymPackageDto) {
+    if (!window.confirm(`Delete "${pkg.name}"?`)) return;
+    try {
+      await packagesApi.delete(subscriptionId, gymId, pkg.id);
+      setPackages(prev => prev.filter(p => p.id !== pkg.id));
+      showNotice('Package deleted successfully');
+    } catch { /* ignore */ }
+  }
+
   function startAdd() {
     setPackageName('');
     setRows([{ ...EMPTY_PKG_ROW }]);
@@ -1649,33 +1684,69 @@ function ManagePackagesContent({ subscriptionId, gymId }: { subscriptionId: stri
 
   // ── List view ──────────────────────────────────────────────────────────────
   if (view === 'list') {
+    const totalPages = Math.max(1, Math.ceil(packages.length / PKG_PAGE_SIZE));
+    const pagePackages = packages.slice((listPage - 1) * PKG_PAGE_SIZE, listPage * PKG_PAGE_SIZE);
+
     return (
       <div className="pkg-list-wrap">
+        {notice && (
+          <div className="pkg-notice">
+            {notice}
+            <button className="pkg-notice-close" onClick={() => setNotice(null)}>×</button>
+          </div>
+        )}
         <div className="pkg-list-toolbar">
           <button className="setup-add-btn" onClick={startAdd}>Add New Package</button>
         </div>
-        {packages.length === 0 ? null : (
-          <div className="db-table-wrap">
-            <table className="db-table">
-              <thead>
-                <tr>
-                  <th>S.No</th>
-                  <th>Package Name</th>
-                  <th>No. of Services</th>
+        <div className="pkg-list-pagination">
+          <button className="pkg-page-btn" onClick={() => setListPage(1)} disabled={listPage === 1} title="First">|◀</button>
+          <button className="pkg-page-btn" onClick={() => setListPage(p => Math.max(1, p - 1))} disabled={listPage === 1} title="Previous">◀</button>
+          <span className="pkg-page-label">Page {listPage} of {totalPages}</span>
+          <button className="pkg-page-btn" onClick={() => setListPage(p => Math.min(totalPages, p + 1))} disabled={listPage === totalPages} title="Next">▶</button>
+          <button className="pkg-page-btn" onClick={() => setListPage(totalPages)} disabled={listPage === totalPages} title="Last">▶|</button>
+        </div>
+        <div className="db-table-wrap">
+          <table className="db-table pkg-list-tbl">
+            <thead>
+              <tr>
+                <th className="pkg-col-sno">S.No</th>
+                <th className="pkg-col-name">Package Name</th>
+                <th className="pkg-col-disable">Disable from Selling</th>
+                <th className="pkg-col-edit">Edit</th>
+                <th className="pkg-col-view">View</th>
+                <th className="pkg-col-del">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pagePackages.length === 0 ? (
+                <tr><td colSpan={6} className="db-state-msg">No packages found.</td></tr>
+              ) : pagePackages.map((pkg, idx) => (
+                <tr key={pkg.id}>
+                  <td>{(listPage - 1) * PKG_PAGE_SIZE + idx + 1}</td>
+                  <td>{pkg.name}</td>
+                  <td>
+                    <button
+                      className={`pkg-toggle-btn ${pkg.isDisabledFromSelling ? 'pkg-toggle-on' : 'pkg-toggle-off'}`}
+                      onClick={() => handleToggleSelling(pkg)}
+                    >
+                      {pkg.isDisabledFromSelling ? 'On' : 'Off'}
+                    </button>
+                  </td>
+                  <td><button className="pkg-action-edit" onClick={() => {}}>Edit</button></td>
+                  <td><button className="pkg-action-view" onClick={() => {}}>View</button></td>
+                  <td>
+                    <button className="pkg-del-row-btn" onClick={() => handleDeletePackage(pkg)} title="Delete">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+                      </svg>
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {packages.map((pkg, idx) => (
-                  <tr key={pkg.id}>
-                    <td>{idx + 1}</td>
-                    <td>{pkg.name}</td>
-                    <td>{pkg.items.length}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -3532,12 +3603,16 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
+  const [convertModal, setConvertModal] = useState<{ enquiry: Enquiry; comment: string } | null>(null);
+  const [clientsView, setClientsView] = useState<'list' | 'add'>('list');
+  const [memberPrefill, setMemberPrefill] = useState<Partial<CreateMemberDto> | null>(null);
   const [showStaffDialog, setShowStaffDialog] = useState(false);
   const [editStaffId, setEditStaffId] = useState<string | null>(null);
   const [adminRightsStaff, setAdminRightsStaff] = useState<{ id: string; name: string } | null>(null);
   const [dateFilter, setDateFilter] = useState('Last 7 days');
   const [enqPage, setEnqPage] = useState(1);
   const [enqPageInput, setEnqPageInput] = useState('1');
+  const [expandedEnqId, setExpandedEnqId] = useState<string | null>(null);
   const [searchField, setSearchField] = useState('Member Name');
   const [searchText, setSearchText] = useState('');
   const [action, setAction] = useState('');
@@ -3612,6 +3687,23 @@ export default function DashboardPage() {
   async function handleSaveMember(data: CreateMemberDto) {
     if (!tenantId || !gymId) return;
     await membersApi.create(tenantId, gymId, data);
+  }
+
+  function handleConvertToMember() {
+    if (!convertModal) return;
+    const e = convertModal.enquiry;
+    setMemberPrefill({
+      fullName: e.fullName,
+      countryCode: e.countryCode,
+      contactNumber: e.contactNumber,
+      email: e.email,
+      gender: e.gender,
+      leadSource: e.leadSource,
+      enquiryId: e.id,
+    });
+    setClientsView('add');
+    setActiveNav('clients');
+    setConvertModal(null);
   }
 
   async function handleSaveStaff(data: import('../api/staff').CreateStaffDto) {
@@ -3980,8 +4072,8 @@ export default function DashboardPage() {
               )}
             </>
             )
-          ) : (
-            /* ── Enquiries (default) ──────────────────────────────────── */
+          ) : activeNav === 'enquiries' ? (
+            /* ── Enquiries ───────────────────────────────────────────── */
             <>
               <div className="db-breadcrumb">
                 <span className="db-bc-link">Home</span>
@@ -4117,38 +4209,89 @@ export default function DashboardPage() {
                       </thead>
                       <tbody>
                         {pagedEnquiries.map((e, idx) => (
-                          <tr key={e.id}>
-                            <td><input type="checkbox" /></td>
-                            <td>{(enqSafePage - 1) * ENQ_PER_PAGE + idx + 1}</td>
-                            <td className="enq-id-cell">{e.enquiryCode}</td>
-                            <td className="enq-date-cell">{formatEnqDate(e.enquiryDate)}</td>
-                            <td><button className="enq-name-link">{e.fullName}</button></td>
-                            <td>{e.serviceName}</td>
-                            <td>{e.leadSource ?? '—'}</td>
-                            <td><EnquiryStageBar status={e.status} /></td>
-                            <td className="enq-callstatus-cell">{e.status}</td>
-                            <td><CallTagBadge tag={e.callTag} /></td>
-                            <td><button className="enq-plus-btn" title="Add call log">+</button></td>
-                            <td><button className="enq-invoice-btn">Invoice</button></td>
-                            <td><button className="enq-plus-btn" title="Add trial appointment">+</button></td>
-                            <td></td>
-                            <td><button className="enq-plus-btn" title="Add other appointment">+</button></td>
-                            <td>{e.followUpStaffName ? <button className="enq-staff-link">{e.followUpStaffName}</button> : '—'}</td>
-                            <td className="enq-fitness-cell">
-                              <button className="enq-plus-btn" title="Add fitness log">+</button>
-                              <button className="enq-icon-btn" title="View fitness log">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/></svg>
-                              </button>
-                            </td>
-                            <td className="enq-action-cell">
-                              <button className="enq-icon-btn" title="Edit" onClick={() => {}}>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                              </button>
-                              <button className="enq-icon-btn enq-delete-btn" title="Delete">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                              </button>
-                            </td>
-                          </tr>
+                          <React.Fragment key={e.id}>
+                            <tr>
+                              <td><input type="checkbox" /></td>
+                              <td>{(enqSafePage - 1) * ENQ_PER_PAGE + idx + 1}</td>
+                              <td className="enq-id-cell">{e.enquiryCode}</td>
+                              <td className="enq-date-cell">{formatEnqDate(e.enquiryDate)}</td>
+                              <td>
+                                <button
+                                  className="enq-name-link"
+                                  onClick={() => setExpandedEnqId(expandedEnqId === e.id ? null : e.id)}
+                                >
+                                  {e.fullName}
+                                </button>
+                              </td>
+                              <td>{e.serviceName}</td>
+                              <td>{e.leadSource ?? '—'}</td>
+                              <td><EnquiryStageBar status={e.status} /></td>
+                              <td className="enq-callstatus-cell">{e.status}</td>
+                              <td><CallTagBadge tag={e.callTag} /></td>
+                              <td><button className="enq-plus-btn" title="Add call log">+</button></td>
+                              <td><button className="enq-invoice-btn" onClick={() => setConvertModal({ enquiry: e, comment: '' })}>Invoice</button></td>
+                              <td><button className="enq-plus-btn" title="Add trial appointment">+</button></td>
+                              <td></td>
+                              <td><button className="enq-plus-btn" title="Add other appointment">+</button></td>
+                              <td>{e.followUpStaffName ? <button className="enq-staff-link">{e.followUpStaffName}</button> : '—'}</td>
+                              <td className="enq-fitness-cell">
+                                <button className="enq-plus-btn" title="Add fitness log">+</button>
+                                <button className="enq-icon-btn" title="View fitness log">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/></svg>
+                                </button>
+                              </td>
+                              <td className="enq-action-cell">
+                                <button className="enq-icon-btn" title="Edit" onClick={() => {}}>
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                                <button className="enq-icon-btn enq-delete-btn" title="Delete">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                </button>
+                              </td>
+                            </tr>
+                            {expandedEnqId === e.id && (
+                              <tr className="enq-expand-row">
+                                <td colSpan={18}>
+                                  <div className="enq-expand-content">
+                                    <div className="enq-expand-grid">
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Member/Lead</span>
+                                        <span className="enq-expand-value">{e.status === 'Member' ? 'Member' : 'Lead'}</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">E-mail</span>
+                                        <span className="enq-expand-value">{e.email || '—'}</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Customer type</span>
+                                        <span className="enq-expand-value">—</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Enquiry type</span>
+                                        <span className="enq-expand-value">—</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Contact Number</span>
+                                        <span className="enq-expand-value">{e.countryCode} {e.contactNumber}</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Follow-up date</span>
+                                        <span className="enq-expand-value">{formatEnqDateTime(e.followUpDateTime)}</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Created by</span>
+                                        <span className="enq-expand-value">{e.followUpStaffName || '—'}</span>
+                                      </div>
+                                      <div className="enq-expand-field">
+                                        <span className="enq-expand-label">Last Call Update</span>
+                                        <span className="enq-expand-value">{e.message || '—'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         ))}
                       </tbody>
                     </table>
@@ -4156,9 +4299,134 @@ export default function DashboardPage() {
                 </div>
               )}
             </>
-          )}
+          ) : activeNav === 'clients' ? (
+            /* ── Clients / Add Member ────────────────────────────────── */
+            clientsView === 'add' && memberPrefill ? (
+              <AddMemberDialog
+                subscriptionId={tenantId ?? ''}
+                gymId={gymId ?? ''}
+                prefill={memberPrefill}
+                pageMode={true}
+                onClose={() => { setClientsView('list'); setMemberPrefill(null); }}
+                onSave={async (data) => { await handleSaveMember(data); setClientsView('list'); setMemberPrefill(null); }}
+              />
+            ) : (
+              <>
+                <div className="db-breadcrumb">
+                  <span className="db-bc-link">Home</span>
+                  <span className="db-bc-sep">/</span>
+                  <span className="db-bc-active">Clients</span>
+                </div>
+                <h1 className="db-heading">Clients</h1>
+                <p className="db-state-msg">Select a member to view, or convert an enquiry to a member.</p>
+              </>
+            )
+          ) : activeNav === 'dashboard' ? (
+            /* ── Dashboard Home ──────────────────────────────────────── */
+            <>
+              <div className="db-breadcrumb">
+                <span className="db-bc-link">Home</span>
+                <span className="db-bc-sep">/</span>
+                <span className="db-bc-active">Dashboard</span>
+              </div>
+
+              <h1 className="db-heading">Dashboard</h1>
+
+              <div className="db-stats-row">
+                <div className="db-stat-card">
+                  <div className="db-stat-title">Enquiries - {enquiries.length}</div>
+                  <div className="db-stat-cols">
+                    <div className="db-stat-col"><span className="db-stat-label">Open</span><span className="db-stat-val">{openCount}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Converted</span><span className="db-stat-val">{convertedCount}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Archived/Lost</span><span className="db-stat-val">{archivedCount}</span></div>
+                  </div>
+                </div>
+                <div className="db-stat-card">
+                  <div className="db-stat-title">Open Enquiries</div>
+                  <div className="db-stat-cols">
+                    <div className="db-stat-col"><span className="db-stat-label">Enquiry</span><span className="db-stat-val db-green">{openEnquiry}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Trial Scheduled</span><span className="db-stat-val db-orange">{trialSched}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Post Trial</span><span className="db-stat-val db-red">{postTrial}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Sales Stage</span><span className="db-stat-val db-red">{salesStage}</span></div>
+                  </div>
+                </div>
+                <div className="db-stat-card">
+                  <div className="db-stat-title">Trial Status</div>
+                  <div className="db-stat-cols">
+                    <div className="db-stat-col"><span className="db-stat-label">Trial Scheduled</span><span className="db-stat-val">{trialSched}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Trial Completed</span><span className="db-stat-val">{trialCompleted}</span></div>
+                    <div className="db-stat-col"><span className="db-stat-label">Converted</span><span className="db-stat-val">{convertedCount}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              {!loading && enquiries.length > 0 && (
+                <div className="db-dash-recent">
+                  <h2 className="db-dash-recent-title">Recent Enquiries</h2>
+                  <div className="db-table-wrap">
+                    <table className="db-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Service</th>
+                          <th>Lead Source</th>
+                          <th>Date</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {enquiries.slice(0, 5).map(e => (
+                          <tr key={e.id}>
+                            <td>{e.fullName}</td>
+                            <td>{e.serviceName}</td>
+                            <td>{e.leadSource ?? '—'}</td>
+                            <td>{formatEnqDate(e.enquiryDate)}</td>
+                            <td><EnquiryStageBar status={e.status} /></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : null}
         </main>
       </div>
+
+      {/* Convert-to-member confirmation modal */}
+      {convertModal && (
+        <div className="conv-overlay">
+          <div className="conv-modal">
+            <div className="conv-modal-header">
+              <span>Would you like to raise bill and convert this enquiry to membership?</span>
+              <button className="conv-modal-close" onClick={() => setConvertModal(null)}>&#x2715;</button>
+            </div>
+            <div className="conv-modal-body">
+              <div className="conv-modal-row">
+                <span className="conv-modal-label">Status:</span>
+                <span className="conv-modal-value">{convertModal.enquiry.status}</span>
+              </div>
+              <div className="conv-modal-row conv-modal-row-top">
+                <span className="conv-modal-label">Comments</span>
+                <textarea
+                  className="conv-modal-textarea"
+                  placeholder="Maximum 540 characters"
+                  maxLength={540}
+                  rows={4}
+                  value={convertModal.comment}
+                  onChange={ev => setConvertModal(prev => prev ? { ...prev, comment: ev.target.value } : prev)}
+                />
+              </div>
+              <p className="conv-modal-hint">(Comments will be saved in call log)</p>
+            </div>
+            <div className="conv-modal-footer">
+              <button className="conv-yes-btn" onClick={handleConvertToMember}>Yes</button>
+              <button className="conv-cancel-btn" onClick={() => setConvertModal(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showDialog && tenantId && gymId && (
         <AddEnquiryDialog

@@ -1931,6 +1931,9 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.Property<Guid>("GymId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDisabledFromSelling")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
