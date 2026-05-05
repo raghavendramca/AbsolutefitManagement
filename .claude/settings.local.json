@@ -30,7 +30,9 @@
       "PowerShell(Stop-Process -Force)",
       "PowerShell(\"stopped\")",
       "Bash(npx tsc *)",
-      "PowerShell(Get-NetTCPConnection -LocalPort 5215 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }; \"done\")"
+      "PowerShell(Get-NetTCPConnection -LocalPort 5215 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }; \"done\")",
+      "Bash(grep -E \"\\\\.\\(cs|csproj\\)$\")",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|cs\\)$\")"
     ]
   }
 }

@@ -1,0 +1,26 @@
+namespace AbsoluteFitManagement.Contracts.ServiceCategories;
+
+public record ServiceTypeConfigResponse(
+    Guid Id,
+    string Name,
+    int SortOrder,
+    bool ShowDaysPerWeek,
+    bool ShowMonths,
+    bool ShowTimeHours,
+    bool ShowTimeMinutes,
+    bool ShowNumberOfSessions,
+    bool ShowValidityDays,
+    bool ValidityDaysIsDropdown,
+    bool ShowMaxMembers,
+    bool ShowAccessType,
+    bool ShowCategory,
+    bool ShowOtpVerification,
+    bool ShowUpgradable,
+    bool ShowTransferable,
+    bool ShowAllowFreeze,
+    bool ShowFreezeDays,
+    bool ShowAppointmentsApplicable,
+    bool ShowRegistrationFee,
+    bool ShowFeeLimits,
+    bool ShowReferralBonus,
+    bool ShowTermBatchDate);

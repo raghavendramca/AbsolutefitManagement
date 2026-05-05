@@ -13,6 +13,7 @@ public class ServiceVariationConfiguration : IEntityTypeConfiguration<ServiceVar
         builder.Property(x => x.ServiceType).HasMaxLength(100);
         builder.Property(x => x.Name).HasMaxLength(200);
         builder.Property(x => x.Tax).HasMaxLength(100).HasDefaultValue("No Tax");
+        builder.Property(x => x.AccessType).HasMaxLength(100);
         builder.Property(x => x.Category).HasMaxLength(100);
         builder.Property(x => x.ServiceFee).HasColumnType("decimal(18,2)");
         builder.Property(x => x.MinFeeLimit).HasColumnType("decimal(18,2)");

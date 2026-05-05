@@ -9,7 +9,9 @@ export default defineConfig({
       '/subscriptions': 'http://localhost:5215',
       '/gyms':          'http://localhost:5215',
       '/navigation':    'http://localhost:5215',
-      '/tenants':       'http://localhost:5215',
+      '/tenants':          'http://localhost:5215',
+      '/service-categories':    'http://localhost:5215',
+      '/service-type-configs':  'http://localhost:5215',
     },
   },
 })

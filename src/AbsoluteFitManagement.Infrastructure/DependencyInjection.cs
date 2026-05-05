@@ -43,6 +43,8 @@ public static class DependencyInjection
         services.AddScoped<IBillTemplateRepository, BillTemplateRepository>();
         services.AddScoped<IBillSettingsRepository, BillSettingsRepository>();
         services.AddScoped<IMembersRepository, MembersRepository>();
+        services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+        services.AddScoped<IServiceTypeConfigRepository, ServiceTypeConfigRepository>();
         services.AddScoped<IUnitOfWork>(sp =>
             sp.GetRequiredService<AbsoluteFitManagementDbContext>());
 

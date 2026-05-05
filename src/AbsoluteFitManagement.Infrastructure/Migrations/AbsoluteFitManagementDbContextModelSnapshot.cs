@@ -2616,6 +2616,59 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
                     b.ToTable("StudioUsers", (string)null);
                 });
 
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.ServiceCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasDefaultValue(true)
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("ServiceCategories");
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.ServiceActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasDefaultValue(true)
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ServiceActivities");
+                });
+
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Navigation.NavFlyout", b =>
                 {
                     b.HasOne("AbsoluteFitManagement.Domain.Navigation.NavMenuItem", null)
@@ -2670,6 +2723,20 @@ namespace AbsoluteFitManagement.Infrastructure.Migrations
             modelBuilder.Entity("AbsoluteFitManagement.Domain.Packages.GymPackage", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.ServiceActivity", b =>
+                {
+                    b.HasOne("AbsoluteFitManagement.Domain.Setup.ServiceCategory", null)
+                        .WithMany("Activities")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AbsoluteFitManagement.Domain.Setup.ServiceCategory", b =>
+                {
+                    b.Navigation("Activities");
                 });
 #pragma warning restore 612, 618
         }

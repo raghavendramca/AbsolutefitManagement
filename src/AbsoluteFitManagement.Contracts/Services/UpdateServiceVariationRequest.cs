@@ -1,9 +1,6 @@
 namespace AbsoluteFitManagement.Contracts.Services;
 
-public record ServiceVariationResponse(
-    Guid Id,
-    Guid ServiceId,
-    string ServiceType,
+public record UpdateServiceVariationRequest(
     string Name,
     decimal ServiceFee,
     int TimeHours,
@@ -29,5 +26,4 @@ public record ServiceVariationResponse(
     bool EligibleForReferralBonus,
     bool ReferralBonusFromPurchase,
     bool TermBatchDate,
-    bool PromoteOnline,
-    bool IsActive);
+    bool PromoteOnline);

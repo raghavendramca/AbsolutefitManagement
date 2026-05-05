@@ -34,6 +34,8 @@ public static class DataSeeder
         await SeedStaffAsync(db, logger);
         await SeedFitnessProfileItemsAsync(db, logger);
         await SeedApparelItemsAsync(db, logger);
+        await SeedServiceCategoriesAsync(db, logger);
+        await SeedServiceTypeConfigsAsync(db, logger);
     }
 
     private static async Task SeedSubscriptionAndGymsAsync(
@@ -329,5 +331,166 @@ public static class DataSeeder
         }
 
         await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedServiceCategoriesAsync(
+        AbsoluteFitManagementDbContext db, ILogger logger)
+    {
+        if (await db.ServiceCategories.AnyAsync())
+            return;
+
+        var catalog = new[]
+        {
+            ("Fitness", new[] {
+                "Body Building","Strength","Cardio","Pilates","Barre",
+                "Spinning","Boot Camp","Zumba","Weight Loss","Weight Management",
+                "Slimming","Aqua Fitness","Crossfit","Aerobics","Personal Session",
+                "Group Workout","Gym Workout","Functional Training" }),
+            ("Yoga", new[] {
+                "Yoga","Traditional Yoga","Hot Yoga","Power Yoga","Bikram Yoga",
+                "Hatha Yoga","Kundalini Yoga","Vinyasa Yoga","Ashtanga Yoga","Prenatal Yoga",
+                "Aerial Yoga","Artistic Yoga","Personal Session","Workshop" }),
+            ("Dance", new[] {
+                "Salsa","Hiphop","Jazz","Jive","Bollywood",
+                "Folk","Ballet","Latin","Ball Room","Rumba",
+                "Hollywood","B-Boying","Street","Tango","Bhangra",
+                "Bharatanatyam","Kathak","Kathakali","Kuchipudi","Manipuri",
+                "Oddisi","Sattriya","Mohiniattam","Freestyle Dance","Personal Session",
+                "Workshop","Belly Dance" }),
+            ("Music", new[] {
+                "Keyboard","Guitar","Drums","Vocals","Bass",
+                "Harmonium","Tabla","Violin","Mrudanga","Flute",
+                "Veena","Personal Session","Workshop" }),
+            ("Sports", new[] {
+                "Aquatics","Automobile Racing","Badminton","Baseball","Basketball",
+                "Beach Volleyball","Bowling","Camping","Canoeing","Cheerleading",
+                "Chess","Cricket","Cross Country Running","Cycling","Darts",
+                "Decathlon","Diving","Dog Training","Equestrianism","Figure Skating",
+                "Football","Golf","Gymnastics","Hand Ball","High Jump",
+                "Hiking","Hockey","Hot Air Ballooning","Ice Skating","Inline Skating",
+                "Jai Alai","Kayaking","Knee Boarding","Long Jump","Motorcycle Racing",
+                "Mountain Biking","Mountaineering","Netball","Paint Ball","Para Gliding",
+                "Parachuting","River Rafting","Rock Climbing","Roller Skating","Rowing",
+                "Rugby","Sailing","Scuba Diving","Shooting","Shot Put",
+                "Skateboarding","Snooker","Soccer","Sprint Running","Squash",
+                "Surfing","Swimming","Table Tennis","Tennis","Track And Field",
+                "Triathlon","Tug Of War","Volleyball","Water Polo","Water Skiing",
+                "Weight Lifting","Wheelchair Basketball","White Water Rafting","Wind Surfing","Yachting",
+                "Self-Defence","Running","Personal Session","Workshop","Kabaddi","Kho Kho" }),
+            ("Rejuvenation", new[] {
+                "Aromatherapy","Deep Tissue Massage","Head Massage","Foot Massage","Massage",
+                "Swedish Massage","Thai Massage","Reflexology","Shiatsu","Tui Na",
+                "Acupuncture","Qi Gong","Ayurvedic Treatments","Meditation","Chiropractic",
+                "Tai Chi","Reiki","Acupressure","Cupping","Personal Session","Workshop" }),
+            ("Combat sports", new[] {
+                "Archery","Boxing","Fencing","Judo","Karate",
+                "Taekwondo","Wrestling","Kickboxing","Brazilian Jiu-Jitsu","Kung Fu",
+                "Mixed Martial Arts","Muay Thai","Kalaripayattu" }),
+            ("Admin Fee",    new[] { "Registration Fee","Transfer Fee","Locker Fee" }),
+            ("Consultation", new[] { "Consultation" }),
+            ("Salon",        new[] {
+                "Beauty","Hair","Nail","Eyebrows And Lashes","Waxing",
+                "Tattoo And Piercing","Aesthetics","Tanning" }),
+            ("Ayurvedic Treatment", new[] {
+                "Abhyanga","Head And Foot Massage","Ekanga Abhyanga","Udvartana","Takradhara",
+                "Shirodhara","Swarna Prashana","Virechana","Vamana","Nasya",
+                "Yoga Basti","Kala Basti","Kati Basti","Greeva Basti","Prusta Basti",
+                "Janu Basti","Slim Down","Get Fit","Fat To Fab","Lose It All",
+                "Rediscover Yourself","Scrap Your Fat","Tone Your Body","Slimtox" }),
+        };
+
+        int catOrder = 0;
+        foreach (var (categoryName, activities) in catalog)
+        {
+            var category = new AbsoluteFitManagement.Domain.Setup.ServiceCategory(categoryName, ++catOrder);
+            await db.ServiceCategories.AddAsync(category);
+            await db.SaveChangesAsync();
+
+            var activityEntities = activities
+                .Select((name, i) => new AbsoluteFitManagement.Domain.Setup.ServiceActivity(category.Id, name, i + 1))
+                .ToList();
+            await db.ServiceActivities.AddRangeAsync(activityEntities);
+            await db.SaveChangesAsync();
+        }
+
+        logger.LogInformation("Seeded {Count} service categories with activities.", catalog.Length);
+    }
+
+    private static async Task SeedServiceTypeConfigsAsync(
+        AbsoluteFitManagementDbContext db, ILogger logger)
+    {
+        if (await db.ServiceTypeConfigs.AnyAsync())
+            return;
+
+        // Parameters: name, sortOrder,
+        //   showDaysPerWeek, showMonths,
+        //   showTimeHours, showTimeMinutes,
+        //   showNumberOfSessions, showValidityDays, validityDaysIsDropdown,
+        //   showMaxMembers, showAccessType, showCategory,
+        //   showOtpVerification, showUpgradable, showTransferable,
+        //   showAllowFreeze, showFreezeDays,
+        //   showAppointmentsApplicable, showRegistrationFee,
+        //   showFeeLimits, showReferralBonus, showTermBatchDate
+        var configs = new[]
+        {
+            new AbsoluteFitManagement.Domain.Setup.ServiceTypeConfig(
+                "Membership", 1,
+                true,  true,
+                false, false,
+                false, false, false,
+                true,  true,  true,
+                true,  true,  true,
+                true,  true,
+                false, true,
+                true,  true,  true),
+
+            new AbsoluteFitManagement.Domain.Setup.ServiceTypeConfig(
+                "1 Session", 2,
+                false, false,
+                true,  true,
+                false, true, false,
+                true,  false, true,
+                true,  true,  true,
+                false, false,
+                true,  true,
+                true,  true,  false),
+
+            new AbsoluteFitManagement.Domain.Setup.ServiceTypeConfig(
+                "Multiple Sessions", 3,
+                false, false,
+                true,  true,
+                true,  true, false,
+                true,  true,  true,
+                true,  true,  true,
+                true,  true,
+                true,  true,
+                true,  true,  true),
+
+            new AbsoluteFitManagement.Domain.Setup.ServiceTypeConfig(
+                "Day pass", 4,
+                false, false,
+                false, false,
+                false, true, true,
+                true,  true,  true,
+                true,  true,  true,
+                false, false,
+                false, true,
+                true,  true,  true),
+
+            new AbsoluteFitManagement.Domain.Setup.ServiceTypeConfig(
+                "Admin fee", 5,
+                false, false,
+                false, false,
+                false, false, false,
+                false, false, false,
+                false, false, false,
+                false, false,
+                false, false,
+                true,  false, false),
+        };
+
+        await db.ServiceTypeConfigs.AddRangeAsync(configs);
+        await db.SaveChangesAsync();
+        logger.LogInformation("Seeded {Count} service type configs.", configs.Length);
     }
 }

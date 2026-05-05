@@ -3,7 +3,8 @@ import { useParams, useLocation } from 'react-router-dom';
 import { enquiriesApi } from '../api/enquiries';
 import { navigationApi, type NavMenuItemDto, type QuickAddMenuItemDto } from '../api/navigation';
 import { staffApi, type StaffMember } from '../api/staff';
-import { servicesApi, type GymServiceDto, type ServiceVariationDto, type CreateServiceVariationRequest, type UpdateServiceRequest } from '../api/services';
+import { servicesApi, type GymServiceDto, type ServiceVariationDto, type CreateServiceVariationRequest, type UpdateServiceVariationRequest, type UpdateServiceRequest } from '../api/services';
+import { serviceTypeConfigsApi, type ServiceTypeConfigDto } from '../api/serviceTypeConfigs';
 import { packagesApi, type GymPackageDto, type CreatePackageItemRequest } from '../api/packages';
 import { profileApi, type GymProfileDto, DAYS, parseOperatingHours, defaultHours, type OperatingHourSlot } from '../api/profile';
 import { formCustomizationApi, type FormFieldConfig, type AdditionalDetailField, type AdditionalDetailFieldType } from '../api/formCustomization';
@@ -12,6 +13,7 @@ import { apparelItemsApi, type ApparelItemDto, type ApparelCategory } from '../a
 import { membersApi, type CreateMemberDto } from '../api/members';
 import { billTemplatesApi, type BillTemplateDto } from '../api/billTemplates';
 import { billSettingsApi, type BillSettingKey } from '../api/billSettings';
+import { serviceCategoriesApi, type ServiceCategoryDto } from '../api/serviceCategories';
 import { getFormSections } from '../formSchemas/formSchemaRegistry';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
 import AddEnquiryDialog from '../components/AddEnquiryDialog';
@@ -434,70 +436,164 @@ const SERVICE_CATEGORIES = [
   'General Membership', 'Personal Training', 'Group Training',
   'Nutrition Counselling', 'Teachers Training', 'Workshop/Event', 'Trial', 'PT Trial',
 ];
-const SERVICE_TYPES = ['1 Session', 'Multiple Sessions', 'Membership', 'Day pass', 'Monthly', 'Quarterly', 'Yearly'];
 const TAX_OPTIONS = ['No Tax', 'GST 5%', 'GST 12%', 'GST 18%'];
+const ACCESS_TYPES = ['Individual', 'Couple', 'Family', 'Group'];
+
 
 function formatDuration(v: ServiceVariationDto): string {
   const type = v.serviceType.toLowerCase();
   if (type === 'membership') {
-    const months = Math.round(v.validityDays / 30) || 1;
-    return `7 Days Per week. Valid for ${months} month(s).`;
+    const m = v.months || Math.round(v.validityDays / 30) || 1;
+    return `${v.daysPerWeek || 7} Days Per week. Valid for ${m} month(s).`;
   }
   if (type === 'multiple sessions') {
     const mins = String(v.timeMinutes).padStart(2, '0');
-    return `${v.validityDays} Sessions. ${v.timeHours} Hours ${mins} minutes per session. Valid for ${v.validityDays} day(s).`;
+    return `${v.numberOfSessions} Sessions. ${v.timeHours}h ${mins}m per session. Valid for ${v.validityDays} day(s).`;
+  }
+  if (type === '1 session') {
+    const mins = String(v.timeMinutes).padStart(2, '0');
+    return `${v.timeHours}h ${mins}m. Valid for ${v.validityDays} day(s).`;
   }
   return `Valid for ${v.validityDays} day(s)`;
 }
 
-// ── Add/Edit Variation Modal ──────────────────────────────────────────────────
+// ── Shared Yes/No radio helper ────────────────────────────────────────────────
+
+function VarYN({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="var-field var-yn-field">
+      <label>{label}</label>
+      <div className="var-yn">
+        <label><input type="radio" checked={value === true}  onChange={() => onChange(true)}  /> Yes</label>
+        <label><input type="radio" checked={value === false} onChange={() => onChange(false)} /> No</label>
+      </div>
+    </div>
+  );
+}
+
+// ── Add Variation Modal (service-type-config driven) ─────────────────────────
+
+const EMPTY_VARIATION: CreateServiceVariationRequest = {
+  serviceType: '',
+  name: '',
+  serviceFee: 1,
+  timeHours: 0,
+  timeMinutes: 15,
+  daysPerWeek: 1,
+  months: 1,
+  numberOfSessions: 2,
+  validityDays: 1,
+  maxMembers: 1,
+  tax: 'No Tax',
+  accessType: 'Individual',
+  category: 'General Membership',
+  otpVerification: false,
+  upgradable: true,
+  transferable: false,
+  allowFreeze: true,
+  maxFreezeDays: 0,
+  minFreezeDays: 1,
+  appointmentsApplicable: false,
+  registrationFee: false,
+  minFeeLimit: 0,
+  maxFeeLimit: 0,
+  eligibleForReferralBonus: false,
+  referralBonusFromPurchase: false,
+  termBatchDate: false,
+  promoteOnline: false,
+};
+
+function variationDtoToForm(v: ServiceVariationDto): CreateServiceVariationRequest {
+  return {
+    serviceType: v.serviceType,
+    name: v.name,
+    serviceFee: v.serviceFee,
+    timeHours: v.timeHours,
+    timeMinutes: v.timeMinutes,
+    daysPerWeek: v.daysPerWeek,
+    months: v.months,
+    numberOfSessions: v.numberOfSessions,
+    validityDays: v.validityDays,
+    maxMembers: v.maxMembers,
+    tax: v.tax,
+    accessType: v.accessType,
+    category: v.category,
+    otpVerification: v.otpVerification,
+    upgradable: v.upgradable,
+    transferable: v.transferable,
+    allowFreeze: v.allowFreeze,
+    maxFreezeDays: v.maxFreezeDays,
+    minFreezeDays: v.minFreezeDays,
+    appointmentsApplicable: v.appointmentsApplicable,
+    registrationFee: v.registrationFee,
+    minFeeLimit: v.minFeeLimit,
+    maxFeeLimit: v.maxFeeLimit,
+    eligibleForReferralBonus: v.eligibleForReferralBonus,
+    referralBonusFromPurchase: v.referralBonusFromPurchase,
+    termBatchDate: v.termBatchDate,
+    promoteOnline: v.promoteOnline,
+  };
+}
 
 function AddVariationModal({
   service,
   subscriptionId,
   gymId,
+  existing,
   onClose,
   onSaved,
 }: {
   service: GymServiceDto;
   subscriptionId: string;
   gymId: string;
+  existing?: ServiceVariationDto;
   onClose: () => void;
   onSaved: (v: ServiceVariationDto) => void;
 }) {
-  const [form, setForm] = useState<CreateServiceVariationRequest>({
-    serviceType: '1 Session',
-    name: '',
-    serviceFee: 1,
-    timeHours: 0,
-    timeMinutes: 15,
-    validityDays: 1,
-    maxMembers: 1,
-    tax: 'No Tax',
-    category: 'General Membership',
-    otpVerification: false,
-    upgradable: true,
-    transferable: false,
-    appointmentsApplicable: false,
-    registrationFee: false,
-    minFeeLimit: 0,
-    maxFeeLimit: 0,
-    eligibleForReferralBonus: false,
-    referralBonusFromPurchase: false,
-    promoteOnline: false,
-  });
+  const isEdit = !!existing;
+  const [configs, setConfigs] = useState<ServiceTypeConfigDto[]>([]);
+  const [form, setForm] = useState<CreateServiceVariationRequest>(
+    existing ? variationDtoToForm(existing) : EMPTY_VARIATION
+  );
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    serviceTypeConfigsApi.list()
+      .then(list => {
+        setConfigs(list);
+        if (list.length > 0 && !existing) setForm(prev => ({ ...prev, serviceType: list[0].name }));
+      })
+      .catch(() => {});
+  }, []);
+
+  const cfg = configs.find(c => c.name === form.serviceType) ?? null;
 
   function set<K extends keyof CreateServiceVariationRequest>(k: K, v: CreateServiceVariationRequest[K]) {
     setForm(prev => ({ ...prev, [k]: v }));
   }
 
   async function handleSave() {
+    if (!form.name.trim()) { setError('Service Variation Name is required.'); return; }
     setSaving(true);
+    setError('');
     try {
-      const result = await servicesApi.createVariation(subscriptionId, gymId, service.id, form);
+      // For Membership, derive validityDays from months
+      const saveData = cfg?.showMonths
+        ? { ...form, validityDays: form.months * 30 }
+        : form;
+
+      let result: ServiceVariationDto;
+      if (isEdit && existing) {
+        const { serviceType: _st, ...updateData } = saveData as CreateServiceVariationRequest;
+        result = await servicesApi.updateVariation(subscriptionId, gymId, service.id, existing.id, updateData as UpdateServiceVariationRequest);
+      } else {
+        result = await servicesApi.createVariation(subscriptionId, gymId, service.id, saveData);
+      }
       onSaved(result);
       onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Save failed.');
     } finally {
       setSaving(false);
     }
@@ -507,93 +603,234 @@ function AddVariationModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box variation-modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <span>Add Service Variation for &ldquo;{service.name}&rdquo;</span>
+          <span>{isEdit ? 'Edit' : 'Add'} Service Variation for &ldquo;{service.name}&rdquo;</span>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
+
         <div className="modal-service-type-row">
           <label>Choose Service type</label>
-          <select value={form.serviceType} onChange={e => set('serviceType', e.target.value)}>
-            {SERVICE_TYPES.map(t => <option key={t}>{t}</option>)}
+          <select value={form.serviceType} onChange={e => set('serviceType', e.target.value)} disabled={isEdit}>
+            {configs.length === 0
+              ? <option value="">Loading…</option>
+              : configs.map(c => <option key={c.id} value={c.name}>{c.name}</option>)
+            }
           </select>
         </div>
-        <div className="variation-modal-body">
-          <div className="variation-left">
-            <div className="var-field"><label>Service Variations Name*</label>
-              <input type="text" value={form.name} onChange={e => set('name', e.target.value)} required />
-            </div>
-            <div className="var-field"><label>Service Fee</label>
-              <input type="number" value={form.serviceFee} onChange={e => set('serviceFee', parseFloat(e.target.value) || 0)} />
-            </div>
-            <div className="var-field-row">
-              <div className="var-field var-field-half"><label>Time (Hours)</label>
-                <select value={form.timeHours} onChange={e => set('timeHours', parseInt(e.target.value))}>
-                  {Array.from({ length: 25 }, (_, i) => <option key={i} value={i}>{i}</option>)}
-                </select>
+
+        {cfg && (
+          <div className="variation-modal-body">
+            <div className="variation-left">
+
+              {/* Always: Name */}
+              <div className="var-field">
+                <label>Service Variations Name*</label>
+                <input type="text" value={form.name} onChange={e => set('name', e.target.value)} autoFocus />
               </div>
-              <div className="var-field var-field-half"><label>Time (Minutes)</label>
-                <select value={form.timeMinutes} onChange={e => set('timeMinutes', parseInt(e.target.value))}>
-                  {[0, 15, 30, 45].map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
+
+              {/* Always: Service Fee */}
+              <div className="var-field">
+                <label>Service Fee</label>
+                <input type="number" value={form.serviceFee} onChange={e => set('serviceFee', parseFloat(e.target.value) || 0)} />
               </div>
-            </div>
-            <div className="var-field"><label>Validity in day(s)*</label>
-              <input type="number" value={form.validityDays} min={1} onChange={e => set('validityDays', parseInt(e.target.value) || 1)} />
-            </div>
-            <div className="var-field"><label>Maximum Member(s)</label>
-              <input type="number" value={form.maxMembers} disabled />
-            </div>
-            <div className="var-field"><label>Tax</label>
-              <select value={form.tax} onChange={e => set('tax', e.target.value)}>
-                {TAX_OPTIONS.map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-            <div className="var-field"><label>Choose Category*</label>
-              <div className="var-radio-grid">
-                {SERVICE_CATEGORIES.map(cat => (
-                  <label key={cat} className="var-radio">
-                    <input type="radio" name="category" value={cat} checked={form.category === cat} onChange={() => set('category', cat)} />
-                    <span>{cat}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            {([
-              ['OTP Verification for Check-in', 'otpVerification'],
-              ['Upgradable*', 'upgradable'],
-              ['Transferable*', 'transferable'],
-              ['Appointments Applicable*', 'appointmentsApplicable'],
-              ['Registration fee*', 'registrationFee'],
-              ['Eligible for referral bonus*', 'eligibleForReferralBonus'],
-              ['Referral Bonus from this Purchase*', 'referralBonusFromPurchase'],
-            ] as [string, keyof CreateServiceVariationRequest][]).map(([label, key]) => (
-              <div key={key} className="var-field var-yn-field">
-                <label>{label}</label>
-                <div className="var-yn">
-                  <label><input type="radio" checked={form[key] === true} onChange={() => set(key, true as never)} /> Yes</label>
-                  <label><input type="radio" checked={form[key] === false} onChange={() => set(key, false as never)} /> No</label>
+
+              {/* Membership: Days Per Week */}
+              {cfg.showDaysPerWeek && (
+                <div className="var-field">
+                  <label>No.of Days Per Week*</label>
+                  <select value={form.daysPerWeek} onChange={e => set('daysPerWeek', parseInt(e.target.value))}>
+                    {[1,2,3,4,5,6,7].map(d => (
+                      <option key={d} value={d}>{d} Day{d > 1 ? 's' : ''} per week</option>
+                    ))}
+                  </select>
                 </div>
+              )}
+
+              {/* Membership: Months */}
+              {cfg.showMonths && (
+                <div className="var-field">
+                  <label>Month(s)*</label>
+                  <select value={form.months} onChange={e => set('months', parseInt(e.target.value))}>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* 1 Session / Multiple Sessions: Time */}
+              {cfg.showTimeHours && (
+                <div className="var-field">
+                  <label>Time (Hours)</label>
+                  <select value={form.timeHours} onChange={e => set('timeHours', parseInt(e.target.value))}>
+                    {Array.from({ length: 25 }, (_, i) => i).map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {cfg.showTimeMinutes && (
+                <div className="var-field">
+                  <label>Time (Minutes)</label>
+                  <select value={form.timeMinutes} onChange={e => set('timeMinutes', parseInt(e.target.value))}>
+                    {[0, 15, 30, 45].map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {/* Multiple Sessions: Number of Sessions */}
+              {cfg.showNumberOfSessions && (
+                <div className="var-field">
+                  <label>Number of Sessions</label>
+                  <select value={form.numberOfSessions} onChange={e => set('numberOfSessions', parseInt(e.target.value))}>
+                    {Array.from({ length: 35 }, (_, i) => i + 2).map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Validity Days */}
+              {cfg.showValidityDays && (
+                cfg.validityDaysIsDropdown ? (
+                  <div className="var-field">
+                    <label>Validity in day(s)*</label>
+                    <select value={form.validityDays} onChange={e => set('validityDays', parseInt(e.target.value))}>
+                      {Array.from({ length: 365 }, (_, i) => i + 1).map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="var-field">
+                    <label>Validity in day(s)*</label>
+                    <input type="number" min={1} value={form.validityDays}
+                      onChange={e => set('validityDays', parseInt(e.target.value) || 1)} />
+                  </div>
+                )
+              )}
+
+              {/* Member(s) */}
+              {cfg.showMaxMembers && (
+                <div className="var-field">
+                  <label>Member(s)</label>
+                  <input type="number" value={form.maxMembers} disabled />
+                </div>
+              )}
+
+              {/* Always: Tax */}
+              <div className="var-field">
+                <label>Tax</label>
+                <select value={form.tax} onChange={e => set('tax', e.target.value)}>
+                  {TAX_OPTIONS.map(t => <option key={t}>{t}</option>)}
+                </select>
               </div>
-            ))}
-            <div className="var-field"><label>Minimum Fee Limit <span className="var-hint">(0= Unlimited)</span></label>
-              <input type="number" value={form.minFeeLimit} onChange={e => set('minFeeLimit', parseFloat(e.target.value) || 0)} />
+
+              {/* Access Type */}
+              {cfg.showAccessType && (
+                <div className="var-field">
+                  <label>Access Type*</label>
+                  <select value={form.accessType ?? 'Individual'} onChange={e => set('accessType', e.target.value)}>
+                    {ACCESS_TYPES.map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {/* Category radio grid */}
+              {cfg.showCategory && (
+                <div className="var-field">
+                  <label>Choose Category*</label>
+                  <div className="var-radio-grid">
+                    {SERVICE_CATEGORIES.map(cat => (
+                      <label key={cat} className="var-radio">
+                        <input type="radio" name="varcat" value={cat}
+                          checked={form.category === cat} onChange={() => set('category', cat)} />
+                        <span>{cat}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {cfg.showOtpVerification && (
+                <VarYN label="OTP Verification for Check-in" value={form.otpVerification} onChange={v => set('otpVerification', v)} />
+              )}
+              {cfg.showUpgradable && (
+                <VarYN label="Upgradable*" value={form.upgradable} onChange={v => set('upgradable', v)} />
+              )}
+              {cfg.showTransferable && (
+                <VarYN label="Transferable*" value={form.transferable} onChange={v => set('transferable', v)} />
+              )}
+              {cfg.showAllowFreeze && (
+                <VarYN label="Allow Freeze*" value={form.allowFreeze} onChange={v => set('allowFreeze', v)} />
+              )}
+
+              {/* Freeze day limits */}
+              {cfg.showFreezeDays && (
+                <>
+                  <div className="var-field">
+                    <label>Max freeze days</label>
+                    <input type="number" min={0} value={form.maxFreezeDays}
+                      onChange={e => set('maxFreezeDays', parseInt(e.target.value) || 0)} />
+                    <span className="var-hint-red">(0= Unlimited)</span>
+                  </div>
+                  <div className="var-field">
+                    <label>Min freeze days</label>
+                    <input type="number" min={1} value={form.minFreezeDays}
+                      onChange={e => set('minFreezeDays', parseInt(e.target.value) || 1)} />
+                    <span className="var-hint-red">(Minimum 1 Day)</span>
+                  </div>
+                </>
+              )}
+
+              {cfg.showAppointmentsApplicable && (
+                <VarYN label="Appointments Applicable*" value={form.appointmentsApplicable} onChange={v => set('appointmentsApplicable', v)} />
+              )}
+              {cfg.showRegistrationFee && (
+                <VarYN label="Registration fee*" value={form.registrationFee} onChange={v => set('registrationFee', v)} />
+              )}
+
+              {/* Fee Limits */}
+              {cfg.showFeeLimits && (
+                <>
+                  <div className="var-field">
+                    <label>Minimum Fee Limit</label>
+                    <input type="number" value={form.minFeeLimit}
+                      onChange={e => set('minFeeLimit', parseFloat(e.target.value) || 0)} />
+                    <span className="var-hint-red">(0= Unlimited)</span>
+                  </div>
+                  <div className="var-field">
+                    <label>Maximum Fee Limit</label>
+                    <input type="number" value={form.maxFeeLimit}
+                      onChange={e => set('maxFeeLimit', parseFloat(e.target.value) || 0)} />
+                    <span className="var-hint-red">(0= Unlimited)</span>
+                  </div>
+                </>
+              )}
+
+              {cfg.showReferralBonus && (
+                <>
+                  <VarYN label="Eligible for referral bonus*" value={form.eligibleForReferralBonus} onChange={v => set('eligibleForReferralBonus', v)} />
+                  <VarYN label="Referral Bonus from this Purchase*" value={form.referralBonusFromPurchase} onChange={v => set('referralBonusFromPurchase', v)} />
+                </>
+              )}
+              {cfg.showTermBatchDate && (
+                <VarYN label="Term / Batch Date" value={form.termBatchDate} onChange={v => set('termBatchDate', v)} />
+              )}
+
             </div>
-            <div className="var-field"><label>Maximum Fee Limit <span className="var-hint">(0= Unlimited)</span></label>
-              <input type="number" value={form.maxFeeLimit} onChange={e => set('maxFeeLimit', parseFloat(e.target.value) || 0)} />
+
+            <div className="variation-right">
+              <div className="var-promo-tab">Promotion</div>
+              <VarYN label="Promote on Website/Member App/Plug-in*" value={form.promoteOnline} onChange={v => set('promoteOnline', v)} />
             </div>
           </div>
-          <div className="variation-right">
-            <div className="var-promo-tab">Promotion</div>
-            <div className="var-field var-yn-field">
-              <label>Promote on Website/Member App/Plug-in*</label>
-              <div className="var-yn">
-                <label><input type="radio" checked={form.promoteOnline === true} onChange={() => set('promoteOnline', true)} /> Yes</label>
-                <label><input type="radio" checked={form.promoteOnline === false} onChange={() => set('promoteOnline', false)} /> No</label>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
+
+        {error && <p className="svc-form-error" style={{ padding: '0 20px' }}>{error}</p>}
+
         <div className="modal-footer">
-          <button className="setup-save-btn" onClick={handleSave} disabled={saving || !form.name}>
+          <button className="setup-save-btn" onClick={handleSave}
+            disabled={saving || !form.name.trim() || !form.serviceType}>
             {saving ? 'Saving…' : 'Save'}
           </button>
           <button className="setup-cancel-btn" onClick={onClose}>Cancel</button>
@@ -609,6 +846,8 @@ const DEFAULT_SERVICE_FORM = {
   name: '',
   description: '',
   categoryType: 'Brand',
+  category: '',
+  activities: [] as string[],
   sacCode: '',
   tax: '',
 };
@@ -618,32 +857,62 @@ function ServiceForm({
   title,
   onSave,
   onCancel,
+  editMode,
+  categories,
 }: {
   initial: typeof DEFAULT_SERVICE_FORM;
   title: string;
   onSave: (data: typeof DEFAULT_SERVICE_FORM) => Promise<void>;
   onCancel: () => void;
+  editMode?: boolean;
+  categories: ServiceCategoryDto[];
 }) {
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customActivity, setCustomActivity] = useState('');
 
   function set(k: keyof typeof form, v: string) {
     setForm(prev => ({ ...prev, [k]: v }));
   }
 
+  function toggleActivity(activity: string) {
+    setForm(prev => {
+      const next = prev.activities.includes(activity)
+        ? prev.activities.filter(a => a !== activity)
+        : [...prev.activities, activity];
+      return { ...prev, activities: next };
+    });
+  }
+
   async function handleSubmit() {
-    if (!form.name.trim()) { setError('Service name is required.'); return; }
+    if (editMode || form.categoryType === 'aktivity') {
+      if (!form.name.trim()) { setError('Service name is required.'); return; }
+    } else {
+      if (!form.category) { setError('Please select a category.'); return; }
+      if (showCustomInput) {
+        if (!customActivity.trim()) { setError('Service / Activity name is required.'); return; }
+      } else {
+        if (form.activities.length === 0) { setError('Please select at least one activity.'); return; }
+      }
+    }
     setSaving(true);
     setError('');
     try {
-      await onSave(form);
+      const saveData = (!editMode && form.categoryType === 'Brand' && showCustomInput)
+        ? { ...form, name: customActivity.trim(), activities: [] }
+        : form;
+      await onSave(saveData);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Save failed.');
     } finally {
       setSaving(false);
     }
   }
+
+  const selectedCategory = categories.find(c => c.name === form.category);
+  const categoryActivities = selectedCategory ? selectedCategory.activities.map(a => a.name) : [];
 
   return (
     <div className="svc-form-wrap">
@@ -656,7 +925,7 @@ function ServiceForm({
             <label className="svc-form-radio-opt">
               <input type="radio" name="categoryType" value="Brand"
                 checked={form.categoryType === 'Brand'}
-                onChange={() => set('categoryType', 'Brand')} />
+                onChange={() => setForm(prev => ({ ...prev, categoryType: 'Brand', category: '', activities: [] }))} />
               <span>
                 <strong>Brand:</strong> You will be able to sell this service at the studio, company&rsquo;s website, member mobile app and plug-in.
               </span>
@@ -664,7 +933,7 @@ function ServiceForm({
             <label className="svc-form-radio-opt">
               <input type="radio" name="categoryType" value="aktivity"
                 checked={form.categoryType === 'aktivity'}
-                onChange={() => set('categoryType', 'aktivity')} />
+                onChange={() => setForm(prev => ({ ...prev, categoryType: 'aktivity', category: '', activities: [] }))} />
               <span>
                 <strong>aktivity:</strong> You will be able to sell this service on Yoactiv website and Yoactiv app.
               </span>
@@ -672,16 +941,84 @@ function ServiceForm({
           </div>
         </div>
 
-        <div className="svc-form-field">
-          <label className="svc-form-label">Service / Activity Name*</label>
-          <input
-            className={`svc-form-input${!form.name && error ? ' svc-form-input-err' : ''}`}
-            type="text"
-            value={form.name}
-            onChange={e => set('name', e.target.value)}
-            placeholder="Enter service name"
-          />
-        </div>
+        {/* Category dropdown — Brand add mode only */}
+        {!editMode && form.categoryType === 'Brand' && (
+          <div className="svc-form-field">
+            <label className="svc-form-label">Category*</label>
+            <select
+              className="svc-form-select"
+              value={form.category}
+              onChange={e => setForm(prev => ({ ...prev, category: e.target.value, activities: [] }))}
+            >
+              <option value="">Select</option>
+              {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+          </div>
+        )}
+
+        {/* Activity checkboxes — Brand add mode with category selected */}
+        {!editMode && form.categoryType === 'Brand' && form.category && (
+          <div className="svc-form-field">
+            <label className="svc-form-label">Service / Activity Name*</label>
+            {showCustomInput ? (
+              <div className="svc-custom-own-row">
+                <input
+                  className="svc-form-input svc-custom-own-input"
+                  type="text"
+                  value={customActivity}
+                  onChange={e => setCustomActivity(e.target.value)}
+                  autoFocus
+                />
+                <span className="svc-required-mark">*</span>
+                <button
+                  className="setup-save-btn"
+                  type="button"
+                  onClick={() => { setShowCustomInput(false); setCustomActivity(''); }}
+                >
+                  Back
+                </button>
+                <span className="svc-custom-own-info">
+                  Please add individual service here. You can create a package from the packages section.
+                </span>
+              </div>
+            ) : (
+              <>
+                <div className="svc-activity-grid">
+                  {categoryActivities.map(act => (
+                    <label key={act} className="svc-activity-check">
+                      <input
+                        type="checkbox"
+                        checked={form.activities.includes(act)}
+                        onChange={() => toggleActivity(act)}
+                      />
+                      <span>{act}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="svc-cant-find">
+                  <span className="svc-cant-find-label">Can&rsquo;t find your activities?</span>
+                  <button className="svc-create-own-btn" type="button" onClick={() => setShowCustomInput(true)}>
+                    Create Your Own Activity
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Service name text input — aktivity mode OR edit mode */}
+        {(editMode || form.categoryType === 'aktivity') && (
+          <div className="svc-form-field">
+            <label className="svc-form-label">Service / Activity Name*</label>
+            <input
+              className={`svc-form-input${!form.name && error ? ' svc-form-input-err' : ''}`}
+              type="text"
+              value={form.name}
+              onChange={e => set('name', e.target.value)}
+              placeholder="Enter service name"
+            />
+          </div>
+        )}
 
         <div className="svc-form-field">
           <label className="svc-form-label">SAC Code</label>
@@ -717,11 +1054,13 @@ function VariationsListView({
   subscriptionId,
   gymId,
   onBack,
+  onVariationCountChange,
 }: {
   service: GymServiceDto;
   subscriptionId: string;
   gymId: string;
   onBack: () => void;
+  onVariationCountChange: (delta: number) => void;
 }) {
   const [variations, setVariations] = useState<ServiceVariationDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -729,6 +1068,7 @@ function VariationsListView({
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingVariation, setEditingVariation] = useState<ServiceVariationDto | null>(null);
   const [openOptionsMenu, setOpenOptionsMenu] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -750,6 +1090,12 @@ function VariationsListView({
 
   function handleVariationSaved(v: ServiceVariationDto) {
     setVariations(prev => [...prev, v]);
+    onVariationCountChange(1);
+  }
+
+  function handleVariationUpdated(v: ServiceVariationDto) {
+    setVariations(prev => prev.map(x => x.id === v.id ? v : x));
+    setEditingVariation(null);
   }
 
   async function handleDeleteVariation(variationId: string) {
@@ -758,6 +1104,7 @@ function VariationsListView({
     try {
       await servicesApi.deleteVariation(subscriptionId, gymId, service.id, variationId);
       setVariations(prev => prev.filter(v => v.id !== variationId));
+      onVariationCountChange(-1);
     } finally {
       setDeleting(null);
       setOpenOptionsMenu(null);
@@ -849,6 +1196,16 @@ function VariationsListView({
                       {openOptionsMenu === v.id && (
                         <div className="svc-options-dropdown">
                           <button
+                            className="svc-options-item"
+                            onClick={() => { setEditingVariation(v); setOpenOptionsMenu(null); }}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Edit
+                          </button>
+                          <button
                             className="svc-options-item svc-options-item-danger"
                             onClick={() => handleDeleteVariation(v.id)}
                             disabled={deleting === v.id}
@@ -859,6 +1216,12 @@ function VariationsListView({
                               <path d="M10 11v6M14 11v6"/>
                             </svg>
                             {deleting === v.id ? 'Deleting…' : 'Delete'}
+                          </button>
+                          <button className="svc-options-item" onClick={() => setOpenOptionsMenu(null)}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
+                              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Add Products
                           </button>
                         </div>
                       )}
@@ -883,6 +1246,17 @@ function VariationsListView({
           onSaved={handleVariationSaved}
         />
       )}
+
+      {editingVariation && (
+        <AddVariationModal
+          service={service}
+          subscriptionId={subscriptionId}
+          gymId={gymId}
+          existing={editingVariation}
+          onClose={() => setEditingVariation(null)}
+          onSaved={handleVariationUpdated}
+        />
+      )}
     </div>
   );
 }
@@ -899,9 +1273,11 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
   const [selectedService, setSelectedService] = useState<GymServiceDto | null>(null);
   const [openOptionsMenu, setOpenOptionsMenu] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [serviceCategories, setServiceCategories] = useState<ServiceCategoryDto[]>([]);
 
   useEffect(() => {
     servicesApi.list(subscriptionId, gymId).then(setServices).catch(() => {});
+    serviceCategoriesApi.list().then(setServiceCategories).catch(() => {});
   }, [subscriptionId, gymId]);
 
   useEffect(() => {
@@ -914,14 +1290,28 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
   }, [openOptionsMenu]);
 
   async function handleAddService(data: typeof DEFAULT_SERVICE_FORM) {
-    const s = await servicesApi.create(subscriptionId, gymId, {
-      name: data.name,
-      description: data.description || undefined,
-      categoryType: data.categoryType,
-      sacCode: data.sacCode || undefined,
-      tax: data.tax || undefined,
-    });
-    setServices(prev => [...prev, s]);
+    if (data.categoryType === 'Brand' && data.activities.length > 0) {
+      const created: GymServiceDto[] = [];
+      for (const activity of data.activities) {
+        const s = await servicesApi.create(subscriptionId, gymId, {
+          name: activity,
+          categoryType: data.categoryType,
+          sacCode: data.sacCode || undefined,
+          tax: data.tax || undefined,
+        });
+        created.push(s);
+      }
+      setServices(prev => [...prev, ...created]);
+    } else {
+      const s = await servicesApi.create(subscriptionId, gymId, {
+        name: data.name,
+        description: data.description || undefined,
+        categoryType: data.categoryType,
+        sacCode: data.sacCode || undefined,
+        tax: data.tax || undefined,
+      });
+      setServices(prev => [...prev, s]);
+    }
     setView('list');
   }
 
@@ -981,6 +1371,7 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
         initial={DEFAULT_SERVICE_FORM}
         onSave={handleAddService}
         onCancel={() => setView('list')}
+        categories={serviceCategories}
       />
     );
   }
@@ -993,11 +1384,15 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
           name: selectedService.name,
           description: selectedService.description ?? '',
           categoryType: selectedService.categoryType,
+          category: '',
+          activities: [],
           sacCode: selectedService.sacCode ?? '',
           tax: selectedService.tax ?? '',
         }}
         onSave={handleEditService}
         onCancel={() => { setView('list'); setSelectedService(null); }}
+        editMode
+        categories={serviceCategories}
       />
     );
   }
@@ -1009,6 +1404,13 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
         subscriptionId={subscriptionId}
         gymId={gymId}
         onBack={() => { setView('list'); setSelectedService(null); }}
+        onVariationCountChange={(delta) => {
+          setServices(prev => prev.map(s =>
+            s.id === selectedService.id
+              ? { ...s, variationCount: s.variationCount + delta }
+              : s
+          ));
+        }}
       />
     );
   }
@@ -1144,131 +1546,289 @@ function ManageServicesContent({ subscriptionId, gymId }: { subscriptionId: stri
 
 // ─── Setup: Manage Packages ───────────────────────────────────────────────────
 
+interface PkgVarEntry {
+  serviceId: string;
+  serviceName: string;
+  variation: ServiceVariationDto;
+}
+
+const EMPTY_PKG_ROW: CreatePackageItemRequest = {
+  serviceId: '', serviceName: '', serviceFee: 0, quantity: 1, discount: 0, discountType: '%',
+};
+
 function ManagePackagesContent({ subscriptionId, gymId }: { subscriptionId: string; gymId: string }) {
+  const [view, setView] = useState<'list' | 'add'>('list');
   const [packages, setPackages] = useState<GymPackageDto[]>([]);
   const [services, setServices] = useState<GymServiceDto[]>([]);
+  const [allVariations, setAllVariations] = useState<PkgVarEntry[]>([]);
   const [packageName, setPackageName] = useState('');
-  const [rows, setRows] = useState<CreatePackageItemRequest[]>([
-    { serviceId: '', serviceName: '', serviceFee: 0, quantity: 1, discount: 0, discountType: '%' },
-  ]);
-  const [serviceDropdownOpen, setServiceDropdownOpen] = useState<number | null>(null);
+  const [rows, setRows] = useState<CreatePackageItemRequest[]>([{ ...EMPTY_PKG_ROW }]);
+  const [rowSvcIds, setRowSvcIds] = useState<string[]>(['']);
+  const [searchPopupRow, setSearchPopupRow] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    servicesApi.list(subscriptionId, gymId).then(setServices).catch(() => {});
     packagesApi.list(subscriptionId, gymId).then(setPackages).catch(() => {});
+    loadAllVariations();
   }, [subscriptionId, gymId]);
 
+  async function loadAllVariations() {
+    try {
+      const svcs = await servicesApi.list(subscriptionId, gymId);
+      setServices(svcs);
+      const entries: PkgVarEntry[] = [];
+      await Promise.all(svcs.map(async svc => {
+        const vars = await servicesApi.listVariations(subscriptionId, gymId, svc.id);
+        vars.forEach(v => entries.push({ serviceId: svc.id, serviceName: svc.name, variation: v }));
+      }));
+      entries.sort((a, b) => a.serviceName.localeCompare(b.serviceName) || a.variation.name.localeCompare(b.variation.name));
+      setAllVariations(entries);
+    } catch { /* ignore */ }
+  }
+
   function addRow() {
-    setRows(prev => [...prev, { serviceId: '', serviceName: '', serviceFee: 0, quantity: 1, discount: 0, discountType: '%' }]);
+    setRows(prev => [...prev, { ...EMPTY_PKG_ROW }]);
+    setRowSvcIds(prev => [...prev, '']);
+  }
+
+  function deleteRow(idx: number) {
+    setRows(prev => prev.filter((_, i) => i !== idx));
+    setRowSvcIds(prev => prev.filter((_, i) => i !== idx));
+  }
+
+  function handleServiceDropdown(idx: number, svcId: string) {
+    setRowSvcIds(prev => prev.map((v, i) => i === idx ? svcId : v));
+    setRows(prev => prev.map((r, i) => i === idx ? { ...EMPTY_PKG_ROW } : r));
   }
 
   function updateRow(idx: number, field: keyof CreatePackageItemRequest, value: string | number) {
     setRows(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
   }
 
-  function selectService(idx: number, svc: GymServiceDto) {
-    setRows(prev => prev.map((r, i) => i === idx ? { ...r, serviceId: svc.id, serviceName: svc.name } : r));
-    setServiceDropdownOpen(null);
+  function selectVariation(rowIdx: number, entry: PkgVarEntry) {
+    setRows(prev => prev.map((r, i) => i === rowIdx ? {
+      ...r,
+      serviceId: entry.variation.id,
+      serviceName: `${entry.serviceName} - ${entry.variation.name}`,
+      serviceFee: entry.variation.serviceFee,
+    } : r));
+    setSearchPopupRow(null);
   }
 
-  const total = rows.reduce((sum, r) => {
-    const fee = r.serviceFee * r.quantity;
-    const disc = r.discountType === '%' ? fee * r.discount / 100 : r.discount;
-    return sum + fee - disc;
-  }, 0);
+  function rowNet(row: CreatePackageItemRequest) {
+    const gross = row.serviceFee * row.quantity;
+    const disc = row.discountType === '%' ? gross * row.discount / 100 : row.discount;
+    return gross - disc;
+  }
+
+  const total = rows.reduce((sum, r) => sum + rowNet(r), 0);
 
   async function handleSave() {
     if (!packageName.trim()) return;
     const validRows = rows.filter(r => r.serviceId);
+    if (validRows.length === 0) return;
     setSaving(true);
     try {
       const pkg = await packagesApi.create(subscriptionId, gymId, { name: packageName, items: validRows });
       setPackages(prev => [...prev, pkg]);
       setPackageName('');
-      setRows([{ serviceId: '', serviceName: '', serviceFee: 0, quantity: 1, discount: 0, discountType: '%' }]);
+      setRows([{ ...EMPTY_PKG_ROW }]);
+      setRowSvcIds(['']);
+      setView('list');
     } finally {
       setSaving(false);
     }
   }
 
+  function startAdd() {
+    setPackageName('');
+    setRows([{ ...EMPTY_PKG_ROW }]);
+    setRowSvcIds(['']);
+    setView('add');
+  }
+
+  // ── List view ──────────────────────────────────────────────────────────────
+  if (view === 'list') {
+    return (
+      <div className="pkg-list-wrap">
+        <div className="pkg-list-toolbar">
+          <button className="setup-add-btn" onClick={startAdd}>Add New Package</button>
+        </div>
+        {packages.length === 0 ? null : (
+          <div className="db-table-wrap">
+            <table className="db-table">
+              <thead>
+                <tr>
+                  <th>S.No</th>
+                  <th>Package Name</th>
+                  <th>No. of Services</th>
+                </tr>
+              </thead>
+              <tbody>
+                {packages.map((pkg, idx) => (
+                  <tr key={pkg.id}>
+                    <td>{idx + 1}</td>
+                    <td>{pkg.name}</td>
+                    <td>{pkg.items.length}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Add form view ──────────────────────────────────────────────────────────
   return (
     <div className="pkg-wrap">
-      <div className="pkg-form">
-        <div className="pkg-name-row">
-          <label className="pkg-name-label">Package Name*</label>
-          <input className="pkg-name-input" type="text" value={packageName} onChange={e => setPackageName(e.target.value)} />
-        </div>
-        <table className="pkg-table">
-          <thead>
-            <tr>
-              <th>S.NO</th>
-              <th>SERVICE</th>
-              <th>SERVICE FEE</th>
-              <th>QUANTITY</th>
-              <th>SERVICE DISCOUNT</th>
-              <th><button className="pkg-add-row" onClick={addRow}>+</button></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, idx) => (
-              <tr key={idx}>
-                <td>{idx + 1}</td>
-                <td className="pkg-svc-cell">
-                  <div className="pkg-svc-select-wrap">
-                    <button
-                      className="pkg-svc-btn"
-                      onClick={() => setServiceDropdownOpen(serviceDropdownOpen === idx ? null : idx)}
-                    >
-                      {row.serviceName || 'Select service'}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14 }}>
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </button>
-                    {serviceDropdownOpen === idx && (
-                      <div className="pkg-svc-dropdown">
-                        {services.map(s => (
-                          <div key={s.id} className="pkg-svc-opt" onClick={() => selectService(idx, s)}>{s.name}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td><input className="pkg-num-input" type="number" value={row.serviceFee} onChange={e => updateRow(idx, 'serviceFee', parseFloat(e.target.value) || 0)} /></td>
-                <td><input className="pkg-num-input" type="number" value={row.quantity} min={1} onChange={e => updateRow(idx, 'quantity', parseInt(e.target.value) || 1)} /></td>
-                <td>
-                  <div className="pkg-discount-row">
-                    <input className="pkg-num-input" type="number" value={row.discount} onChange={e => updateRow(idx, 'discount', parseFloat(e.target.value) || 0)} />
-                    <select value={row.discountType} onChange={e => updateRow(idx, 'discountType', e.target.value)}>
-                      <option value="%">%</option><option value="Flat">Flat</option>
-                    </select>
-                    <span>= {(row.discountType === '%' ? row.serviceFee * row.quantity * row.discount / 100 : row.discount).toFixed(0)}</span>
-                  </div>
-                </td>
-                <td />
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="pkg-total">Total = {total.toFixed(0)}</div>
-        <div className="pkg-actions">
-          <button className="setup-save-btn" onClick={handleSave} disabled={saving || !packageName.trim()}>
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
+      <div className="pkg-name-row">
+        <label className="pkg-name-label">Package Name*</label>
+        <input className="pkg-name-input" type="text" value={packageName}
+          onChange={e => setPackageName(e.target.value)} autoFocus />
       </div>
 
-      {packages.length > 0 && (
-        <div className="pkg-list">
-          <h3>Saved Packages</h3>
-          {packages.map(pkg => (
-            <div key={pkg.id} className="pkg-list-item">
-              <strong>{pkg.name}</strong>
-              <span className="pkg-list-count">{pkg.items.length} service(s)</span>
-            </div>
+      <table className="pkg-table">
+        <thead>
+          <tr>
+            <th className="pkg-th-sno">S.NO</th>
+            <th className="pkg-th-svc">SERVICE</th>
+            <th className="pkg-th-fee">SERVICE FEE</th>
+            <th className="pkg-th-qty">QUANTITY</th>
+            <th className="pkg-th-disc">SERVICE DISCOUNT</th>
+            <th className="pkg-th-add"><button className="pkg-add-row" onClick={addRow}>+</button></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, idx) => (
+            <tr key={idx}>
+              <td>{idx + 1}</td>
+              <td className="pkg-svc-td">
+                <div className="pkg-svc-input-wrap">
+                  {row.serviceId ? (
+                    <input
+                      className="pkg-svc-input"
+                      type="text"
+                      readOnly
+                      value={row.serviceName}
+                    />
+                  ) : (
+                    <select
+                      className="pkg-svc-select"
+                      value={rowSvcIds[idx] || ''}
+                      onChange={e => handleServiceDropdown(idx, e.target.value)}
+                    >
+                      <option value="">Select service</option>
+                      {services.map(svc => (
+                        <option key={svc.id} value={svc.id}>{svc.name}</option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    className="pkg-search-icon-btn"
+                    disabled={!row.serviceId && !rowSvcIds[idx]}
+                    onClick={() => setSearchPopupRow(idx)}
+                    title="Search variations"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="14" height="14">
+                      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+              <td>
+                <input className="pkg-num-input" type="number" min={0} value={row.serviceFee}
+                  onChange={e => updateRow(idx, 'serviceFee', parseFloat(e.target.value) || 0)} />
+              </td>
+              <td>
+                <input className="pkg-num-input pkg-qty-input" type="number" value={row.quantity} readOnly />
+              </td>
+              <td>
+                <div className="pkg-discount-wrap">
+                  <input className="pkg-num-input" type="number" min={0} value={row.discount}
+                    onChange={e => updateRow(idx, 'discount', parseFloat(e.target.value) || 0)} />
+                  <select className="pkg-disc-type" value={row.discountType}
+                    onChange={e => updateRow(idx, 'discountType', e.target.value)}>
+                    <option value="%">%</option>
+                    <option value="Flat">Flat</option>
+                  </select>
+                  <span className="pkg-net-val">= {rowNet(row).toFixed(2)}</span>
+                </div>
+              </td>
+              <td className="pkg-del-td">
+                {idx > 0 && (
+                  <button className="pkg-del-row-btn" onClick={() => deleteRow(idx)} title="Remove row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+                    </svg>
+                  </button>
+                )}
+              </td>
+            </tr>
           ))}
+        </tbody>
+      </table>
+
+      <div className="pkg-total-row">Total = {total.toFixed(2)}</div>
+
+      <div className="pkg-form-actions">
+        <button className="setup-save-btn" onClick={handleSave}
+          disabled={saving || !packageName.trim() || rows.every(r => !r.serviceId)}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+
+      {/* Search Service popup */}
+      {searchPopupRow !== null && (() => {
+        const popupVariations = allVariations.filter(e => e.serviceId === rowSvcIds[searchPopupRow!]);
+        return (
+        <div className="modal-overlay" onClick={() => setSearchPopupRow(null)}>
+          <div className="pkg-search-popup" onClick={e => e.stopPropagation()}>
+            <div className="pkg-search-popup-hdr">
+              <span>Search Service</span>
+              <button className="modal-close" onClick={() => setSearchPopupRow(null)}>×</button>
+            </div>
+            <div className="pkg-search-popup-body">
+              {popupVariations.length === 0 ? (
+                <p className="db-state-msg">No variations found.</p>
+              ) : (
+                <table className="db-table pkg-search-tbl">
+                  <thead>
+                    <tr>
+                      <th className="pkg-sh-name">Service Name</th>
+                      <th className="pkg-sh-var">Service Variation</th>
+                      <th className="pkg-sh-dur">Duration</th>
+                      <th>Amount</th>
+                      <th>Session(s)</th>
+                      <th className="pkg-sh-sel">Select</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {popupVariations.map(entry => (
+                      <tr key={entry.variation.id}>
+                        <td>{entry.serviceName}</td>
+                        <td>{entry.variation.name}</td>
+                        <td>{entry.variation.serviceType.toLowerCase() === 'admin fee' ? '-' : formatDuration(entry.variation)}</td>
+                        <td>{entry.variation.serviceFee}</td>
+                        <td>{entry.variation.numberOfSessions > 0 ? entry.variation.numberOfSessions : 'NA'}</td>
+                        <td>
+                          <button className="pkg-select-link"
+                            onClick={() => selectVariation(searchPopupRow!, entry)}>
+                            Select
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -1,9 +1,12 @@
-namespace AbsoluteFitManagement.Contracts.Services;
+using ErrorOr;
+using AbsoluteFitManagement.Domain.Services;
+using MediatR;
 
-public record ServiceVariationResponse(
-    Guid Id,
+namespace AbsoluteFitManagement.Application.Services.Commands.UpdateServiceVariation;
+
+public record UpdateServiceVariationCommand(
     Guid ServiceId,
-    string ServiceType,
+    Guid VariationId,
     string Name,
     decimal ServiceFee,
     int TimeHours,
@@ -29,5 +32,4 @@ public record ServiceVariationResponse(
     bool EligibleForReferralBonus,
     bool ReferralBonusFromPurchase,
     bool TermBatchDate,
-    bool PromoteOnline,
-    bool IsActive);
+    bool PromoteOnline) : IRequest<ErrorOr<ServiceVariation>>;

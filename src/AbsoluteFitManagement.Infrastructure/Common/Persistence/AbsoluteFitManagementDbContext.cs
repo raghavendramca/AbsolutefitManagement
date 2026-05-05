@@ -53,6 +53,9 @@ public class AbsoluteFitManagementDbContext : DbContext, IUnitOfWork
     // Setup
     public DbSet<GymService> GymServices { get; set; } = null!;
     public DbSet<ServiceVariation> ServiceVariations { get; set; } = null!;
+    public DbSet<ServiceCategory> ServiceCategories { get; set; } = null!;
+    public DbSet<ServiceActivity> ServiceActivities { get; set; } = null!;
+    public DbSet<ServiceTypeConfig> ServiceTypeConfigs { get; set; } = null!;
     public DbSet<GymPackage> GymPackages { get; set; } = null!;
     public DbSet<GymPackageItem> GymPackageItems { get; set; } = null!;
     public DbSet<GymProfile> GymProfiles { get; set; } = null!;

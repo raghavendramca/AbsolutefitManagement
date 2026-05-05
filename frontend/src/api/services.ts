@@ -20,19 +20,27 @@ export interface ServiceVariationDto {
   serviceFee: number;
   timeHours: number;
   timeMinutes: number;
+  daysPerWeek: number;
+  months: number;
+  numberOfSessions: number;
   validityDays: number;
   maxMembers: number;
   tax: string;
+  accessType?: string;
   category: string;
   otpVerification: boolean;
   upgradable: boolean;
   transferable: boolean;
+  allowFreeze: boolean;
+  maxFreezeDays: number;
+  minFreezeDays: number;
   appointmentsApplicable: boolean;
   registrationFee: boolean;
   minFeeLimit: number;
   maxFeeLimit: number;
   eligibleForReferralBonus: boolean;
   referralBonusFromPurchase: boolean;
+  termBatchDate: boolean;
   promoteOnline: boolean;
   isActive: boolean;
 }
@@ -60,21 +68,31 @@ export interface CreateServiceVariationRequest {
   serviceFee: number;
   timeHours: number;
   timeMinutes: number;
+  daysPerWeek: number;
+  months: number;
+  numberOfSessions: number;
   validityDays: number;
   maxMembers: number;
   tax: string;
+  accessType?: string;
   category: string;
   otpVerification: boolean;
   upgradable: boolean;
   transferable: boolean;
+  allowFreeze: boolean;
+  maxFreezeDays: number;
+  minFreezeDays: number;
   appointmentsApplicable: boolean;
   registrationFee: boolean;
   minFeeLimit: number;
   maxFeeLimit: number;
   eligibleForReferralBonus: boolean;
   referralBonusFromPurchase: boolean;
+  termBatchDate: boolean;
   promoteOnline: boolean;
 }
+
+export type UpdateServiceVariationRequest = Omit<CreateServiceVariationRequest, 'serviceType'>;
 
 export const servicesApi = {
   list: (subscriptionId: string, gymId: string) =>
@@ -94,6 +112,9 @@ export const servicesApi = {
 
   createVariation: (subscriptionId: string, gymId: string, serviceId: string, data: CreateServiceVariationRequest) =>
     api.post<ServiceVariationDto>(`/subscriptions/${subscriptionId}/gyms/${gymId}/services/${serviceId}/variations`, data),
+
+  updateVariation: (subscriptionId: string, gymId: string, serviceId: string, variationId: string, data: UpdateServiceVariationRequest) =>
+    api.put<ServiceVariationDto>(`/subscriptions/${subscriptionId}/gyms/${gymId}/services/${serviceId}/variations/${variationId}`, data),
 
   deleteVariation: (subscriptionId: string, gymId: string, serviceId: string, variationId: string) =>
     api.delete<void>(`/subscriptions/${subscriptionId}/gyms/${gymId}/services/${serviceId}/variations/${variationId}`),

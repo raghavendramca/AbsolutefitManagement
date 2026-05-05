@@ -3,6 +3,7 @@ using AbsoluteFitManagement.Application.Services.Commands.CreateServiceVariation
 using AbsoluteFitManagement.Application.Services.Commands.DeleteGymService;
 using AbsoluteFitManagement.Application.Services.Commands.DeleteServiceVariation;
 using AbsoluteFitManagement.Application.Services.Commands.UpdateGymService;
+using AbsoluteFitManagement.Application.Services.Commands.UpdateServiceVariation;
 using AbsoluteFitManagement.Application.Services.Queries.ListGymServices;
 using AbsoluteFitManagement.Application.Services.Queries.ListServiceVariations;
 using AbsoluteFitManagement.Application.Common.Interfaces;
@@ -78,18 +79,45 @@ public class GymServicesController : ApiController
         var command = new CreateServiceVariationCommand(
             gymId, serviceId,
             request.ServiceType, request.Name, request.ServiceFee,
-            request.TimeHours, request.TimeMinutes, request.ValidityDays,
-            request.MaxMembers, request.Tax, request.Category,
+            request.TimeHours, request.TimeMinutes,
+            request.DaysPerWeek, request.Months, request.NumberOfSessions,
+            request.ValidityDays, request.MaxMembers,
+            request.Tax, request.AccessType, request.Category,
             request.OtpVerification, request.Upgradable, request.Transferable,
+            request.AllowFreeze, request.MaxFreezeDays, request.MinFreezeDays,
             request.AppointmentsApplicable, request.RegistrationFee,
             request.MinFeeLimit, request.MaxFeeLimit,
             request.EligibleForReferralBonus, request.ReferralBonusFromPurchase,
-            request.PromoteOnline);
+            request.TermBatchDate, request.PromoteOnline);
 
         var result = await _mediator.Send(command);
         return result.Match(
             v => CreatedAtAction(nameof(ListVariations), new { subscriptionId, gymId, serviceId }, ToVariationResponse(v)),
             Problem);
+    }
+
+    [HttpPut("{serviceId:guid}/variations/{variationId:guid}")]
+    public async Task<IActionResult> UpdateVariation(
+        UpdateServiceVariationRequest request,
+        Guid serviceId,
+        Guid variationId)
+    {
+        var command = new UpdateServiceVariationCommand(
+            serviceId, variationId,
+            request.Name, request.ServiceFee,
+            request.TimeHours, request.TimeMinutes,
+            request.DaysPerWeek, request.Months, request.NumberOfSessions,
+            request.ValidityDays, request.MaxMembers,
+            request.Tax, request.AccessType, request.Category,
+            request.OtpVerification, request.Upgradable, request.Transferable,
+            request.AllowFreeze, request.MaxFreezeDays, request.MinFreezeDays,
+            request.AppointmentsApplicable, request.RegistrationFee,
+            request.MinFeeLimit, request.MaxFeeLimit,
+            request.EligibleForReferralBonus, request.ReferralBonusFromPurchase,
+            request.TermBatchDate, request.PromoteOnline);
+
+        var result = await _mediator.Send(command);
+        return result.Match(v => Ok(ToVariationResponse(v)), Problem);
     }
 
     [HttpDelete("{serviceId:guid}/variations/{variationId:guid}")]
@@ -104,8 +132,14 @@ public class GymServicesController : ApiController
 
     private static ServiceVariationResponse ToVariationResponse(ServiceVariation v) =>
         new(v.Id, v.ServiceId, v.ServiceType, v.Name, v.ServiceFee,
-            v.TimeHours, v.TimeMinutes, v.ValidityDays, v.MaxMembers,
-            v.Tax, v.Category, v.OtpVerification, v.Upgradable, v.Transferable,
-            v.AppointmentsApplicable, v.RegistrationFee, v.MinFeeLimit, v.MaxFeeLimit,
-            v.EligibleForReferralBonus, v.ReferralBonusFromPurchase, v.PromoteOnline, v.IsActive);
+            v.TimeHours, v.TimeMinutes,
+            v.DaysPerWeek, v.Months, v.NumberOfSessions,
+            v.ValidityDays, v.MaxMembers,
+            v.Tax, v.AccessType, v.Category,
+            v.OtpVerification, v.Upgradable, v.Transferable,
+            v.AllowFreeze, v.MaxFreezeDays, v.MinFreezeDays,
+            v.AppointmentsApplicable, v.RegistrationFee,
+            v.MinFeeLimit, v.MaxFeeLimit,
+            v.EligibleForReferralBonus, v.ReferralBonusFromPurchase,
+            v.TermBatchDate, v.PromoteOnline, v.IsActive);
 }
