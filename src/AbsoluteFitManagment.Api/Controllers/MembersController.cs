@@ -1,4 +1,5 @@
 using AbsoluteFitManagement.Application.Members.Commands.CreateMember;
+using AbsoluteFitManagement.Application.Members.Commands.UpdateMember;
 using AbsoluteFitManagement.Application.Members.Queries.ListMembers;
 using AbsoluteFitManagement.Contracts.Members;
 using MediatR;
@@ -45,6 +46,34 @@ public class MembersController : ApiController
                 nameof(ListMembers),
                 new { subscriptionId, gymId },
                 ToResponse(member)),
+            Problem);
+    }
+
+    [HttpPut("{memberId:guid}")]
+    public async Task<IActionResult> UpdateMember(
+        UpdateMemberRequest request,
+        Guid memberId,
+        Guid gymId)
+    {
+        var command = new UpdateMemberCommand(
+            MemberId: memberId,
+            FullName: request.FullName,
+            CountryCode: request.CountryCode,
+            ContactNumber: request.ContactNumber,
+            Email: request.Email,
+            Gender: request.Gender,
+            DateOfBirth: request.DateOfBirth,
+            Address: request.Address,
+            Locality: request.Locality,
+            EmergencyContactName: request.EmergencyContactName,
+            EmergencyContactPhone: request.EmergencyContactPhone,
+            LeadSource: request.LeadSource,
+            ExtendedFieldsJson: request.ExtendedFieldsJson);
+
+        var result = await _mediator.Send(command);
+
+        return result.Match(
+            member => Ok(ToResponse(member)),
             Problem);
     }
 

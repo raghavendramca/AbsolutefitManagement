@@ -10,7 +10,7 @@ import { profileApi, type GymProfileDto, DAYS, parseOperatingHours, defaultHours
 import { formCustomizationApi, type FormFieldConfig, type AdditionalDetailField, type AdditionalDetailFieldType } from '../api/formCustomization';
 import { fitnessProfileApi, type FitnessProfileItemDto, type FitnessCategory } from '../api/fitnessProfile';
 import { apparelItemsApi, type ApparelItemDto, type ApparelCategory } from '../api/apparelItems';
-import { membersApi, type CreateMemberDto } from '../api/members';
+import { membersApi, type CreateMemberDto, type MemberDto } from '../api/members';
 import { billTemplatesApi, type BillTemplateDto } from '../api/billTemplates';
 import { billSettingsApi, type BillSettingKey } from '../api/billSettings';
 import { serviceCategoriesApi, type ServiceCategoryDto } from '../api/serviceCategories';
@@ -18,6 +18,8 @@ import { getFormSections } from '../formSchemas/formSchemaRegistry';
 import type { Enquiry, CreateEnquiryRequest } from '../types';
 import AddEnquiryDialog from '../components/AddEnquiryDialog';
 import AddMemberDialog from '../components/AddMemberDialog';
+import MemberInvoicePage from '../components/MemberInvoicePage';
+import MemberProfilePage from '../components/MemberProfilePage';
 import AddStaffDialog from '../components/AddStaffDialog';
 import EditStaffDialog from '../components/EditStaffDialog';
 import AdminRightsDialog from '../components/AdminRightsDialog';
@@ -3604,8 +3606,12 @@ export default function DashboardPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
   const [convertModal, setConvertModal] = useState<{ enquiry: Enquiry; comment: string } | null>(null);
-  const [clientsView, setClientsView] = useState<'list' | 'add'>('list');
+  const [clientsView, setClientsView] = useState<'list' | 'add' | 'invoice' | 'profile'>('list');
   const [memberPrefill, setMemberPrefill] = useState<Partial<CreateMemberDto> | null>(null);
+  const [invoiceMember, setInvoiceMember] = useState<{ name: string; contact: string } | null>(null);
+  const [selectedMember, setSelectedMember] = useState<MemberDto | null>(null);
+  const [members, setMembers] = useState<MemberDto[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
   const [showStaffDialog, setShowStaffDialog] = useState(false);
   const [editStaffId, setEditStaffId] = useState<string | null>(null);
   const [adminRightsStaff, setAdminRightsStaff] = useState<{ id: string; name: string } | null>(null);
@@ -3659,6 +3665,16 @@ export default function DashboardPage() {
       .finally(() => setStaffLoading(false));
   }, [gymId]);
 
+  // ── Fetch members when navigating to clients ──────────────────────────────
+  useEffect(() => {
+    if (activeNav !== 'clients' || !tenantId || !gymId) return;
+    setMembersLoading(true);
+    membersApi.list(tenantId, gymId)
+      .then(setMembers)
+      .catch(() => {})
+      .finally(() => setMembersLoading(false));
+  }, [activeNav, tenantId, gymId]);
+
   // ── Close quick-add dropdown on outside click ─────────────────────────────
   useEffect(() => {
     if (!quickAddOpen) return;
@@ -3687,6 +3703,14 @@ export default function DashboardPage() {
   async function handleSaveMember(data: CreateMemberDto) {
     if (!tenantId || !gymId) return;
     await membersApi.create(tenantId, gymId, data);
+  }
+
+  async function handleAddAndBill(data: CreateMemberDto) {
+    if (!tenantId || !gymId) return;
+    await membersApi.create(tenantId, gymId, data);
+    setInvoiceMember({ name: data.fullName, contact: data.contactNumber });
+    setMemberPrefill(null);
+    setClientsView('invoice');
   }
 
   function handleConvertToMember() {
@@ -4300,8 +4324,29 @@ export default function DashboardPage() {
               )}
             </>
           ) : activeNav === 'clients' ? (
-            /* ── Clients / Add Member ────────────────────────────────── */
-            clientsView === 'add' && memberPrefill ? (
+            /* ── Clients / Add Member / Invoice / Profile ───────────── */
+            clientsView === 'invoice' && invoiceMember ? (
+              <MemberInvoicePage
+                memberName={invoiceMember.name}
+                memberContact={invoiceMember.contact}
+                subscriptionId={tenantId ?? ''}
+                gymId={gymId ?? ''}
+                onClose={() => { setClientsView('list'); setInvoiceMember(null); }}
+              />
+            ) : clientsView === 'profile' && selectedMember ? (
+              <MemberProfilePage
+                member={selectedMember}
+                subscriptionId={tenantId ?? ''}
+                gymId={gymId ?? ''}
+                gymName={gymName}
+                onClose={() => { setClientsView('list'); setSelectedMember(null); }}
+                onNewInvoice={(m) => {
+                  setInvoiceMember({ name: m.fullName, contact: m.contactNumber });
+                  setClientsView('invoice');
+                  setSelectedMember(null);
+                }}
+              />
+            ) : clientsView === 'add' && memberPrefill ? (
               <AddMemberDialog
                 subscriptionId={tenantId ?? ''}
                 gymId={gymId ?? ''}
@@ -4309,6 +4354,7 @@ export default function DashboardPage() {
                 pageMode={true}
                 onClose={() => { setClientsView('list'); setMemberPrefill(null); }}
                 onSave={async (data) => { await handleSaveMember(data); setClientsView('list'); setMemberPrefill(null); }}
+                onAddAndBill={handleAddAndBill}
               />
             ) : (
               <>
@@ -4318,7 +4364,53 @@ export default function DashboardPage() {
                   <span className="db-bc-active">Clients</span>
                 </div>
                 <h1 className="db-heading">Clients</h1>
-                <p className="db-state-msg">Select a member to view, or convert an enquiry to a member.</p>
+
+                {membersLoading ? (
+                  <p className="db-state-msg">Loading members…</p>
+                ) : members.length === 0 ? (
+                  <p className="db-state-msg">No members found. Convert an enquiry or add a member to get started.</p>
+                ) : (
+                  <div className="db-table-wrap" style={{ marginTop: 12 }}>
+                    <table className="db-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Contact</th>
+                          <th>Email</th>
+                          <th>Gender</th>
+                          <th>Join Date</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {members
+                          .filter(m => {
+                            const q = searchText.toLowerCase();
+                            if (!q) return true;
+                            return (
+                              m.fullName.toLowerCase().includes(q) ||
+                              m.contactNumber.includes(q) ||
+                              (m.email ?? '').toLowerCase().includes(q)
+                            );
+                          })
+                          .map(m => (
+                            <tr
+                              key={m.id}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => { setSelectedMember(m); setClientsView('profile'); }}
+                            >
+                              <td style={{ color: '#f97316', fontWeight: 500 }}>{m.fullName}</td>
+                              <td>{m.contactNumber}</td>
+                              <td>{m.email ?? '—'}</td>
+                              <td>{m.gender ?? '—'}</td>
+                              <td>{new Date(m.joinDate).toLocaleDateString('en-GB')}</td>
+                              <td>{m.status}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </>
             )
           ) : activeNav === 'dashboard' ? (

@@ -16,6 +16,14 @@ public class Invoice : GymScopedEntity
     public string Status { get; set; } = "Draft";
     public string? Notes { get; set; }
 
+    // Extended billing fields
+    public string InvoiceType { get; set; } = "Service";
+    public string? SalesRepName { get; set; }
+    public string? DiscountReason { get; set; }
+    public string? InternalNotes { get; set; }
+    public decimal PaidAmount { get; set; }
+    public string? PaymentsJson { get; set; }
+
     public Invoice(
         Guid gymId,
         string invoiceNumber,
@@ -25,6 +33,12 @@ public class Invoice : GymScopedEntity
         Guid? memberId = null,
         DateOnly? dueDate = null,
         string? notes = null,
+        string invoiceType = "Service",
+        string? salesRepName = null,
+        string? discountReason = null,
+        string? internalNotes = null,
+        decimal paidAmount = 0,
+        string? paymentsJson = null,
         Guid? id = null)
         : base(id ?? Guid.NewGuid(), gymId)
     {
@@ -37,6 +51,12 @@ public class Invoice : GymScopedEntity
         TotalAmount = subTotal + taxAmount;
         Notes = notes;
         Status = "Draft";
+        InvoiceType = invoiceType;
+        SalesRepName = salesRepName;
+        DiscountReason = discountReason;
+        InternalNotes = internalNotes;
+        PaidAmount = paidAmount;
+        PaymentsJson = paymentsJson;
     }
 
     protected Invoice() { }

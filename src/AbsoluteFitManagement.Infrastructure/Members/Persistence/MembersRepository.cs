@@ -17,5 +17,8 @@ public class MembersRepository : IMembersRepository
             .OrderByDescending(m => m.CreatedAt)
             .ToListAsync();
 
+    public async Task<Member?> GetByIdAsync(Guid memberId) =>
+        await _db.Members.FindAsync(memberId);
+
     public async Task AddAsync(Member member) => await _db.Members.AddAsync(member);
 }

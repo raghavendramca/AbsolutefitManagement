@@ -49,4 +49,10 @@ export const membersApi = {
     api.get<MemberDto[]>(
       `/subscriptions/${subscriptionId}/gyms/${gymId}/members`
     ),
+
+  update: (subscriptionId: string, gymId: string, memberId: string, data: CreateMemberDto) =>
+    api.put<MemberDto>(
+      `/subscriptions/${subscriptionId}/gyms/${gymId}/members/${memberId}`,
+      data
+    ),
 };

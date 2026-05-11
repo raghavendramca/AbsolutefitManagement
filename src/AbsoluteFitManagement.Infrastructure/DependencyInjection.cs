@@ -2,6 +2,7 @@ using AbsoluteFitManagement.Application.Common.Interfaces;
 using AbsoluteFitManagement.Infrastructure.Admins.Persistence;
 using AbsoluteFitManagement.Infrastructure.Common.Persistence;
 using AbsoluteFitManagement.Infrastructure.Enquiries.Persistence;
+using AbsoluteFitManagement.Infrastructure.Finance.Persistence;
 using AbsoluteFitManagement.Infrastructure.Packages.Persistence;
 using AbsoluteFitManagement.Infrastructure.Services.Persistence;
 using AbsoluteFitManagement.Infrastructure.Members.Persistence;
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IMembersRepository, MembersRepository>();
         services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
         services.AddScoped<IServiceTypeConfigRepository, ServiceTypeConfigRepository>();
+        services.AddScoped<IInvoicesRepository, InvoicesRepository>();
         services.AddScoped<IUnitOfWork>(sp =>
             sp.GetRequiredService<AbsoluteFitManagementDbContext>());
 

@@ -18,6 +18,12 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.Property(x => x.TotalAmount).HasPrecision(12, 2);
         builder.Property(x => x.Status).HasMaxLength(20).HasDefaultValue("Draft");
         builder.Property(x => x.Notes).HasMaxLength(500);
+        builder.Property(x => x.InvoiceType).HasMaxLength(20).HasDefaultValue("Service");
+        builder.Property(x => x.SalesRepName).HasMaxLength(100);
+        builder.Property(x => x.DiscountReason).HasMaxLength(300);
+        builder.Property(x => x.InternalNotes).HasMaxLength(500);
+        builder.Property(x => x.PaidAmount).HasPrecision(12, 2);
+        builder.Property(x => x.PaymentsJson);
         builder.HasIndex(x => x.GymId);
         builder.HasIndex(x => x.InvoiceNumber);
     }
